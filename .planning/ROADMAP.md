@@ -32,14 +32,20 @@ Decimal phases appear between their surrounding integers in numeric order.
   6. System processes input events without panics (unwrap() calls eliminated on hot paths)
   7. Macro engine cleans up completed executions (memory leak fixed)
   8. Daemon releases device grabs gracefully on error/shutdown
-**Plans**: TBD
+**Plans**: 5 plans created
 
 Plans:
-- [ ] 01-01: Create RemapEngine with HashMap-based key code translation
-- [ ] 01-02: Integrate RemapEngine into main event loop (device → remap → macro → inject)
-- [ ] 01-03: Extend ConfigManager for RemapEntry YAML parsing and validation
-- [ ] 01-04: Implement key repeat handling (event value 2) and stuck key prevention
-- [ ] 01-05: Fix macro execution memory leak and remove unwrap() panic risk
+- [ ] 01-01-PLAN.md — Create RemapEngine and KeyParser components
+- [ ] 01-02-PLAN.md — Extend ConfigManager for YAML remap loading
+- [ ] 01-03-PLAN.md — Integrate RemapEngine into main event loop
+- [ ] 01-04-PLAN.md — Implement key repeat handling and stuck key prevention
+- [ ] 01-05-PLAN.md — Fix memory leak and unwrap() calls
+
+**Wave Structure:**
+- Wave 1: 01-01 (RemapEngine foundation)
+- Wave 2: 01-02, 01-03 (Config and integration, parallel after 01-01)
+- Wave 3: 01-04 (Advanced handling, depends on 01-03)
+- Wave 4: 01-05 (Quality fixes, parallel with other waves)
 
 ### Phase 2: Per-Device Profiles & IPC
 **Goal**: Users can define different remap profiles per device and switch between them at runtime via GUI
@@ -98,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Remapping Engine | 0/5 | Not started | - |
+| 1. Core Remapping Engine | 0/5 | Ready to execute | 2026-02-16 |
 | 2. Per-Device Profiles & IPC | 0/3 | Not started | - |
 | 3. Hotplug & Hot-Reload | 0/3 | Not started | - |
 | 4. Integration Testing | 0/3 | Not started | - |
