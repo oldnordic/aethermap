@@ -84,7 +84,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REMAP-04 | Phase 1 | Pending |
 | REMAP-05 | Phase 1 | Pending |
 | REMAP-06 | Phase 1 | Pending |
-| REMAP-07 | Phase 2 | Pending |
+| REMAP-07 | Phase 1 | Pending |
 | CONFIG-01 | Phase 1 | Pending |
 | CONFIG-02 | Phase 1 | Pending |
 | CONFIG-03 | Phase 3 | Pending |
@@ -93,8 +93,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONFIG-06 | Phase 2 | Pending |
 | QUAL-01 | Phase 1 | Pending |
 | QUAL-02 | Phase 1 | Pending |
-| QUAL-03 | Phase 4 | Pending |
-| QUAL-04 | Phase 1 | Pending |
+| QUAL-03 | Phase 3 | Pending |
+| QUAL-04 | Phase 4 | Pending |
 | QUAL-05 | Phase 4 | Pending |
 | QUAL-06 | Phase 1 | Pending |
 | IPC-01 | Phase 2 | Pending |
@@ -104,9 +104,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v1 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21 ⚠️
+- Mapped to phases: 21
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-16*
-*Last updated: 2026-02-16 after initial definition*
+*Last updated: 2026-02-16 after roadmap creation*
