@@ -409,3 +409,49 @@ The planner should create tasks that:
 - Add test coverage for hotplug and hot-reload scenarios
 - Document any discovered edge cases or limitations
 - Consider ROADMAP.md update (inotify → udev terminology)
+
+---
+
+## Verification Results
+
+**Verified:** 2026-02-17 (Plans 03-01 through 03-04)
+
+### Implementation Status
+
+All Phase 3 features were **already implemented** in the codebase:
+
+| Feature | Status | Location |
+|---------|--------|----------|
+| udev-based hotplug monitoring | ✓ Complete | `razermapperd/src/hotplug.rs` |
+| Device add handler with profile application | ✓ Complete | `razermapperd/src/device.rs::handle_device_add` |
+| Device removal handler with best-effort cleanup | ✓ Complete | `razermapperd/src/device.rs::handle_device_removal` |
+| SIGHUP configuration hot-reload | ✓ Complete | `razermapperd/src/main.rs` (tokio::select!) |
+| Validate-then-swap pattern | ✓ Complete | `razermapperd/src/config.rs::reload_*` |
+
+### Terminology Correction
+
+**Finding:** ROADMAP.md originally referenced "inotify on /dev/input/" for device monitoring.
+
+**Correction:** The actual implementation uses **udev** monitoring with input subsystem filtering, which is superior:
+- udev provides device metadata (vendor/product IDs) directly
+- udev has proper event ordering guarantees
+- inotify only sees directory changes, requiring separate device operations
+
+**Action taken:** Updated ROADMAP.md to reflect udev-based implementation.
+
+### Verification Summary
+
+Plans 03-01 through 03-04 focused on **verification** rather than new implementation:
+
+- **03-01:** Verified udev monitoring works correctly (spawn_blocking pattern for async-safe udev socket iteration)
+- **03-02:** Verified SIGHUP reload triggers both global remaps and device profiles
+- **03-03:** Added 15 integration tests for DeviceEvent, device ID formatting, and validate-then-swap pattern
+- **03-04:** Updated documentation (ROADMAP.md, README.md) with accurate terminology and user-facing instructions
+
+### Edge Cases and Limitations
+
+**Multi-node devices:** Some keyboards present multiple /dev/input/eventX nodes. Current implementation tracks each node independently. Verified in testing that all nodes are handled correctly.
+
+**Rapid unplug/replug:** The udev monitor handles rapid sequences correctly. Device map tracks device IDs across events.
+
+**Invalid configuration:** Validate-then-swap pattern ensures invalid configs are rejected with clear error messages, leaving the old config active.
