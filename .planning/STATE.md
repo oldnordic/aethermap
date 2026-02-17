@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 2 of 4 (Device Profiles & IPC)
-Status: Plan 02-02 COMPLETE
-_✓ Extended YAML config for per-device profiles_
-Last activity: 2026-02-17 — Extended YAML config structures with match_pattern and description support (4 min)
+Status: Plan 02-03 COMPLETE
+_✓ IPC request/response types for profiles_
+Last activity: 2026-02-17 — Extended IPC protocol with RemapProfileInfo, RemapEntry structs and 4 new Request/Response variants (7 min)
 
-Progress: [███░░░░░░░░░░░░░░░░░░] 33% (Phase 2) - 2 of 6 plans complete
+Progress: [████░░░░░░░░░░░░░░░░░] 50% (Phase 2) - 3 of 6 plans complete
 
 ## Phase 1 Deliverables
 
@@ -35,7 +35,7 @@ Progress: [███░░░░░░░░░░░░░░░░░░] 33% 
 |------|-------------|--------|
 | 02-01 | RemapTable type alias for atomic switching | ✓ Complete |
 | 02-02 | Extended YAML config for per-device profiles | ✓ Complete |
-| 02-03 | IPC request/response types for profiles | Pending |
+| 02-03 | IPC request/response types for profiles | ✓ Complete |
 | 02-04 | Per-device profile storage in DeviceManager | Pending |
 | 02-05 | Profile activation methods | Pending |
 | 02-06 | IPC handlers for profile operations | Pending |
@@ -95,6 +95,7 @@ Progress: [███░░░░░░░░░░░░░░░░░░] 33% 
 | Phase 04 P01 | 5min | 3 tasks | 1 file created |
 | Phase 04 P02 | 15min | 3 tasks | 1 file created |
 | Phase 04 P03 | 8min | 3 tasks | 1 file created |
+| Phase 02 P02-03 | 7min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -133,12 +134,16 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: load_device_profiles_extended() method returning HashMap<String, Vec<RemapProfile>> (02-02)
 - **2026-02-17**: Flat HashMap<String, String> remaps for ergonomic YAML syntax instead of Vec<RemapEntry> (02-02)
 - **2026-02-17**: Optional match_pattern field for flexible device matching (02-02)
+- **2026-02-17**: IPC protocol extended with RemapProfileInfo and RemapEntry structs for profile metadata (02-03)
+- **2026-02-17**: IPC Request variants added: GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile (02-03)
+- **2026-02-17**: IPC Response variants added: ActiveRemaps, RemapProfiles, RemapProfileActivated, RemapProfileDeactivated (02-03)
+- **2026-02-17**: Handler scaffolds with underscore-prefixed parameters to suppress unused variable warnings (02-03)
 
 ### Pending Todos
 
-- Complete Phase 2 per-device profile configuration (5 remaining plans)
-- Add IPC handlers for profile queries and switching
-- Implement profile activation in DeviceManager
+- Complete Phase 2 per-device profile configuration (3 remaining plans)
+- Implement profile activation in DeviceManager (02-05)
+- Complete IPC handler implementations (02-06)
 
 ### Blockers/Concerns
 
@@ -147,8 +152,8 @@ Recent decisions from Phase 1 and 3:
 
 ## Session Continuity
 
-Last session: Phase 2 Device Profiles & IPC - Plan 02-02 Extended YAML config
-Stopped at: Plan 02-02 complete - Extended YAML config structures with match_pattern and description support
+Last session: Phase 2 Device Profiles & IPC - Plan 02-03 IPC request/response types
+Stopped at: Plan 02-03 complete - Extended IPC protocol with RemapProfileInfo, RemapEntry structs and 4 new Request/Response variants
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -165,12 +170,13 @@ Resume files:
 - .planning/phases/04-integration-testing/04-03-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-01-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-02-SUMMARY.md
+- .planning/phases/02-device-profiles-ipc/02-03-SUMMARY.md
 
 ## Next Steps
 
-Phase 2 IN PROGRESS (2 of 6 plans done).
+Phase 2 IN PROGRESS (3 of 6 plans done).
 
-**Next:** Plan 02-03 - IPC request/response types for profiles.
+**Next:** Plan 02-04 - Per-device profile storage in DeviceManager.
 
 1. **Phase 2**: Per-Device Profiles & IPC (in progress) - Runtime profile switching via IPC
 2. **GUI development**: Frontend for configuration (deferred)
