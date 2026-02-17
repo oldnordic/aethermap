@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 3 of 4 (Hotplug and Hot-reload)
-Status: Plan 2 of 3 complete (03-02 - SIGHUP hot-reload verification)
-_📋 Current plan: 03-02 COMPLETE ✓_
-Last activity: 2026-02-17 — Verified SIGHUP-based configuration hot-reload with atomic swap pattern
+Status: Phase 3 COMPLETE - All 3 plans finished
+_📋 Current plan: 03-03 COMPLETE ✓_
+Last activity: 2026-02-17 — Integration tests for hotplug and hot-reload scenarios
 
-Progress: [███████░░░░░░░░░░░░] 67% (Phase 3)
+Progress: [████████████████████] 100% (Phase 3)
 
 ## Phase 1 Deliverables
 
@@ -35,31 +35,32 @@ Progress: [███████░░░░░░░░░░░░] 67% (Phase
 |------|-------------|--------|
 | 03-01 | Verify udev hotplug monitoring | ✓ Complete |
 | 03-02 | SIGHUP configuration hot-reload | ✓ Complete |
-| 03-03 | Runtime profile switching | Pending |
+| 03-03 | Integration tests for hotplug and hot-reload | ✓ Complete |
 
 **Hotplug Achievement:** Device hotplug monitoring verified - devices are auto-detected on plug-in, profiles auto-applied, and clean removal on unplug.
 **Hot-reload Achievement:** SIGHUP-based configuration hot-reload verified - validate-then-swap pattern ensures atomic updates without daemon restart.
+**Integration Test Achievement:** 15 integration tests covering DeviceEvent structure, device ID formatting, and validate-then-swap hot-reload pattern.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 9
 - Average duration: ~0.6 hours/plan
-- Total execution time: ~4.5 hours
+- Total execution time: ~5.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Status | Total | Avg/Plan |
 |-------|-------|--------|-------|----------|
 | 1 - Core Remapping Engine | 6/6 | Complete | 4.2 | 0.70 |
-| 3 - Hotplug and Hot-reload | 2/3 | In Progress | 0.33 | 0.17 |
+| 3 - Hotplug and Hot-reload | 3/3 | Complete | 0.75 | 0.25 |
 
 **Recent Trend:**
-- Last 7 plans: 0.64h avg (including 03-01, 03-02)
-- Trend: Phase 3 verification progressing
+- Last 3 plans: 0.25h avg (03-01, 03-02, 03-03)
+- Trend: Phase 3 verification complete
 
 *Updated after each plan completion*
-| Phase 03 P02 | 8min | 3 tasks verified | 0 files modified |
+| Phase 03 P03 | 15min | 3 tasks | 2 files created, 1 modified |
 
 ## Accumulated Context
 
@@ -84,7 +85,8 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-16**: KeyParser and RemapEngine with evdev::Key enum storage (not u16) (01-01)
 - **2026-02-16**: Manual fmt::Display/std::error::Error impl instead of thiserror (01-01)
 - **2026-02-16**: Non-linear function key code mapping (F11=87, F12=88) (01-01)
-- [Phase 03]: SIGHUP-based configuration hot-reload verified with atomic swap pattern via Arc<RwLock<>> - no changes needed, implementation already follows best practices
+- **2026-02-17**: Integration tests for hotplug and hot-reload using tempfile isolation (03-03)
+- **2026-02-17**: Made hotplug::format_device_id public for testing device ID format (03-03)
 
 ### Pending Todos
 
@@ -97,8 +99,8 @@ None from Phase 1. All deliverables complete.
 
 ## Session Continuity
 
-Last session: Phase 3 hot-reload verification
-Stopped at: Plan 03-02 complete - SIGHUP hot-reload verified
+Last session: Phase 3 integration tests
+Stopped at: Plan 03-03 complete - Integration tests for hotplug and hot-reload
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -108,15 +110,16 @@ Resume files:
 - .planning/phases/01-core-remapping/01-05-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-01-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-02-SUMMARY.md
+- .planning/phases/03-hotplug-hotreload/03-03-SUMMARY.md
 
 ## Next Steps
 
-Phase 3 in progress (2/3 complete). Next plans:
+Phase 3 complete. Recommended next phases:
 
-1. **Plan 03-03**: Runtime profile switching via IPC
-2. **Phase 2**: IPC and Profile Management (deferred)
-3. **Phase 4**: GUI integration (deferred)
+1. **Phase 2**: IPC and Profile Management (deferred) - Runtime profile switching via D-Bus
+2. **Phase 4**: GUI integration (deferred) - Frontend for configuration
+3. **Alternative**: Continue with Phase 3 plans if additional hotplug/hot-reload features needed
 
-**Recommended:** Continue with Plan 03-03 (runtime profile switching).
+**Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching.
 
 <sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03</sub>
