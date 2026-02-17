@@ -7,21 +7,21 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 9 - Device Detection and Basic Input
+**Current focus:** Phase 10 - Layer System and State Management
 
 ## Current Position
 
-Phase: 9 of 12 (Device Detection and Basic Input)
-Plan: 6 of 7
+Phase: 10 of 12 (Layer System and State Management)
+Plan: 6 of 8
 Status: In progress
-Last activity: 2026-02-17 — Plan 09-06 complete: IPC protocol for device capability queries
+Last activity: 2026-02-17 — Plan 10-06 complete: Layer state persistence across profile switches
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [####..........................] 13% (4/31 plans)
-Overall: [=======================================...] 59% (31/52 plans)
+v1.2 (Phases 9-12): [############################.............] 39% (12/31 plans)
+Overall: [=======================================...] 71% (37/52 plans)
 ```
 
 ## Performance Metrics
@@ -43,8 +43,8 @@ Overall: [=======================================...] 59% (31/52 plans)
 | 6. Mouse Event Reading | 4 | Complete |
 | 7. Mouse Macro Verification | 4 | Complete |
 | 8. GUI Integration | 4 | Complete |
-| 9. Device Detection and Basic Input | 7 | In progress |
-| 10. Layer System and State Management | 8 | Not started |
+| 9. Device Detection and Basic Input | 7 | Complete |
+| 10. Layer System and State Management | 8 | 6 complete (10-01, 10-02, 10-03, 10-04, 10-05, 10-06) |
 | 11. Analog Processing and Calibration | 8 | Not started |
 | 12. LED Control | 8 | Not started |
 
@@ -109,6 +109,51 @@ Overall: [=======================================...] 59% (31/52 plans)
 - Visual feedback: Primary style for selected, Secondary for remapped, Text for unmapped
 - Hat switch displayed as centered "HAT" indicator in button grid
 
+**v1.2 Implementation Decisions (Phase 10):**
+
+*Plan 10-01 - LayerManager Component:*
+- LayerMode enum with Hold (modifier-held) and Toggle (press-on-press-off) variants
+- LayerConfig uses custom serde serialization for HashMap<Key, Key> (serializes as Vec<(u16, u16)>)
+- get_effective_layer() returns highest active layer ID using max(active_layers) for simple priority
+- active_toggle_layers tracked separately from active_layers for state clarity
+- Minimum 3 layers guaranteed per device (0=base, 1, 2) with extensible configuration
+
+*Plan 10-02 - Hold Mode Activation:*
+- active_hold_layers HashSet tracks currently held layers (modifier-key-held activation)
+- activate_hold_layer() and deactivate_hold_layer() methods on DeviceLayerState for hold lifecycle
+- LayerManager async wrapper methods with Result<(), String> error handling
+- get_effective_layer() combines active_hold_layers and active_toggle_layers via union for priority
+- activate_layer() updated to track hold mode layers in active_hold_layers based on LayerMode
+
+*Plan 10-03 - Toggle Mode Activation:*
+- toggle_layer() uses active_toggle_layers.contains() for state checking (not active_layers)
+- is_toggle_layer_active() provides explicit toggle state query method
+- LayerManager.toggle_layer() returns Result<bool, String> for error handling
+- LayerManager.toggle_layer() validates layer_id against configured layers
+- Toggle layers persist until explicitly toggled off (unlike hold layers)
+
+*Plan 10-04 - Layer Stack Composition:*
+- get_effective_layer() uses .chain() instead of .union().collect() to avoid intermediate HashSet allocation
+- get_active_layers(device_id) returns sorted Vec of all active layer IDs for GUI display
+- Highest layer ID wins when multiple layers active (simple priority ordering)
+- Comprehensive unit tests for layer stack composition (8 new tests)
+
+*Plan 10-05 - RemapEngine Layer-Aware Lookups:*
+- layer_remaps: Vec<Arc<RwLock<HashMap<Key, Key>>>> for O(1) indexed layer access
+- Cascade fallback searches from effective_layer down to base (0) using (0..=effective_layer).rev()
+- remap_layer_aware() and process_event_layer_aware() for device-specific layer-aware lookups
+- load_layer_remap() for per-layer config loading with eager validation
+- Backward compatible remaps field maps to layer_remaps[0] for existing code
+- 11 unit tests verifying layer creation, loading, cascade, priority, and isolation
+
+*Plan 10-06 - Layer State Persistence:*
+- LayerStateSnapshot struct with device_id, base_layer, active_toggle_layers
+- Hold layers NOT persisted (physical key press state resets on device reconnect)
+- Toggle layers persisted across daemon restarts (user mode preferences)
+- save_to_path/load_from_path methods using YAML serialization (serde_yaml for consistency)
+- ConfigManager has layer_state_path field for file location
+- load_from_path returns Ok(()) when file doesn't exist (graceful first startup)
+
 ### Pending Todos
 
 None.
@@ -125,7 +170,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Plan 09-06 complete - IPC protocol for device capability queries
+Stopped at: Plan 10-06 complete - Layer state persistence across profile switches
 Resume file: None
 
-**Next step:** Execute plan 09-07 - Joystick axis remapping
+**Next step:** Execute plan 10-07 - Integrate layer activation with modifier key bindings
