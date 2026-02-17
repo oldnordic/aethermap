@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Users can remap any input key to any other key, with remaps persisting across reboots and switchable at runtime.
-**Current focus:** Phase 4 - Integration Testing
+**Current focus:** Phase 2 - Device Profiles & IPC
 
 ## Current Position
 
-Phase: 4 of 4 (Integration Testing)
-Status: Phase 04 COMPLETE
-_✓ All Phase 4 plans complete_
-Last activity: 2026-02-17 — Hotplug and config reload integration test verification (15 tests, 701 lines)
+Phase: 2 of 4 (Device Profiles & IPC)
+Status: Plan 02-01 COMPLETE
+_✓ RemapTable type alias added_
+Last activity: 2026-02-17 — RemapTable type alias for atomic profile switching (8 min)
 
-Progress: [████████████████████████] 100% (Phase 4)
+Progress: [██░░░░░░░░░░░░░░░░░░░] 17% (Phase 2)
 
 ## Phase 1 Deliverables
 
@@ -28,6 +28,19 @@ Progress: [███████████████████████
 | 01-05 | Quality fixes | ✓ Complete |
 
 **Core Achievement:** Users can now remap any input key to any other key through YAML configuration (`/etc/razermapperd/remaps.yaml`). Remaps persist across reboots, key repeat works correctly, and the daemon has no memory leaks.
+
+## Phase 2 Deliverables
+
+| Plan | Description | Status |
+|------|-------------|--------|
+| 02-01 | RemapTable type alias for atomic switching | ✓ Complete |
+| 02-02 | Extended YAML config for per-device profiles | Pending |
+| 02-03 | IPC request/response types for profiles | Pending |
+| 02-04 | Per-device profile storage in DeviceManager | Pending |
+| 02-05 | Profile activation methods | Pending |
+| 02-06 | IPC handlers for profile operations | Pending |
+
+**Atomic Switching Achievement:** RemapTable type alias added for O(1) atomic pointer swaps during profile switching without memory allocations or locks during event processing.
 
 ## Phase 3 Deliverables
 
@@ -114,10 +127,14 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: End-to-end virtual device integration tests - 4 tests using evdev::uinput::VirtualDeviceBuilder (04-02)
 - **2026-02-17**: ROADMAP correction - uses evdev::uinput (not "evdevil" which doesn't exist) (04-02)
 - **2026-02-17**: Hotplug and config reload integration tests verified - 15 tests (701 lines) covering DeviceEvent structure, device ID formatting, atomic swap, invalid rejection, and concurrent safety (04-03)
+- **2026-02-17**: RemapTable type alias added for O(1) atomic profile switching (02-01)
+- **2026-02-17**: Existing RemapProfile structure preserved with Arc<RwLock<HashMap>> for async compatibility (02-01)
 
 ### Pending Todos
 
-None from Phase 1. All deliverables complete.
+- Complete Phase 2 per-device profile configuration (5 remaining plans)
+- Add IPC handlers for profile queries and switching
+- Implement profile activation in DeviceManager
 
 ### Blockers/Concerns
 
@@ -126,9 +143,8 @@ None from Phase 1. All deliverables complete.
 
 ## Session Continuity
 
-Last session: Phase 4 hotplug and config reload integration test verification
-Stopped at: Plan 04-03 complete - All Phase 4 plans finished
-Stopped at: Plan 03-04 complete - Documentation update (ROADMAP, README, RESEARCH)
+Last session: Phase 2 Device Profiles & IPC - Plan 02-01 RemapTable type alias
+Stopped at: Plan 02-01 complete - RemapTable type alias for atomic profile switching
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -143,14 +159,15 @@ Resume files:
 - .planning/phases/04-integration-testing/04-01-SUMMARY.md
 - .planning/phases/04-integration-testing/04-02-SUMMARY.md
 - .planning/phases/04-integration-testing/04-03-SUMMARY.md
+- .planning/phases/02-device-profiles-ipc/02-01-SUMMARY.md
 
 ## Next Steps
 
-Phase 4 COMPLETE (3 of 3 plans done).
+Phase 2 IN PROGRESS (1 of 6 plans done).
 
-**Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching via D-Bus.
+**Next:** Plan 02-02 - Extended YAML config for per-device profiles.
 
-1. **Phase 2**: IPC and Profile Management (deferred) - Runtime profile switching via D-Bus
+1. **Phase 2**: Per-Device Profiles & IPC (in progress) - Runtime profile switching via IPC
 2. **GUI development**: Frontend for configuration (deferred)
 
 <sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03 ✓ → 03-04 ✓</sub>
