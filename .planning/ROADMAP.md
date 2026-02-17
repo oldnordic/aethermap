@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Core Remapping Engine** - Build the missing RemapEngine for single-key-to-single-key remapping
 - [x] **Phase 2: Per-Device Profiles & IPC** - Enable device-specific remaps and runtime profile switching (2026-02-17)
-- [ ] **Phase 3: Hotplug & Hot-Reload** - Handle device changes and runtime configuration reload
+- [x] **Phase 3: Hotplug & Hot-Reload** - Handle device changes and runtime configuration reload
 - [ ] **Phase 4: Integration Testing** - Verify end-to-end functionality with virtual devices
 
 ## Phase Details
@@ -25,27 +25,28 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Requirements**: REMAP-01, REMAP-02, REMAP-04, REMAP-05, REMAP-06, REMAP-07, CONFIG-01, CONFIG-02, CONFIG-05, QUAL-01, QUAL-02, QUAL-04, QUAL-06
 **Success Criteria** (what must be TRUE):
   1. User creates YAML config file with key name syntax (e.g., `KEY_A: KEY_B`), daemon loads it on startup, and pressing A outputs B
-  2. Remapping modifier keys (CapsLock→Ctrl_L, Escape→Ctrl_L) works correctly
+  2. Remapping modifier keys (CapsLock->Ctrl_L, Escape->Ctrl_L) works correctly
   3. Key repeat events (event value 2) are handled properly for remapped keys
   4. No stuck keys occur when device is grabbed (existing key states cleared)
   5. Modifier state synchronization prevents keys from appearing permanently held down
   6. System processes input events without panics (unwrap() calls eliminated on hot paths)
   7. Macro engine cleans up completed executions (memory leak fixed)
   8. Daemon releases device grabs gracefully on error/shutdown
-**Plans**: 5 plans created
+**Plans**: 6 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Create RemapEngine and KeyParser components
-- [ ] 01-02-PLAN.md — Extend ConfigManager for YAML remap loading
-- [ ] 01-03-PLAN.md — Integrate RemapEngine into main event loop
-- [ ] 01-04-PLAN.md — Implement key repeat handling and stuck key prevention
-- [ ] 01-05-PLAN.md — Fix memory leak and unwrap() calls
+- [x] 01-01-PLAN.md — Create RemapEngine and KeyParser components
+- [x] 01-02-PLAN.md — Extend ConfigManager for YAML remap loading
+- [x] 01-03-PLAN.md — Integrate RemapEngine into main event loop
+- [x] 01-04-PLAN.md — Implement key repeat handling and stuck key prevention
+- [x] 01-05-PLAN.md — Fix memory leak and unwrap() calls
+- [x] 01-03b-PLAN.md — Device event loop integration
 
 **Wave Structure:**
 - Wave 1: 01-01 (RemapEngine foundation)
 - Wave 2: 01-02, 01-03 (Config and integration, parallel after 01-01)
 - Wave 3: 01-04 (Advanced handling, depends on 01-03)
-- Wave 4: 01-05 (Quality fixes, parallel with other waves)
+- Wave 4: 01-05, 01-03b (Quality fixes and integration, parallel with other waves)
 
 ### Phase 2: Per-Device Profiles & IPC
 **Goal**: Users can define different remap profiles per device and switch between them at runtime via GUI
@@ -57,7 +58,7 @@ Plans:
   3. GUI can request activation of a specific remap profile, daemon switches to it without restart
   4. GUI can request deactivation of current remap profile, daemon stops applying those remaps
   5. Multiple named profiles coexist in configuration, user can switch between them
-**Plans**: 6 plans created
+**Plans**: 6 plans
 
 Plans:
 - [x] 02-01: RemapProfile struct for atomic profile switching
@@ -96,16 +97,22 @@ Plans:
 **Requirements**: QUAL-05
 **Success Criteria** (what must be TRUE):
   1. Unit tests cover core remapping logic (key code lookup, modifier handling, repeat events)
-  2. Integration tests use evdevil virtual devices to test end-to-end remapping
+  2. Integration tests use virtual devices (evdev::uinput) to test end-to-end remapping
   3. Tests verify hotplug scenarios (device removal, re-acquisition)
   4. Tests verify configuration reload scenarios
   5. Test suite runs cleanly with all tests passing
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Add unit tests for RemapEngine (lookup tables, modifier state, repeat handling)
-- [ ] 04-02: Add integration tests with evdevil virtual devices
-- [ ] 04-03: Add tests for hotplug and configuration reload scenarios
+- [ ] 04-01-PLAN.md — Verify existing RemapEngine unit tests (17 tests, 251 lines)
+- [ ] 04-02-PLAN.md — Add integration tests with evdev::uinput VirtualDeviceBuilder
+- [ ] 04-03-PLAN.md — Verify existing hotplug and config reload tests (15 tests, 701 lines)
+
+**Note:** Most tests already exist. Plans focus on verification and adding end-to-end virtual device tests.
+
+**Wave Structure:**
+- Wave 1: 04-01, 04-02 (Verification and new implementation, parallel)
+- Wave 2: 04-03 (Final verification, depends on 04-02 for complete test suite)
 
 ## Progress
 
@@ -117,4 +124,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Core Remapping Engine | 6/6 | ✓ Complete | 2026-02-17 |
 | 2. Per-Device Profiles & IPC | 6/6 | ✓ Complete | 2026-02-17 |
 | 3. Hotplug & Hot-Reload | 4/4 | ✓ Complete | 2026-02-17 |
-| 4. Integration Testing | 0/3 | Not started | - |
+| 4. Integration Testing | 0/3 | Planned | - |
