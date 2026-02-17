@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 4 of 4 (Integration Testing)
-Status: Plan 04-02 COMPLETE
-_📋 Current plan: 04-02 COMPLETE ✓_
-Last activity: 2026-02-17 — End-to-end virtual device integration tests (4 tests, 295 lines)
+Status: Phase 04 COMPLETE
+_✓ All Phase 4 plans complete_
+Last activity: 2026-02-17 — Hotplug and config reload integration test verification (15 tests, 701 lines)
 
-Progress: [███░░░░░░░░░░░░░░░░░░] 67% (Phase 4)
+Progress: [████████████████████████] 100% (Phase 4)
 
 ## Phase 1 Deliverables
 
@@ -49,10 +49,13 @@ Progress: [███░░░░░░░░░░░░░░░░░░] 67% 
 |------|-------------|--------|
 | 04-01 | Verify existing unit test coverage | ✓ Complete |
 | 04-02 | End-to-end virtual device integration tests | ✓ Complete |
+| 04-03 | Hotplug and config reload integration test verification | ✓ Complete |
 
 **Unit Test Coverage Achievement:** Verified 31 comprehensive unit tests (486 lines) covering RemapEngine lookup tables, KeyParser key categories, validation, eager config loading, and RemapProfile atomic switching. All tests passing.
 
 **Virtual Device Integration Test Achievement:** Created 4 end-to-end integration tests (295 lines) using evdev::uinput::VirtualDeviceBuilder. Tests verify key remapping with press, release, and repeat event values. CI-compatible with graceful /dev/uinput skip.
+
+**Hotplug and Config Reload Test Achievement:** Verified 15 integration tests (701 lines) covering hotplug event handling (6 tests) and configuration hot-reload (9 tests). Tests verify DeviceEvent structure, device ID formatting, atomic swap pattern, invalid config rejection, and concurrent reload safety.
 
 ## Performance Metrics
 
@@ -67,7 +70,7 @@ Progress: [███░░░░░░░░░░░░░░░░░░] 67% 
 |-------|-------|--------|-------|----------|
 | 1 - Core Remapping Engine | 6/6 | Complete | 4.2 | 0.70 |
 | 3 - Hotplug and Hot-reload | 4/4 | Complete | 1.0 | 0.25 |
-| 4 - Integration Testing | 2/3 | In Progress | 0.4 | 0.18 |
+| 4 - Integration Testing | 3/3 | Complete | 0.5 | 0.15 |
 
 **Recent Trend:**
 - Last 4 plans: 0.25h avg (03-01, 03-02, 03-03, 03-04)
@@ -78,6 +81,7 @@ Progress: [███░░░░░░░░░░░░░░░░░░] 67% 
 | Phase 03 P04 | 10min | 3 tasks | 3 files modified |
 | Phase 04 P01 | 5min | 3 tasks | 1 file created |
 | Phase 04 P02 | 15min | 3 tasks | 1 file created |
+| Phase 04 P03 | 8min | 3 tasks | 1 file created |
 
 ## Accumulated Context
 
@@ -109,6 +113,7 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: Unit test coverage verified - 31 tests (486 lines) covering RemapEngine and KeyParser (04-01)
 - **2026-02-17**: End-to-end virtual device integration tests - 4 tests using evdev::uinput::VirtualDeviceBuilder (04-02)
 - **2026-02-17**: ROADMAP correction - uses evdev::uinput (not "evdevil" which doesn't exist) (04-02)
+- **2026-02-17**: Hotplug and config reload integration tests verified - 15 tests (701 lines) covering DeviceEvent structure, device ID formatting, atomic swap, invalid rejection, and concurrent safety (04-03)
 
 ### Pending Todos
 
@@ -136,19 +141,16 @@ Resume files:
 - .planning/phases/03-hotplug-hotreload/03-04-SUMMARY.md
 - .planning/phases/04-integration-testing/04-01-SUMMARY.md
 - .planning/phases/04-integration-testing/04-02-SUMMARY.md
+- .planning/phases/04-integration-testing/04-03-SUMMARY.md
 
 ## Next Steps
 
-Phase 4 in progress (2 of 3 plans complete). Remaining plans:
-- 04-03: End-to-end testing with real devices
+Phase 4 COMPLETE (3 of 3 plans done).
 
-**Recommended:** Complete Phase 4 integration testing plans before proceeding to Phase 2 (IPC) or GUI development.
+**Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching via D-Bus.
 
 1. **Phase 2**: IPC and Profile Management (deferred) - Runtime profile switching via D-Bus
-2. **Phase 4**: GUI integration (deferred) - Frontend for configuration
-3. **Alternative**: Continue with Phase 3 plans if additional hotplug/hot-reload features needed
-
-**Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching.
+2. **GUI development**: Frontend for configuration (deferred)
 
 <sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03 ✓ → 03-04 ✓</sub>
-<sub>Phase 4: 04-01 ✓ → 04-02 ✓ → 04-03</sub>
+<sub>Phase 4: 04-01 ✓ → 04-02 ✓ → 04-03 ✓</sub>
