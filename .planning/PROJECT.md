@@ -37,7 +37,11 @@ If key remapping doesn't work reliably, nothing else matters.
 
 <!-- Current scope. Building toward these. -->
 
-*No active requirements — v1.1 planning pending.*
+**Milestone v1.1: Mouse & Mixed Macros**
+- [ ] Mouse events in macros (buttons, movement, scroll)
+- [ ] Mixed keyboard+mouse macro recordings
+- [ ] GUI mouse button selection and recording
+- [ ] Input-only device discovery filtering
 
 ### Out of Scope
 
