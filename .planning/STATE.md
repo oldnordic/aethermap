@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 4 of 4 (Integration Testing)
-Status: Plan 04-01 COMPLETE
-_📋 Current plan: 04-01 COMPLETE ✓_
-Last activity: 2026-02-17 — Unit test coverage verified (31 tests, 486 lines)
+Status: Plan 04-02 COMPLETE
+_📋 Current plan: 04-02 COMPLETE ✓_
+Last activity: 2026-02-17 — End-to-end virtual device integration tests (4 tests, 295 lines)
 
-Progress: [██░░░░░░░░░░░░░░░░░░░] 33% (Phase 4)
+Progress: [███░░░░░░░░░░░░░░░░░░] 67% (Phase 4)
 
 ## Phase 1 Deliverables
 
@@ -48,15 +48,18 @@ Progress: [██░░░░░░░░░░░░░░░░░░░] 33% 
 | Plan | Description | Status |
 |------|-------------|--------|
 | 04-01 | Verify existing unit test coverage | ✓ Complete |
+| 04-02 | End-to-end virtual device integration tests | ✓ Complete |
 
 **Unit Test Coverage Achievement:** Verified 31 comprehensive unit tests (486 lines) covering RemapEngine lookup tables, KeyParser key categories, validation, eager config loading, and RemapProfile atomic switching. All tests passing.
+
+**Virtual Device Integration Test Achievement:** Created 4 end-to-end integration tests (295 lines) using evdev::uinput::VirtualDeviceBuilder. Tests verify key remapping with press, release, and repeat event values. CI-compatible with graceful /dev/uinput skip.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: ~0.6 hours/plan
-- Total execution time: ~6.1 hours
+- Total execution time: ~6.3 hours
 
 **By Phase:**
 
@@ -64,7 +67,7 @@ Progress: [██░░░░░░░░░░░░░░░░░░░] 33% 
 |-------|-------|--------|-------|----------|
 | 1 - Core Remapping Engine | 6/6 | Complete | 4.2 | 0.70 |
 | 3 - Hotplug and Hot-reload | 4/4 | Complete | 1.0 | 0.25 |
-| 4 - Integration Testing | 1/3 | In Progress | 0.1 | 0.08 |
+| 4 - Integration Testing | 2/3 | In Progress | 0.4 | 0.18 |
 
 **Recent Trend:**
 - Last 4 plans: 0.25h avg (03-01, 03-02, 03-03, 03-04)
@@ -74,6 +77,7 @@ Progress: [██░░░░░░░░░░░░░░░░░░░] 33% 
 | Phase 03 P03 | 15min | 3 tasks | 2 files created, 1 modified |
 | Phase 03 P04 | 10min | 3 tasks | 3 files modified |
 | Phase 04 P01 | 5min | 3 tasks | 1 file created |
+| Phase 04 P02 | 15min | 3 tasks | 1 file created |
 
 ## Accumulated Context
 
@@ -103,6 +107,8 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: Documentation updated - ROADMAP.md reflects udev terminology, README.md documents hotplug/hot-reload (03-04)
 - **2026-02-17**: RESEARCH.md updated with verification results documenting Phase 3 implementation status (03-04)
 - **2026-02-17**: Unit test coverage verified - 31 tests (486 lines) covering RemapEngine and KeyParser (04-01)
+- **2026-02-17**: End-to-end virtual device integration tests - 4 tests using evdev::uinput::VirtualDeviceBuilder (04-02)
+- **2026-02-17**: ROADMAP correction - uses evdev::uinput (not "evdevil" which doesn't exist) (04-02)
 
 ### Pending Todos
 
@@ -129,11 +135,11 @@ Resume files:
 - .planning/phases/03-hotplug-hotreload/03-03-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-04-SUMMARY.md
 - .planning/phases/04-integration-testing/04-01-SUMMARY.md
+- .planning/phases/04-integration-testing/04-02-SUMMARY.md
 
 ## Next Steps
 
-Phase 4 in progress (1 of 3 plans complete). Remaining plans:
-- 04-02: Integration test framework setup
+Phase 4 in progress (2 of 3 plans complete). Remaining plans:
 - 04-03: End-to-end testing with real devices
 
 **Recommended:** Complete Phase 4 integration testing plans before proceeding to Phase 2 (IPC) or GUI development.
@@ -145,4 +151,4 @@ Phase 4 in progress (1 of 3 plans complete). Remaining plans:
 **Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching.
 
 <sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03 ✓ → 03-04 ✓</sub>
-<sub>Phase 4: 04-01 ✓ → 04-02 → 04-03</sub>
+<sub>Phase 4: 04-01 ✓ → 04-02 ✓ → 04-03</sub>
