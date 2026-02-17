@@ -79,10 +79,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Verify udev-based device monitoring for hotplug detection
-- [ ] 03-02-PLAN.md — Verify SIGHUP-based configuration hot-reload
-- [ ] 03-03-PLAN.md — Add integration tests for hotplug and hot-reload scenarios
-- [ ] 03-04-PLAN.md — Update documentation (ROADMAP.md, README.md)
+- [x] 03-01-PLAN.md — Verify udev-based device monitoring for hotplug detection
+- [x] 03-02-PLAN.md — Verify SIGHUP-based configuration hot-reload
+- [x] 03-03-PLAN.md — Add integration tests for hotplug and hot-reload scenarios
+- [x] 03-04-PLAN.md — Update documentation (ROADMAP.md, README.md)
 
 **Note:** Phase 3 implementation already exists. Plans focus on verification, testing, and documentation.
 
@@ -116,5 +116,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Core Remapping Engine | 6/6 | ✓ Complete | 2026-02-17 |
 | 2. Per-Device Profiles & IPC | 6/6 | ✓ Complete | 2026-02-17 |
-| 3. Hotplug & Hot-Reload | 0/4 | Not started | - |
+| 3. Hotplug & Hot-Reload | 4/4 | ✓ Complete | 2026-02-17 |
 | 4. Integration Testing | 0/3 | Not started | - |
