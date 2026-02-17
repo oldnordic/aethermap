@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 9 of 12 (Device Detection and Basic Input)
-Plan: 2 of 7
+Plan: 1 of 7
 Status: In progress
-Last activity: 2026-02-17 — Plan 09-02 complete: EV_ABS event handling
+Last activity: 2026-02-17 — Plan 09-01 complete: Azeron device detection and keypad classification
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [##..........................] 6% (2/31 plans)
-Overall: [=======================================...] 56% (29/52 plans)
+v1.2 (Phases 9-12): [#...........................] 3% (1/31 plans)
+Overall: [=======================================...] 56% (28/52 plans)
 ```
 
 ## Performance Metrics
@@ -43,7 +43,7 @@ Overall: [=======================================...] 56% (29/52 plans)
 | 6. Mouse Event Reading | 4 | Complete |
 | 7. Mouse Macro Verification | 4 | Complete |
 | 8. GUI Integration | 4 | Complete |
-| 9. Device Detection and Basic Input | 7 | Not started |
+| 9. Device Detection and Basic Input | 7 | In progress |
 | 10. Layer System and State Management | 8 | Not started |
 | 11. Analog Processing and Calibration | 8 | Not started |
 | 12. LED Control | 8 | Not started |
@@ -71,6 +71,12 @@ Overall: [=======================================...] 56% (29/52 plans)
 - AnalogProcessor for deadzone, sensitivity curves, D-pad emulation
 - LED protocol research deferred to Phase 12 planning
 
+**v1.2 Implementation Decisions (Plan 09-01):**
+- Azeron Cyborg vendor ID: 0x32b6
+- DeviceType::Keypad added for devices with many keys + analog stick
+- Key count threshold: 50 keys to distinguish keypad from gamepad
+- GUI icon for Keypad: 🎹 (musical keyboard emoji)
+
 **v1.2 Implementation Decisions (Plan 09-02):**
 - EV_ABS events use InputEventKind::AbsAxis(AbsoluteAxisType) in evdev 0.12.2
 - Absolute axis events encoded with high key codes (61000-61005) to avoid conflicts
@@ -93,7 +99,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Plan 09-02 complete - EV_ABS event handling in event reader
+Stopped at: Plan 09-01 complete - Azeron device detection and keypad classification
 Resume file: None
 
-**Next step:** Execute plan 09-03 - Absolute axis capability detection
+**Next step:** Execute plan 09-02 - EV_ABS event handling
