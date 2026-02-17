@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Users can remap any input key to any other key, with remaps persisting across reboots and switchable at runtime.
-**Current focus:** Phase 3 - Hotplug and Hot-reload
+**Current focus:** Phase 4 - Integration Testing
 
 ## Current Position
 
-Phase: 3 of 4 (Hotplug and Hot-reload)
-Status: Phase 3 COMPLETE - All 4 plans finished
-_📋 Current plan: 03-04 COMPLETE ✓_
-Last activity: 2026-02-17 — Documentation updated with udev terminology and user-facing instructions
+Phase: 4 of 4 (Integration Testing)
+Status: Plan 04-01 COMPLETE
+_📋 Current plan: 04-01 COMPLETE ✓_
+Last activity: 2026-02-17 — Unit test coverage verified (31 tests, 486 lines)
 
-Progress: [████████████████████] 100% (Phase 3)
+Progress: [██░░░░░░░░░░░░░░░░░░░] 33% (Phase 4)
 
 ## Phase 1 Deliverables
 
@@ -43,12 +43,20 @@ Progress: [████████████████████] 100% (P
 **Integration Test Achievement:** 15 integration tests covering DeviceEvent structure, device ID formatting, and validate-then-swap hot-reload pattern.
 **Documentation Achievement:** ROADMAP.md updated with udev terminology, README.md documents hotplug/hot-reload features, RESEARCH.md records verification findings.
 
+## Phase 4 Deliverables
+
+| Plan | Description | Status |
+|------|-------------|--------|
+| 04-01 | Verify existing unit test coverage | ✓ Complete |
+
+**Unit Test Coverage Achievement:** Verified 31 comprehensive unit tests (486 lines) covering RemapEngine lookup tables, KeyParser key categories, validation, eager config loading, and RemapProfile atomic switching. All tests passing.
+
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: ~0.6 hours/plan
-- Total execution time: ~6 hours
+- Total execution time: ~6.1 hours
 
 **By Phase:**
 
@@ -56,6 +64,7 @@ Progress: [████████████████████] 100% (P
 |-------|-------|--------|-------|----------|
 | 1 - Core Remapping Engine | 6/6 | Complete | 4.2 | 0.70 |
 | 3 - Hotplug and Hot-reload | 4/4 | Complete | 1.0 | 0.25 |
+| 4 - Integration Testing | 1/3 | In Progress | 0.1 | 0.08 |
 
 **Recent Trend:**
 - Last 4 plans: 0.25h avg (03-01, 03-02, 03-03, 03-04)
@@ -64,6 +73,7 @@ Progress: [████████████████████] 100% (P
 *Updated after each plan completion*
 | Phase 03 P03 | 15min | 3 tasks | 2 files created, 1 modified |
 | Phase 03 P04 | 10min | 3 tasks | 3 files modified |
+| Phase 04 P01 | 5min | 3 tasks | 1 file created |
 
 ## Accumulated Context
 
@@ -92,6 +102,7 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: Made hotplug::format_device_id public for testing device ID format (03-03)
 - **2026-02-17**: Documentation updated - ROADMAP.md reflects udev terminology, README.md documents hotplug/hot-reload (03-04)
 - **2026-02-17**: RESEARCH.md updated with verification results documenting Phase 3 implementation status (03-04)
+- **2026-02-17**: Unit test coverage verified - 31 tests (486 lines) covering RemapEngine and KeyParser (04-01)
 
 ### Pending Todos
 
@@ -117,10 +128,15 @@ Resume files:
 - .planning/phases/03-hotplug-hotreload/03-02-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-03-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-04-SUMMARY.md
+- .planning/phases/04-integration-testing/04-01-SUMMARY.md
 
 ## Next Steps
 
-Phase 3 complete. Recommended next phases:
+Phase 4 in progress (1 of 3 plans complete). Remaining plans:
+- 04-02: Integration test framework setup
+- 04-03: End-to-end testing with real devices
+
+**Recommended:** Complete Phase 4 integration testing plans before proceeding to Phase 2 (IPC) or GUI development.
 
 1. **Phase 2**: IPC and Profile Management (deferred) - Runtime profile switching via D-Bus
 2. **Phase 4**: GUI integration (deferred) - Frontend for configuration
@@ -129,3 +145,4 @@ Phase 3 complete. Recommended next phases:
 **Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching.
 
 <sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03 ✓ → 03-04 ✓</sub>
+<sub>Phase 4: 04-01 ✓ → 04-02 → 04-03</sub>
