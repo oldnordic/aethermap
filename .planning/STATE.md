@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 1 of 4 (Core Remapping Engine)
-Plan: 0 of 5 in current phase
-Status: Planning complete, ready to execute
-Last activity: 2026-02-16 — Phase 1 planning complete, 5 plans ready for execution
+Plan: 1 of 5 in current phase
+Status: Plan 01-01 complete, continuing execution
+Last activity: 2026-02-16 — Completed KeyParser and RemapEngine implementation
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -27,11 +27,11 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 - Core Remapping Engine | 0/5 | 0.0 | N/A |
+| 1 - Core Remapping Engine | 1/5 | 0.8 | 0.8 |
 
 **Recent Trend:**
-- Last 5 plans: N/A
-- Trend: N/A
+- Last 5 plans: 0.8h (01-01: KeyParser/RemapEngine)
+- Trend: Initial implementation progressing well
 
 *Updated after each plan completion*
 
@@ -42,8 +42,10 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- **2026-02-16**: KeyParser and RemapEngine implemented with evdev::Key enum storage (not u16)
+- **2026-02-16**: Manual fmt::Display/std::error::Error impl instead of thiserror (not in dependencies)
+- **2026-02-16**: Non-linear function key code mapping due to evdev quirks (F11=87, F12=88)
 - **2026-02-16**: Config file syntax locked to flat YAML key:value pairs
-- **2026-02-16**: Key storage locked to `Arc<RwLock<HashMap<u16, u16>>>`
 - **2026-02-16**: Config validation locked to fail-fast with exit code 1
 
 ### Pending Todos
@@ -52,14 +54,14 @@ None from planning. Execution todos will be tracked during plan implementation.
 
 ### Blockers/Concerns
 
-- **Decision conflict**: Research notes user decision for `evdev::Key` enum storage, but codebase uses u16 throughout. **Resolution**: Storing u16 internally per research recommendation (simpler integration).
-- **Limited integration**: Current plan stores RemapEngine in DaemonState but full IPC wiring deferred to Phase 2. This is acceptable for Phase 1 scope.
+- **Pre-existing issue**: macro_engine tests have a hanging issue unrelated to Phase 1 work. Excluded from test runs using filter.
+- **Integration deferred**: Full IPC wiring for RemapEngine deferred to Phase 2 per plan. This is acceptable for Phase 1 scope.
 
 ## Session Continuity
 
-Last session: Planning session (Phase 1)
-Stopped at: 5 PLAN.md files created, ready for execution
-Resume file: .planning/phases/01-core-remapping/01-CONTEXT.md
+Last session: Execution session (Plan 01-01)
+Stopped at: Completed KeyParser and RemapEngine with 37 tests passing
+Resume file: .planning/phases/01-core-remapping/01-01-SUMMARY.md
 
 ## Next Steps
 
