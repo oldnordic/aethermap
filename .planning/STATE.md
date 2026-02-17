@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 3 of 4 (Hotplug and Hot-reload)
-Status: Phase 3 COMPLETE - All 3 plans finished
-_📋 Current plan: 03-03 COMPLETE ✓_
-Last activity: 2026-02-17 — Integration tests for hotplug and hot-reload scenarios
+Status: Phase 3 COMPLETE - All 4 plans finished
+_📋 Current plan: 03-04 COMPLETE ✓_
+Last activity: 2026-02-17 — Documentation updated with udev terminology and user-facing instructions
 
 Progress: [████████████████████] 100% (Phase 3)
 
@@ -36,31 +36,34 @@ Progress: [████████████████████] 100% (P
 | 03-01 | Verify udev hotplug monitoring | ✓ Complete |
 | 03-02 | SIGHUP configuration hot-reload | ✓ Complete |
 | 03-03 | Integration tests for hotplug and hot-reload | ✓ Complete |
+| 03-04 | Documentation update (ROADMAP, README, RESEARCH) | ✓ Complete |
 
 **Hotplug Achievement:** Device hotplug monitoring verified - devices are auto-detected on plug-in, profiles auto-applied, and clean removal on unplug.
 **Hot-reload Achievement:** SIGHUP-based configuration hot-reload verified - validate-then-swap pattern ensures atomic updates without daemon restart.
 **Integration Test Achievement:** 15 integration tests covering DeviceEvent structure, device ID formatting, and validate-then-swap hot-reload pattern.
+**Documentation Achievement:** ROADMAP.md updated with udev terminology, README.md documents hotplug/hot-reload features, RESEARCH.md records verification findings.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: ~0.6 hours/plan
-- Total execution time: ~5.5 hours
+- Total execution time: ~6 hours
 
 **By Phase:**
 
 | Phase | Plans | Status | Total | Avg/Plan |
 |-------|-------|--------|-------|----------|
 | 1 - Core Remapping Engine | 6/6 | Complete | 4.2 | 0.70 |
-| 3 - Hotplug and Hot-reload | 3/3 | Complete | 0.75 | 0.25 |
+| 3 - Hotplug and Hot-reload | 4/4 | Complete | 1.0 | 0.25 |
 
 **Recent Trend:**
-- Last 3 plans: 0.25h avg (03-01, 03-02, 03-03)
-- Trend: Phase 3 verification complete
+- Last 4 plans: 0.25h avg (03-01, 03-02, 03-03, 03-04)
+- Trend: Phase 3 complete
 
 *Updated after each plan completion*
 | Phase 03 P03 | 15min | 3 tasks | 2 files created, 1 modified |
+| Phase 03 P04 | 10min | 3 tasks | 3 files modified |
 
 ## Accumulated Context
 
@@ -87,6 +90,8 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-16**: Non-linear function key code mapping (F11=87, F12=88) (01-01)
 - **2026-02-17**: Integration tests for hotplug and hot-reload using tempfile isolation (03-03)
 - **2026-02-17**: Made hotplug::format_device_id public for testing device ID format (03-03)
+- **2026-02-17**: Documentation updated - ROADMAP.md reflects udev terminology, README.md documents hotplug/hot-reload (03-04)
+- **2026-02-17**: RESEARCH.md updated with verification results documenting Phase 3 implementation status (03-04)
 
 ### Pending Todos
 
@@ -99,8 +104,8 @@ None from Phase 1. All deliverables complete.
 
 ## Session Continuity
 
-Last session: Phase 3 integration tests
-Stopped at: Plan 03-03 complete - Integration tests for hotplug and hot-reload
+Last session: Phase 3 documentation update
+Stopped at: Plan 03-04 complete - Documentation update (ROADMAP, README, RESEARCH)
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -111,6 +116,7 @@ Resume files:
 - .planning/phases/03-hotplug-hotreload/03-01-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-02-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-03-SUMMARY.md
+- .planning/phases/03-hotplug-hotreload/03-04-SUMMARY.md
 
 ## Next Steps
 
@@ -122,4 +128,4 @@ Phase 3 complete. Recommended next phases:
 
 **Recommended:** Phase 2 (IPC and Profile Management) to enable runtime profile switching.
 
-<sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03</sub>
+<sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03 ✓ → 03-04 ✓</sub>
