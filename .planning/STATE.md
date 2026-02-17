@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 2 of 4 (Device Profiles & IPC)
-Status: Plan 02-05 COMPLETE
-_✓ Profile activation methods and IPC handlers_
-Last activity: 2026-02-17 — Implemented get_active_remaps, activate_profile_by_name, get_device_info_from_path methods; IPC handlers for GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile; daemon loads profiles at startup (15 min)
+Status: Plan 02-06 COMPLETE
+_✓ GUI profile management with IPC client methods and UI widgets_
+Last activity: 2026-02-17 — Added GUI IPC client methods (get_active_remaps, list_remap_profiles, activate_remap_profile, deactivate_remap_profile); added ProfileSwitcher and ActiveRemapsDisplay UI widgets; integrated remap profile controls into device cards (15 min)
 
-Progress: [███████░░░░░░░░░░░░] 83% (Phase 2) - 5 of 6 plans complete
+Progress: [████████░░░░░░░░░░░] 100% (Phase 2) - 6 of 6 plans complete
 
 ## Phase 1 Deliverables
 
@@ -38,7 +38,7 @@ Progress: [███████░░░░░░░░░░░░] 83% (Phase
 | 02-03 | IPC request/response types for profiles | ✓ Complete |
 | 02-04 | Per-device profile storage in DeviceManager | ✓ Complete |
 | 02-05 | Profile activation methods | ✓ Complete |
-| 02-06 | IPC handlers for profile operations | Pending |
+| 02-06 | GUI profile management | ✓ Complete |
 
 **Atomic Switching Achievement:** RemapTable type alias added for O(1) atomic pointer swaps during profile switching without memory allocations or locks during event processing.
 
@@ -97,6 +97,7 @@ Progress: [███████░░░░░░░░░░░░] 83% (Phase
 | Phase 04 P03 | 8min | 3 tasks | 1 file created |
 | Phase 02 P02-03 | 7min | 2 tasks | 2 files |
 | Phase 02 P04 | 8min | 3 tasks | 2 files |
+| Phase 02 P02-06 | 15min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -149,11 +150,14 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: get_device_info_from_path() helper method added for device info lookup (02-05)
 - **2026-02-17**: IPC handlers implemented: GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile (02-05)
 - **2026-02-17**: Device profiles loaded at daemon startup via load_device_profiles_extended() and set_device_profiles() (02-05)
+- **2026-02-17**: GUI IPC client methods added for remap profile operations using device_path parameter (02-06)
+- **2026-02-17**: Profile switcher and active remaps display widgets integrated into device card view (02-06)
+- **2026-02-17**: Remap profile state separated from macro profile state (device_path vs device_id keys) (02-06)
 
 ### Pending Todos
 
-- Complete Phase 2 per-device profile configuration (1 remaining plan)
-- End-to-end integration testing for profile operations (02-06)
+- Phase 2 complete - all 6 plans finished
+- GUI development continues (additional features may be needed)
 
 ### Blockers/Concerns
 
@@ -183,15 +187,16 @@ Resume files:
 - .planning/phases/02-device-profiles-ipc/02-03-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-04-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-05-SUMMARY.md
+- .planning/phases/02-device-profiles-ipc/02-06-SUMMARY.md
 
 ## Next Steps
 
-Phase 2 IN PROGRESS (5 of 6 plans done).
+Phase 2 COMPLETE (6 of 6 plans done).
 
-**Next:** Plan 02-06 - End-to-end integration and testing for profile operations.
+**Next:** Phase 5 - GUI Development or other pending work.
 
-1. **Phase 2**: Per-Device Profiles & IPC (in progress) - Runtime profile switching via IPC
-2. **GUI development**: Frontend for configuration (deferred)
+1. **Phase 2**: Per-Device Profiles & IPC ✓ COMPLETE - Runtime profile switching via IPC with GUI support
+2. **GUI development**: Frontend for configuration (partial - remap profile switching added)
 
 <sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03 ✓ → 03-04 ✓</sub>
 <sub>Phase 4: 04-01 ✓ → 04-02 ✓ → 04-03 ✓</sub>
