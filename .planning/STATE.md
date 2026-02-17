@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 2 of 4 (Device Profiles & IPC)
-Status: Plan 02-04 COMPLETE
-_✓ Per-device profile storage in DeviceManager_
-Last activity: 2026-02-17 — Added device_profiles HashMap to DeviceManager, profile_remaps cache to GrabbedDevice, DeviceProfileInfo IPC type (8 min)
+Status: Plan 02-05 COMPLETE
+_✓ Profile activation methods and IPC handlers_
+Last activity: 2026-02-17 — Implemented get_active_remaps, activate_profile_by_name, get_device_info_from_path methods; IPC handlers for GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile; daemon loads profiles at startup (15 min)
 
-Progress: [██████░░░░░░░░░░░░░░] 67% (Phase 2) - 4 of 6 plans complete
+Progress: [███████░░░░░░░░░░░░] 83% (Phase 2) - 5 of 6 plans complete
 
 ## Phase 1 Deliverables
 
@@ -37,7 +37,7 @@ Progress: [██████░░░░░░░░░░░░░░] 67% (Ph
 | 02-02 | Extended YAML config for per-device profiles | ✓ Complete |
 | 02-03 | IPC request/response types for profiles | ✓ Complete |
 | 02-04 | Per-device profile storage in DeviceManager | ✓ Complete |
-| 02-05 | Profile activation methods | Pending |
+| 02-05 | Profile activation methods | ✓ Complete |
 | 02-06 | IPC handlers for profile operations | Pending |
 
 **Atomic Switching Achievement:** RemapTable type alias added for O(1) atomic pointer swaps during profile switching without memory allocations or locks during event processing.
@@ -96,6 +96,7 @@ Progress: [██████░░░░░░░░░░░░░░] 67% (Ph
 | Phase 04 P02 | 15min | 3 tasks | 1 file created |
 | Phase 04 P03 | 8min | 3 tasks | 1 file created |
 | Phase 02 P02-03 | 7min | 2 tasks | 2 files |
+| Phase 02 P04 | 8min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -142,12 +143,17 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: Profile remaps cache added to GrabbedDevice with profile_remaps HashMap for O(1) switching (02-04)
 - **2026-02-17**: DeviceProfileInfo IPC type added with Serialize/Deserialize support (02-04)
 - **2026-02-17**: set_device_profiles() and get_device_profiles() methods added to DeviceManager (02-04)
+- **2026-02-17**: Error types changed to Box<dyn std::error::Error + Send + Sync> for async compatibility across tokio::spawn (02-05)
+- **2026-02-17**: get_active_remaps() method added to DeviceManager returning profile name and remap table (02-05)
+- **2026-02-17**: activate_profile_by_name() method added to look up and activate profiles from stored device_profiles HashMap (02-05)
+- **2026-02-17**: get_device_info_from_path() helper method added for device info lookup (02-05)
+- **2026-02-17**: IPC handlers implemented: GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile (02-05)
+- **2026-02-17**: Device profiles loaded at daemon startup via load_device_profiles_extended() and set_device_profiles() (02-05)
 
 ### Pending Todos
 
-- Complete Phase 2 per-device profile configuration (2 remaining plans)
-- Implement profile activation in DeviceManager (02-05)
-- Complete IPC handler implementations (02-06)
+- Complete Phase 2 per-device profile configuration (1 remaining plan)
+- End-to-end integration testing for profile operations (02-06)
 
 ### Blockers/Concerns
 
@@ -156,8 +162,8 @@ Recent decisions from Phase 1 and 3:
 
 ## Session Continuity
 
-Last session: Phase 2 Device Profiles & IPC - Plan 02-04 Per-device profile storage
-Stopped at: Plan 02-04 complete - Added device_profiles HashMap, profile_remaps cache, DeviceProfileInfo type
+Last session: Phase 2 Device Profiles & IPC - Plan 02-05 Profile activation methods
+Stopped at: Plan 02-05 complete - Implemented profile operation methods and IPC handlers
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -176,13 +182,13 @@ Resume files:
 - .planning/phases/02-device-profiles-ipc/02-02-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-03-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-04-SUMMARY.md
-- .planning/phases/04-integration-testing/04-03-SUMMARY.md
+- .planning/phases/02-device-profiles-ipc/02-05-SUMMARY.md
 
 ## Next Steps
 
-Phase 2 IN PROGRESS (4 of 6 plans done).
+Phase 2 IN PROGRESS (5 of 6 plans done).
 
-**Next:** Plan 02-05 - Profile activation methods in DeviceManager.
+**Next:** Plan 02-06 - End-to-end integration and testing for profile operations.
 
 1. **Phase 2**: Per-Device Profiles & IPC (in progress) - Runtime profile switching via IPC
 2. **GUI development**: Frontend for configuration (deferred)
