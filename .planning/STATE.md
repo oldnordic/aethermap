@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 2 of 4 (Device Profiles & IPC)
-Status: Plan 02-03 COMPLETE
-_✓ IPC request/response types for profiles_
-Last activity: 2026-02-17 — Extended IPC protocol with RemapProfileInfo, RemapEntry structs and 4 new Request/Response variants (7 min)
+Status: Plan 02-04 COMPLETE
+_✓ Per-device profile storage in DeviceManager_
+Last activity: 2026-02-17 — Added device_profiles HashMap to DeviceManager, profile_remaps cache to GrabbedDevice, DeviceProfileInfo IPC type (8 min)
 
-Progress: [████░░░░░░░░░░░░░░░░░] 50% (Phase 2) - 3 of 6 plans complete
+Progress: [██████░░░░░░░░░░░░░░] 67% (Phase 2) - 4 of 6 plans complete
 
 ## Phase 1 Deliverables
 
@@ -36,7 +36,7 @@ Progress: [████░░░░░░░░░░░░░░░░░] 50% 
 | 02-01 | RemapTable type alias for atomic switching | ✓ Complete |
 | 02-02 | Extended YAML config for per-device profiles | ✓ Complete |
 | 02-03 | IPC request/response types for profiles | ✓ Complete |
-| 02-04 | Per-device profile storage in DeviceManager | Pending |
+| 02-04 | Per-device profile storage in DeviceManager | ✓ Complete |
 | 02-05 | Profile activation methods | Pending |
 | 02-06 | IPC handlers for profile operations | Pending |
 
@@ -138,10 +138,14 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: IPC Request variants added: GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile (02-03)
 - **2026-02-17**: IPC Response variants added: ActiveRemaps, RemapProfiles, RemapProfileActivated, RemapProfileDeactivated (02-03)
 - **2026-02-17**: Handler scaffolds with underscore-prefixed parameters to suppress unused variable warnings (02-03)
+- **2026-02-17**: Per-device profile storage added to DeviceManager with device_profiles HashMap (02-04)
+- **2026-02-17**: Profile remaps cache added to GrabbedDevice with profile_remaps HashMap for O(1) switching (02-04)
+- **2026-02-17**: DeviceProfileInfo IPC type added with Serialize/Deserialize support (02-04)
+- **2026-02-17**: set_device_profiles() and get_device_profiles() methods added to DeviceManager (02-04)
 
 ### Pending Todos
 
-- Complete Phase 2 per-device profile configuration (3 remaining plans)
+- Complete Phase 2 per-device profile configuration (2 remaining plans)
 - Implement profile activation in DeviceManager (02-05)
 - Complete IPC handler implementations (02-06)
 
@@ -152,8 +156,8 @@ Recent decisions from Phase 1 and 3:
 
 ## Session Continuity
 
-Last session: Phase 2 Device Profiles & IPC - Plan 02-03 IPC request/response types
-Stopped at: Plan 02-03 complete - Extended IPC protocol with RemapProfileInfo, RemapEntry structs and 4 new Request/Response variants
+Last session: Phase 2 Device Profiles & IPC - Plan 02-04 Per-device profile storage
+Stopped at: Plan 02-04 complete - Added device_profiles HashMap, profile_remaps cache, DeviceProfileInfo type
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -171,12 +175,14 @@ Resume files:
 - .planning/phases/02-device-profiles-ipc/02-01-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-02-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-03-SUMMARY.md
+- .planning/phases/02-device-profiles-ipc/02-04-SUMMARY.md
+- .planning/phases/04-integration-testing/04-03-SUMMARY.md
 
 ## Next Steps
 
-Phase 2 IN PROGRESS (3 of 6 plans done).
+Phase 2 IN PROGRESS (4 of 6 plans done).
 
-**Next:** Plan 02-04 - Per-device profile storage in DeviceManager.
+**Next:** Plan 02-05 - Profile activation methods in DeviceManager.
 
 1. **Phase 2**: Per-Device Profiles & IPC (in progress) - Runtime profile switching via IPC
 2. **GUI development**: Frontend for configuration (deferred)
