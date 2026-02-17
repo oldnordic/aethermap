@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 9 of 12 (Device Detection and Basic Input)
-Plan: 0 of 7
-Status: Ready to plan
-Last activity: 2026-02-17 — v1.2 Azeron Cyborg Support roadmap created
+Plan: 2 of 7
+Status: In progress
+Last activity: 2026-02-17 — Plan 09-02 complete: EV_ABS event handling
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [....................] 0% (0/31 plans)
-Overall: [=======================================...] 52% (27/52 plans)
+v1.2 (Phases 9-12): [##..........................] 6% (2/31 plans)
+Overall: [=======================================...] 56% (29/52 plans)
 ```
 
 ## Performance Metrics
@@ -71,6 +71,12 @@ Overall: [=======================================...] 52% (27/52 plans)
 - AnalogProcessor for deadzone, sensitivity curves, D-pad emulation
 - LED protocol research deferred to Phase 12 planning
 
+**v1.2 Implementation Decisions (Plan 09-02):**
+- EV_ABS events use InputEventKind::AbsAxis(AbsoluteAxisType) in evdev 0.12.2
+- Absolute axis events encoded with high key codes (61000-61005) to avoid conflicts
+- Analog events flow through same mpsc channel as key/mouse events to macro engine
+- Unsupported absolute axes logged and skipped (not sent to macro engine)
+
 ### Pending Todos
 
 None.
@@ -87,7 +93,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Roadmap created for v1.2 Azeron Cyborg Support
+Stopped at: Plan 09-02 complete - EV_ABS event handling in event reader
 Resume file: None
 
-**Next step:** `/gsd:plan-phase 9` to begin detailed planning for Device Detection and Basic Input
+**Next step:** Execute plan 09-03 - Absolute axis capability detection
