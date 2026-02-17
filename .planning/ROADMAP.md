@@ -12,8 +12,8 @@ Razermapper transforms from a prototype with working device grabbing and macro r
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Core Remapping Engine** - Build the missing RemapEngine for single-key-to-single-key remapping
-- [ ] **Phase 2: Per-Device Profiles & IPC** - Enable device-specific remaps and runtime profile switching
+- [x] **Phase 1: Core Remapping Engine** - Build the missing RemapEngine for single-key-to-single-key remapping
+- [x] **Phase 2: Per-Device Profiles & IPC** - Enable device-specific remaps and runtime profile switching (2026-02-17)
 - [ ] **Phase 3: Hotplug & Hot-Reload** - Handle device changes and runtime configuration reload
 - [ ] **Phase 4: Integration Testing** - Verify end-to-end functionality with virtual devices
 
@@ -57,12 +57,15 @@ Plans:
   3. GUI can request activation of a specific remap profile, daemon switches to it without restart
   4. GUI can request deactivation of current remap profile, daemon stops applying those remaps
   5. Multiple named profiles coexist in configuration, user can switch between them
-**Plans**: TBD
+**Plans**: 6 plans created
 
 Plans:
-- [ ] 02-01: Implement per-device remap profile storage and lookup
-- [ ] 02-02: Add IPC protocol messages for remap configuration query and profile activation/deactivation
-- [ ] 02-03: Extend GUI to display active remaps and profile switching UI
+- [x] 02-01: RemapProfile struct for atomic profile switching
+- [x] 02-02: YAML device profile loading
+- [x] 02-03: IPC protocol extensions for profile operations
+- [x] 02-04: Per-device profile storage in DeviceManager
+- [x] 02-05: IPC handlers and daemon startup profile loading
+- [x] 02-06: GUI profile switcher UI components
 
 ### Phase 3: Hotplug & Hot-Reload
 **Goal**: System handles device hotplug without crashing and reloads configuration without daemon restart
@@ -71,14 +74,21 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User unplugs USB keyboard and plugs it back in, daemon continues operating and re-acquires the device
   2. User edits YAML config file and sends reload signal, daemon applies new remaps without restart
-  3. Device monitoring uses inotify on /dev/input/ for hotplug detection
+  3. Device monitoring uses udev for input subsystem event detection
   4. Configuration reload validates before applying, provides clear error messages for invalid configs
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: Implement inotify-based device monitoring for hotplug detection
-- [ ] 03-02: Add graceful device removal handling (FD cleanup, continue operating)
-- [ ] 03-03: Implement configuration hot-reload with atomic swap and validation
+- [ ] 03-01-PLAN.md — Verify udev-based device monitoring for hotplug detection
+- [ ] 03-02-PLAN.md — Verify SIGHUP-based configuration hot-reload
+- [ ] 03-03-PLAN.md — Add integration tests for hotplug and hot-reload scenarios
+- [ ] 03-04-PLAN.md — Update documentation (ROADMAP.md, README.md)
+
+**Note:** Phase 3 implementation already exists. Plans focus on verification, testing, and documentation.
+
+**Wave Structure:**
+- Wave 1: 03-01, 03-02 (Verification of existing hotplug and hot-reload, parallel)
+- Wave 2: 03-03, 03-04 (Tests and documentation, depends on verification)
 
 ### Phase 4: Integration Testing
 **Goal**: Remap functionality is verified by comprehensive unit and integration tests with virtual devices
@@ -104,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Remapping Engine | 0/5 | Ready to execute | 2026-02-16 |
-| 2. Per-Device Profiles & IPC | 0/3 | Not started | - |
-| 3. Hotplug & Hot-Reload | 0/3 | Not started | - |
+| 1. Core Remapping Engine | 6/6 | ✓ Complete | 2026-02-17 |
+| 2. Per-Device Profiles & IPC | 6/6 | ✓ Complete | 2026-02-17 |
+| 3. Hotplug & Hot-Reload | 0/4 | Not started | - |
 | 4. Integration Testing | 0/3 | Not started | - |
