@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-4 (shipped 2026-02-17)
-- 📋 **v1.1 Advanced Remapping** — Phases 5+ (planned)
+- 📋 **v1.1 Mouse & Mixed Macros** — Phases 5-8 (planned)
 
 ## Phases
 
@@ -19,11 +19,14 @@
 
 </details>
 
-### 📋 v1.1 Advanced Remapping (Planned)
+### 📋 v1.1 Mouse & Mixed Macros (Planned)
 
-- [ ] Phase 5: Layer Modes (planned)
-- [ ] Phase 6: Tap-Hold Functionality (planned)
-- [ ] Phase 7: Key Chords (planned)
+- [ ] Phase 5: Device Filtering & Discovery (3 plans)
+- [ ] Phase 6: Mouse Event Reading (4 plans)
+- [ ] Phase 7: Mouse Macro Verification (4 plans)
+- [ ] Phase 8: GUI Integration (4 plans)
+
+**Full roadmap:** `.planning/milestones/v1.1-ROADMAP.md`
 
 ## Progress
 
@@ -33,9 +36,10 @@
 | 2. Per-Device Profiles & IPC | v1.0 | 6/6 | Complete | 2026-02-17 |
 | 3. Hotplug & Hot-Reload | v1.0 | 4/4 | Complete | 2026-02-17 |
 | 4. Integration Testing | v1.0 | 3/3 | Complete | 2026-02-17 |
-| 5. Layer Modes | v1.1 | 0/0 | Not started | - |
-| 6. Tap-Hold Functionality | v1.1 | 0/0 | Not started | - |
-| 7. Key Chords | v1.1 | 0/0 | Not started | - |
+| 5. Device Filtering & Discovery | v1.1 | 0/3 | Not started | - |
+| 6. Mouse Event Reading | v1.1 | 0/4 | Not started | - |
+| 7. Mouse Macro Verification | v1.1 | 0/4 | Not started | - |
+| 8. GUI Integration | v1.1 | 0/4 | Not started | - |
 
 ---
 

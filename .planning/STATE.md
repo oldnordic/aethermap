@@ -12,22 +12,22 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 9 of 12 (Device Detection and Basic Input)
-Plan: 1 of 7
+Plan: 6 of 7
 Status: In progress
-Last activity: 2026-02-17 — Plan 09-01 complete: Azeron device detection and keypad classification
+Last activity: 2026-02-17 — Plan 09-06 complete: IPC protocol for device capability queries
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [#...........................] 3% (1/31 plans)
-Overall: [=======================================...] 56% (28/52 plans)
+v1.2 (Phases 9-12): [####..........................] 13% (4/31 plans)
+Overall: [=======================================...] 59% (31/52 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 27
+- Total plans completed: 29
 - Average duration: ~5-8 minutes per plan
 - Total execution time: ~3 hours
 
@@ -83,6 +83,32 @@ Overall: [=======================================...] 56% (28/52 plans)
 - Analog events flow through same mpsc channel as key/mouse events to macro engine
 - Unsupported absolute axes logged and skipped (not sent to macro engine)
 
+**v1.2 Implementation Decisions (Plan 09-04):**
+- Hat switch (D-pad) uses ABS_HAT0X and ABS_HAT0Y axes with values -1, 0, 1
+- HatSwitchState struct tracks X/Y position for 8-way direction decoding
+- Cardinal directions map to single arrow keys (KEY_UP=103, KEY_DOWN=108, KEY_LEFT=105, KEY_RIGHT=106)
+- Diagonal directions send TWO keys (composable from cardinal keys)
+- Previous hat keys are always released before new ones to prevent stuck keys
+
+**v1.2 Implementation Decisions (Plan 09-05):**
+- JOY_BTN_N (N=0-25) names map to Linux BTN_N codes starting at 0x100 (256)
+- KeyParser extended with joystick button and hat switch direction name support
+- DeviceCapabilities struct stores optional metadata for GUI display and profile validation
+- DeviceCapabilities fields use skip_serializing_if for backward compatibility with existing profiles
+
+**v1.2 Implementation Decisions (Plan 09-06):**
+- DeviceCapabilities IPC protocol uses type-based inference for capability detection
+- Azeron keypad: has_analog_stick=true, has_hat_switch=true, joystick_button_count=26
+- LED zones left empty pending Phase 12 (LED Control) implementation
+- Capability detection uses DeviceType enum rather than querying evdev directly (devices may not be grabbed)
+
+**v1.2 Implementation Decisions (Plan 09-07):**
+- Grid-based visual keypad layout using row-based positioning (10 rows)
+- KeypadButton struct with id, label, row, col, current_remap fields
+- "Configure Keypad" button only shown for DeviceType::Keypad devices
+- Visual feedback: Primary style for selected, Secondary for remapped, Text for unmapped
+- Hat switch displayed as centered "HAT" indicator in button grid
+
 ### Pending Todos
 
 None.
@@ -99,7 +125,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Plan 09-01 complete - Azeron device detection and keypad classification
+Stopped at: Plan 09-06 complete - IPC protocol for device capability queries
 Resume file: None
 
-**Next step:** Execute plan 09-02 - EV_ABS event handling
+**Next step:** Execute plan 09-07 - Joystick axis remapping
