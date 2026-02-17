@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 3 of 4 (Hotplug and Hot-reload)
-Status: Plan 1 of 3 complete (03-01 - udev hotplug verification)
-_📋 Current plan: 03-01 COMPLETE ✓_
-Last activity: 2026-02-17 — Verified udev hotplug monitoring implementation
+Status: Plan 2 of 3 complete (03-02 - SIGHUP hot-reload verification)
+_📋 Current plan: 03-02 COMPLETE ✓_
+Last activity: 2026-02-17 — Verified SIGHUP-based configuration hot-reload with atomic swap pattern
 
-Progress: [████░░░░░░░░░░░░░░░] 33% (Phase 3)
+Progress: [███████░░░░░░░░░░░░] 67% (Phase 3)
 
 ## Phase 1 Deliverables
 
@@ -34,30 +34,32 @@ Progress: [████░░░░░░░░░░░░░░░] 33% (Phase
 | Plan | Description | Status |
 |------|-------------|--------|
 | 03-01 | Verify udev hotplug monitoring | ✓ Complete |
-| 03-02 | Profile hot-reload with inotify | Pending |
+| 03-02 | SIGHUP configuration hot-reload | ✓ Complete |
 | 03-03 | Runtime profile switching | Pending |
 
 **Hotplug Achievement:** Device hotplug monitoring verified - devices are auto-detected on plug-in, profiles auto-applied, and clean removal on unplug.
+**Hot-reload Achievement:** SIGHUP-based configuration hot-reload verified - validate-then-swap pattern ensures atomic updates without daemon restart.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~0.7 hours/plan
-- Total execution time: ~4.2 hours
+- Total plans completed: 7
+- Average duration: ~0.6 hours/plan
+- Total execution time: ~4.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Status | Total | Avg/Plan |
 |-------|-------|--------|-------|----------|
 | 1 - Core Remapping Engine | 6/6 | Complete | 4.2 | 0.70 |
-| 3 - Hotplug and Hot-reload | 1/3 | In Progress | 0.25 | 0.25 |
+| 3 - Hotplug and Hot-reload | 2/3 | In Progress | 0.33 | 0.17 |
 
 **Recent Trend:**
-- Last 7 plans: 0.64h avg (including 03-01)
-- Trend: Phase 3 verification started
+- Last 7 plans: 0.64h avg (including 03-01, 03-02)
+- Trend: Phase 3 verification progressing
 
 *Updated after each plan completion*
+| Phase 03 P02 | 8min | 3 tasks verified | 0 files modified |
 
 ## Accumulated Context
 
@@ -82,6 +84,7 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-16**: KeyParser and RemapEngine with evdev::Key enum storage (not u16) (01-01)
 - **2026-02-16**: Manual fmt::Display/std::error::Error impl instead of thiserror (01-01)
 - **2026-02-16**: Non-linear function key code mapping (F11=87, F12=88) (01-01)
+- [Phase 03]: SIGHUP-based configuration hot-reload verified with atomic swap pattern via Arc<RwLock<>> - no changes needed, implementation already follows best practices
 
 ### Pending Todos
 
@@ -94,8 +97,8 @@ None from Phase 1. All deliverables complete.
 
 ## Session Continuity
 
-Last session: Phase 3 hotplug verification
-Stopped at: Plan 03-01 complete - udev hotplug monitoring verified
+Last session: Phase 3 hot-reload verification
+Stopped at: Plan 03-02 complete - SIGHUP hot-reload verified
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -104,16 +107,16 @@ Resume files:
 - .planning/phases/01-core-remapping/01-04-SUMMARY.md
 - .planning/phases/01-core-remapping/01-05-SUMMARY.md
 - .planning/phases/03-hotplug-hotreload/03-01-SUMMARY.md
+- .planning/phases/03-hotplug-hotreload/03-02-SUMMARY.md
 
 ## Next Steps
 
-Phase 3 in progress (1/3 complete). Next plans:
+Phase 3 in progress (2/3 complete). Next plans:
 
-1. **Plan 03-02**: Profile hot-reload using inotify to detect YAML changes
-2. **Plan 03-03**: Runtime profile switching via IPC
-3. **Phase 2**: IPC and Profile Management (deferred)
-4. **Phase 4**: GUI integration (deferred)
+1. **Plan 03-03**: Runtime profile switching via IPC
+2. **Phase 2**: IPC and Profile Management (deferred)
+3. **Phase 4**: GUI integration (deferred)
 
-**Recommended:** Continue with Plan 03-02 (profile hot-reload).
+**Recommended:** Continue with Plan 03-03 (runtime profile switching).
 
-<sub>Phase 3: 03-01 ✓ → 03-02 → 03-03</sub>
+<sub>Phase 3: 03-01 ✓ → 03-02 ✓ → 03-03</sub>
