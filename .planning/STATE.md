@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 2 of 4 (Device Profiles & IPC)
-Status: Plan 02-01 COMPLETE
-_✓ RemapTable type alias added_
-Last activity: 2026-02-17 — RemapTable type alias for atomic profile switching (8 min)
+Status: Plan 02-02 COMPLETE
+_✓ Extended YAML config for per-device profiles_
+Last activity: 2026-02-17 — Extended YAML config structures with match_pattern and description support (4 min)
 
-Progress: [██░░░░░░░░░░░░░░░░░░░] 17% (Phase 2)
+Progress: [███░░░░░░░░░░░░░░░░░░] 33% (Phase 2)
 
 ## Phase 1 Deliverables
 
@@ -34,7 +34,7 @@ Progress: [██░░░░░░░░░░░░░░░░░░░] 17% 
 | Plan | Description | Status |
 |------|-------------|--------|
 | 02-01 | RemapTable type alias for atomic switching | ✓ Complete |
-| 02-02 | Extended YAML config for per-device profiles | Pending |
+| 02-02 | Extended YAML config for per-device profiles | ✓ Complete |
 | 02-03 | IPC request/response types for profiles | Pending |
 | 02-04 | Per-device profile storage in DeviceManager | Pending |
 | 02-05 | Profile activation methods | Pending |
@@ -129,6 +129,10 @@ Recent decisions from Phase 1 and 3:
 - **2026-02-17**: Hotplug and config reload integration tests verified - 15 tests (701 lines) covering DeviceEvent structure, device ID formatting, atomic swap, invalid rejection, and concurrent safety (04-03)
 - **2026-02-17**: RemapTable type alias added for O(1) atomic profile switching (02-01)
 - **2026-02-17**: Existing RemapProfile structure preserved with Arc<RwLock<HashMap>> for async compatibility (02-01)
+- **2026-02-17**: Extended YAML config structures added - ExtendedDeviceRemapConfig, ProfileRemaps, RemapDevicesConfig (02-02)
+- **2026-02-17**: load_device_profiles_extended() method returning HashMap<String, Vec<RemapProfile>> (02-02)
+- **2026-02-17**: Flat HashMap<String, String> remaps for ergonomic YAML syntax instead of Vec<RemapEntry> (02-02)
+- **2026-02-17**: Optional match_pattern field for flexible device matching (02-02)
 
 ### Pending Todos
 
@@ -143,8 +147,8 @@ Recent decisions from Phase 1 and 3:
 
 ## Session Continuity
 
-Last session: Phase 2 Device Profiles & IPC - Plan 02-01 RemapTable type alias
-Stopped at: Plan 02-01 complete - RemapTable type alias for atomic profile switching
+Last session: Phase 2 Device Profiles & IPC - Plan 02-02 Extended YAML config
+Stopped at: Plan 02-02 complete - Extended YAML config structures with match_pattern and description support
 Resume files:
 - .planning/phases/01-core-remapping/01-01-SUMMARY.md
 - .planning/phases/01-core-remapping/01-02-SUMMARY.md
@@ -160,12 +164,13 @@ Resume files:
 - .planning/phases/04-integration-testing/04-02-SUMMARY.md
 - .planning/phases/04-integration-testing/04-03-SUMMARY.md
 - .planning/phases/02-device-profiles-ipc/02-01-SUMMARY.md
+- .planning/phases/02-device-profiles-ipc/02-02-SUMMARY.md
 
 ## Next Steps
 
-Phase 2 IN PROGRESS (1 of 6 plans done).
+Phase 2 IN PROGRESS (2 of 6 plans done).
 
-**Next:** Plan 02-02 - Extended YAML config for per-device profiles.
+**Next:** Plan 02-03 - IPC request/response types for profiles.
 
 1. **Phase 2**: Per-Device Profiles & IPC (in progress) - Runtime profile switching via IPC
 2. **GUI development**: Frontend for configuration (deferred)
