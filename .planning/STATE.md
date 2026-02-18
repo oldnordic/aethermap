@@ -1,35 +1,36 @@
 # Project State
 
-**Last Updated:** 2026-02-17
+**Last Updated:** 2026-02-19
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 10 - Layer System and State Management
+**Current focus:** Phase 13 - Wayland Portal Integration
 
 ## Current Position
 
-Phase: 10 of 12 (Layer System and State Management)
-Plan: 6 of 8
+Phase: 13 of 16 (Wayland Portal Integration and Global Hotkeys)
+Plan: 1 of 6
 Status: In progress
-Last activity: 2026-02-17 — Plan 10-06 complete: Layer state persistence across profile switches
+Last activity: 2026-02-19 — Plan 13-01 complete: Ashpd dependency for Wayland portal integration
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [############################.............] 39% (12/31 plans)
-Overall: [=======================================...] 71% (37/52 plans)
+v1.2 (Phases 9-12): [========================================] 100%
+v1.3 (Phases 13-16): [#.......................................] 2% (1/58 plans)
+Overall: [========================================...] 72% (53/74 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 29
+- Total plans completed: 53
 - Average duration: ~5-8 minutes per plan
-- Total execution time: ~3 hours
+- Total execution time: ~6 hours
 
 **By Phase:**
 
@@ -44,9 +45,13 @@ Overall: [=======================================...] 71% (37/52 plans)
 | 7. Mouse Macro Verification | 4 | Complete |
 | 8. GUI Integration | 4 | Complete |
 | 9. Device Detection and Basic Input | 7 | Complete |
-| 10. Layer System and State Management | 8 | 6 complete (10-01, 10-02, 10-03, 10-04, 10-05, 10-06) |
-| 11. Analog Processing and Calibration | 8 | Not started |
-| 12. LED Control | 8 | Not started |
+| 10. Layer System and State Management | 8 | Complete |
+| 11. Analog Processing and Calibration | 8 | Complete |
+| 12. LED Control | 8 | Complete |
+| 13. Wayland Portal Integration | 6 | 1 complete (13-01) |
+| 14. Gamepad Emulation Mode | 8 | Not started |
+| 15. WASD Mouse Camera Modes | 8 | Not started |
+| 16. Calibration GUI | 8 | Not started |
 
 ## Accumulated Context
 
@@ -154,6 +159,14 @@ Overall: [=======================================...] 71% (37/52 plans)
 - ConfigManager has layer_state_path field for file location
 - load_from_path returns Ok(()) when file doesn't exist (graceful first startup)
 
+**v1.3 Implementation Decisions (Phase 13):**
+
+*Plan 13-01 - Ashpd Dependency:*
+- ashpd 0.8 added to razermapper-gui with wayland and tokio features
+- default-features = false to minimize dependency bloat
+- tokio feature required for async portal operations compatibility
+- GUI runs as normal user for portal access (daemon runs as root)
+
 ### Pending Todos
 
 None.
@@ -169,8 +182,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-17
-Stopped at: Plan 10-06 complete - Layer state persistence across profile switches
+Last session: 2026-02-19
+Stopped at: Plan 13-01 complete - Ashpd dependency for Wayland portal integration
 Resume file: None
 
-**Next step:** Execute plan 10-07 - Integrate layer activation with modifier key bindings
+**Next step:** Execute plan 13-02 - FocusTracker component for window focus detection
