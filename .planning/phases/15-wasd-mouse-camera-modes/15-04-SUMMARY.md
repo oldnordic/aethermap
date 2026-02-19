@@ -108,6 +108,17 @@ None - no external service configuration required.
 - GUI calibration UI will need mouse velocity slider/multiplier control
 - Next plan (15-06) will add GUI mouse mode configuration
 
+## Self-Check: PASSED
+
+- [x] SUMMARY.md created at `.planning/phases/15-wasd-mouse-camera-modes/15-04-SUMMARY.md`
+- [x] Task 1 commit exists: `d52de2b` (feat)
+- [x] Task 2 commit exists: `2509428` (feat)
+- [x] `default_mouse_velocity_config()` function exists in analog_processor.rs
+- [x] Mouse mode handling exists in device.rs event loop
+- [x] `process_as_mouse()` is called with mouse config
+- [x] `mouse_move()` is called with velocity
+- [x] Final metadata commit exists: `1db5711`
+
 ---
 *Phase: 15-wasd-mouse-camera-modes*
 *Plan: 04*
