@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 10 of 10
+Plan: 9 of 10
 Status: Complete
-Last activity: 2026-02-19 — Plan 15-10 complete: WASD key state tracking with proper press/release semantics
+Last activity: 2026-02-19 — Plan 15-09 complete: GUI analog mode persistence with IPC round-trip
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [==============.....................................] 35% (22/40 plans)
-Overall: [================================================] 80% (81/92 plans)
+v1.3 (Phases 13-16): [==============================.....................] 38% (23/40 plans)
+Overall: [================================================] 81% (82/92 plans)
 ```
 
 ## Performance Metrics
@@ -344,10 +344,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 10 complete - WASD key state tracking (10/10 plans complete: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10)
+Stopped at: Phase 15 Plan 9 complete - GUI analog mode persistence (9/10 plans complete: 01, 02, 03, 04, 05, 06, 07, 08, 09)
 Resume file: None
 
-**Next step:** Continue Phase 15 - Plan 03 (Mouse Mode Processing) or Plan 06 (GUI Camera Mode Configuration)
+**Next step:** Continue Phase 15 - Plan 10 (WASD Key State Tracking) or move to Phase 16
 
 **v1.3 Implementation Decisions (Phase 14):**
 
@@ -415,6 +415,14 @@ Resume file: None
 - Y-axis centering behavior: cy = 0.5 - ny means raw Y=0 becomes positive output
 - Mouse velocity: positive Y = up, negative Y = down (due to centering inversion)
 - All 29 tests pass successfully
+
+*Plan 15-09 - GUI Analog Mode Persistence (Gap Closure):*
+- Extended AnalogCalibrationConfig with analog_mode and camera_output_mode fields
+- Type conversion functions common_to_internal_analog_mode/common_to_internal_camera_mode
+- GUI ApplyAnalogCalibration handler now sends selected mode via IPC
+- Daemon SetAnalogCalibration handler applies mode to LayerConfig
+- IPC serialization test confirms mode round-trip works correctly
+- User selections in calibration dialog now persist when clicking Apply
 
 *Plan 15-10 - WASD Key State Tracking (Gap Closure):*
 - wasd_previous_keys state variable using Arc<RwLock<Vec<(Key, bool)>>> for shared mutable access
