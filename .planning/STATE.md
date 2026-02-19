@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 13 of 16 (Wayland Portal Integration and Global Hotkeys)
-Plan: 4 of 6
+Plan: 5 of 6
 Status: In progress
-Last activity: 2026-02-19 — Plan 13-04 complete: AutoProfileSwitcher with focus-based profile switching
+Last activity: 2026-02-19 — Plan 13-05 complete: Global hotkey detection at daemon level
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [========================================] 100%
-v1.3 (Phases 13-16): [####....................................] 7% (4/58 plans)
-Overall: [========================================...] 74% (56/74 plans)
+v1.3 (Phases 13-16): [#####...................................] 8% (5/58 plans)
+Overall: [========================================...] 75% (57/74 plans)
 ```
 
 ## Performance Metrics
@@ -48,10 +48,11 @@ Overall: [========================================...] 74% (56/74 plans)
 | 10. Layer System and State Management | 8 | Complete |
 | 11. Analog Processing and Calibration | 8 | Complete |
 | 12. LED Control | 8 | Complete |
-| 13. Wayland Portal Integration | 6 | 4 complete (13-01, 13-02, 13-03, 13-04) |
+| 13. Wayland Portal Integration | 6 | 5 complete (13-01, 13-02, 13-03, 13-04, 13-05) |
 | 14. Gamepad Emulation Mode | 8 | Not started |
 | 15. WASD Mouse Camera Modes | 8 | Not started |
 | 16. Calibration GUI | 8 | Not started |
+| Phase 13 P05 | 30 | 6 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -190,6 +191,14 @@ Overall: [========================================...] 74% (56/74 plans)
 - Optional auto_profile_switcher parameter allows graceful degradation when unavailable
 - Manual override state is per-device, allowing selective auto-switching control
 
+*Plan 13-05 - Global Hotkeys:*
+- Hotkey detection happens before remap processing in event pipeline
+- Modifier keys tracked as HashSet<u16> for LEFT/RIGHT variants separately
+- Matched hotkey events consumed (not forwarded to applications)
+- Default Ctrl+Alt+Shift+1-9 bindings for profile slots 1-9
+- Wayland-compatible - no compositor support required
+- Hotkey combo detection uses case-insensitive modifier name matching
+
 ### Pending Todos
 
 None.
@@ -206,7 +215,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 13-04 complete - AutoProfileSwitcher with focus-based profile switching
+Stopped at: Plan 13-05 complete - Global hotkey detection at daemon level
 Resume file: None
 
-**Next step:** Execute plan 13-05 - Global hotkeys for manual profile switching
+**Next step:** Execute plan 13-06 - GUI integration for hotkey configuration
