@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 13 of 16 (Wayland Portal Integration and Global Hotkeys)
-Plan: 3 of 6
+Plan: 4 of 6
 Status: In progress
-Last activity: 2026-02-19 — Plan 13-03 complete: IPC protocol for focus events
+Last activity: 2026-02-19 — Plan 13-04 complete: AutoProfileSwitcher with focus-based profile switching
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [========================================] 100%
-v1.3 (Phases 13-16): [###.....................................] 5% (3/58 plans)
-Overall: [========================================...] 73% (55/74 plans)
+v1.3 (Phases 13-16): [####....................................] 7% (4/58 plans)
+Overall: [========================================...] 74% (56/74 plans)
 ```
 
 ## Performance Metrics
@@ -48,11 +48,10 @@ Overall: [========================================...] 73% (55/74 plans)
 | 10. Layer System and State Management | 8 | Complete |
 | 11. Analog Processing and Calibration | 8 | Complete |
 | 12. LED Control | 8 | Complete |
-| 13. Wayland Portal Integration | 6 | 3 complete (13-01, 13-02, 13-03) |
+| 13. Wayland Portal Integration | 6 | 4 complete (13-01, 13-02, 13-03, 13-04) |
 | 14. Gamepad Emulation Mode | 8 | Not started |
 | 15. WASD Mouse Camera Modes | 8 | Not started |
 | 16. Calibration GUI | 8 | Not started |
-| Phase 13 P03 | -- | -- tasks | -- files |
 
 ## Accumulated Context
 
@@ -183,6 +182,14 @@ Overall: [========================================...] 73% (55/74 plans)
 - Request/Response variant pairs for IPC protocol extension pattern
 - Placeholder handler with TODO for cross-plan integration pattern
 
+*Plan 13-04 - AutoProfileSwitcher:*
+- Wildcard "*" app_id matches any application for default profile fallback
+- Rules evaluated in order with first-match-wins semantics
+- Manual overrides cleared on every focus change to re-enable auto-switching
+- Prefix matching (org.mozilla.) and suffix matching (.firefox) for flexible app_id patterns
+- Optional auto_profile_switcher parameter allows graceful degradation when unavailable
+- Manual override state is per-device, allowing selective auto-switching control
+
 ### Pending Todos
 
 None.
@@ -199,7 +206,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 13-03 complete - IPC protocol for focus events
+Stopped at: Plan 13-04 complete - AutoProfileSwitcher with focus-based profile switching
 Resume file: None
 
-**Next step:** Execute plan 13-04 - AutoProfileSwitcher component
+**Next step:** Execute plan 13-05 - Global hotkeys for manual profile switching
