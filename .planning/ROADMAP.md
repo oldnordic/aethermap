@@ -146,12 +146,12 @@ Plans:
 **Plans:** 6 plans
 
 Plans:
-- [ ] 14-01: Create virtual Xbox 360 gamepad device via uinput
-- [ ] 14-02: Add AnalogMode::Gamepad to AnalogProcessor
-- [ ] 14-03: Implement analog-to-gamepad event conversion
-- [ ] 14-04: Add gamepad mode to layer configuration
-- [ ] 14-05: Integrate gamepad output with calibration pipeline
-- [ ] 14-06: Unit tests for gamepad mode and calibration
+- [x] 14-01: Create virtual Xbox 360 gamepad device via uinput
+- [x] 14-02: Add AnalogMode::Gamepad to AnalogProcessor
+- [x] 14-03: Implement analog-to-gamepad event conversion
+- [x] 14-04: Add gamepad mode to layer configuration
+- [x] 14-05: Integrate gamepad output with calibration pipeline
+- [x] 14-06: Unit tests for gamepad mode and calibration
 
 #### Phase 15: WASD, Mouse, and Camera Modes
 **Goal:** Analog stick outputs directional keys, mouse movement, or scroll/camera events
@@ -163,17 +163,19 @@ Plans:
   3. Camera mode emits scroll events or key repeats for rotation
   4. Mode switchable via GUI and IPC, per-layer configurable
   5. Smooth transitions between analog directions
-**Plans:** 8 plans
+**Plans:** 10 plans
 
 Plans:
-- [ ] 15-01: Add AnalogMode::WASD with 8-way sector detection
-- [ ] 15-02: Implement WASD key output with diagonal combinations
-- [ ] 15-03: Add AnalogMode::Mouse with velocity-based movement
-- [ ] 15-04: Implement mouse event output with acceleration curve
-- [ ] 15-05: Add AnalogMode::Camera with scroll/key repeat options
-- [ ] 15-06: Implement camera mode output (configurable axis mapping)
-- [ ] 15-07: Add mode switching via IPC protocol
-- [ ] 15-08: Unit tests for all analog modes
+- [x] 15-01: Add AnalogMode::WASD with 8-way sector detection
+- [x] 15-02: Implement WASD key output with diagonal combinations
+- [x] 15-03: Add AnalogMode::Mouse with velocity-based movement
+- [x] 15-04: Implement mouse event output with acceleration curve
+- [x] 15-05: Add AnalogMode::Camera with scroll/key repeat options
+- [x] 15-06: Implement camera mode output (configurable axis mapping)
+- [x] 15-07: Add mode switching via IPC protocol
+- [x] 15-08: Unit tests for all analog modes
+- [ ] 15-09: Fix GUI mode persistence (gap closure)
+- [ ] 15-10: Implement WASD key state tracking (gap closure)
 
 #### Phase 16: Calibration GUI
 **Goal:** Full GUI for analog calibration with live preview and visual feedback
@@ -212,14 +214,14 @@ Plans:
 | 8. GUI Integration | v1.1 | 4/4 | Complete | 2026-02-17 |
 | 9. Device Detection and Basic Input | v1.2 | 7/7 | Complete | 2026-02-17 |
 | 10. Layer System and State Management | v1.2 | 8/8 | Complete | 2026-02-17 |
-| 11. Analog Processing and Calibration | v1.2 | 0/8 | Ready to execute | - |
+| 11. Analog Processing and Calibration | v1.2 | 8/8 | Complete | 2026-02-19 |
 | 12. LED Control | v1.2 | 0/8 | Not started | - |
-| 13. Wayland Portal Integration | v1.3 | 0/6 | Not started | - |
-| 14. Gamepad Emulation Mode | v1.3 | 0/6 | Not started | - |
-| 15. WASD, Mouse, and Camera Modes | v1.3 | 0/8 | Not started | - |
+| 13. Wayland Portal Integration | v1.3 | 6/6 | Complete | 2026-02-19 |
+| 14. Gamepad Emulation Mode | v1.3 | 6/6 | Complete | 2026-02-19 |
+| 15. WASD, Mouse, and Camera Modes | v1.3 | 8/10 | In Progress | 2026-02-19 |
 | 16. Calibration GUI | v1.3 | 0/8 | Not started | - |
 
-**Overall Progress:** 49/92 plans complete (53%)
+**Overall Progress:** 79/92 plans complete (86%)
 
 ---
 
