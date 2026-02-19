@@ -7,28 +7,28 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 13 - Wayland Portal Integration
+**Current focus:** Phase 11 - Analog Processing and Calibration
 
 ## Current Position
 
-Phase: 13 of 16 (Wayland Portal Integration and Global Hotkeys)
-Plan: 6 of 6
-Status: Complete
-Last activity: 2026-02-19 — Plan 13-06 complete: GUI views for auto-switch rules and hotkey bindings
+Phase: 11 of 16 (Analog Processing and Calibration)
+Plan: 1 of 8
+Status: In Progress
+Last activity: 2026-02-19 — Plan 11-01 complete: Analog calibration data types with YAML serialization
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [========================================] 100%
-v1.3 (Phases 13-16): [#########################...............] 10% (6/58 plans)
-Overall: [========================================...] 76% (58/74 plans)
+v1.2 (Phases 9-12): [=======================..................] 53% (19/36 plans)
+v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
+Overall: [==========================================....] 68% (50/74 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 53
+- Total plans completed: 50
 - Average duration: ~5-8 minutes per plan
 - Total execution time: ~6 hours
 
@@ -46,8 +46,8 @@ Overall: [========================================...] 76% (58/74 plans)
 | 8. GUI Integration | 4 | Complete |
 | 9. Device Detection and Basic Input | 7 | Complete |
 | 10. Layer System and State Management | 8 | Complete |
-| 11. Analog Processing and Calibration | 8 | Complete |
-| 12. LED Control | 8 | Complete |
+| 11. Analog Processing and Calibration | 8 | 1 complete, 7 pending |
+| 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 8 | Not started |
 | 15. WASD Mouse Camera Modes | 8 | Not started |
@@ -209,6 +209,17 @@ Overall: [========================================...] 76% (58/74 plans)
 - View state pattern: Option<View> for modal-like screen management
 - Module visibility workaround: WAYLAND_DISPLAY check instead of ashpd in async closure
 
+**v1.2 Implementation Decisions (Phase 11):**
+
+*Plan 11-01 - Analog Calibration Data Types:*
+- AnalogCalibration struct with deadzone (0.0-1.0), sensitivity_multiplier (0.1-5.0), range_min/max, and invert_x/y
+- DeadzoneShape enum (Circular, Square) for deadzone behavior - Circular default for smoother diagonals
+- SensitivityCurve enum (Linear, Quadratic, Exponential { exponent }) for response curves
+- YAML serialization with serde using snake_case renaming for enum variants
+- Default values: 0.15 deadzone (15%), Linear curve, -32768/32767 range (Linux input limits)
+- Validation method for bounds checking with Result<(), String> return type
+- 19 unit tests covering defaults, serialization, validation, and roundtrip
+
 ### Pending Todos
 
 None.
@@ -225,7 +236,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 13-06 complete - GUI views for auto-switch rules and hotkey bindings
+Stopped at: Plan 11-01 complete - Analog calibration data types with YAML serialization
 Resume file: None
 
-**Next step:** Execute plan 14-01 - Gamepad emulation mode foundation
+**Next step:** Execute plan 11-02 - Integrate AnalogCalibration into config system
