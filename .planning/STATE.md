@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 8 of 8
+Plan: 10 of 10
 Status: Complete
-Last activity: 2026-02-19 — Plan 15-08 complete: Unit and integration tests for WASD, Mouse, and Camera modes
+Last activity: 2026-02-19 — Plan 15-10 complete: WASD key state tracking with proper press/release semantics
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [============...................................] 32% (20/40 plans)
-Overall: [================================================] 79% (79/92 plans)
+v1.3 (Phases 13-16): [==============.....................................] 35% (22/40 plans)
+Overall: [================================================] 80% (81/92 plans)
 ```
 
 ## Performance Metrics
@@ -50,7 +50,7 @@ Overall: [================================================] 79% (79/92 plans)
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
-| 15. WASD Mouse Camera Modes | 8 | Complete (8/8) |
+| 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
 | 16. Calibration GUI | 8 | Not started |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
@@ -344,7 +344,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 7 complete - GUI analog mode selector (7/8 plans complete: 01, 02, 03, 04, 05, 06, 07)
+Stopped at: Phase 15 Plan 10 complete - WASD key state tracking (10/10 plans complete: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10)
 Resume file: None
 
 **Next step:** Continue Phase 15 - Plan 03 (Mouse Mode Processing) or Plan 06 (GUI Camera Mode Configuration)
@@ -415,3 +415,10 @@ Resume file: None
 - Y-axis centering behavior: cy = 0.5 - ny means raw Y=0 becomes positive output
 - Mouse velocity: positive Y = up, negative Y = down (due to centering inversion)
 - All 29 tests pass successfully
+
+*Plan 15-10 - WASD Key State Tracking (Gap Closure):*
+- wasd_previous_keys state variable using Arc<RwLock<Vec<(Key, bool)>>> for shared mutable access
+- State diffing algorithm: keys in previous but not current get release, keys in current but not previous get press
+- Keys remaining active get no new events (stay held) - proper game-like key behavior
+- 6 WASD state tracking tests (5 unit tests for transitions, 1 integration test for full event loop)
+- Closed Gap 2 from Phase 15 verification (TODO about state tracking)
