@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 3 of 8
+Plan: 4 of 8
 Status: In progress
-Last activity: 2026-02-20 — Phase 17 Plan 03 complete: IPC hotkey handlers with ConfigManager integration and GlobalHotkeyManager reload
+Last activity: 2026-02-20 — Phase 17 Plan 04 complete: SetAutoSwitchRules IPC protocol with AutoProfileSwitcher reload
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [============================================] 50% (30/60 plans)
-Overall: [===================================================] 86% (87/100 plans)
+v1.3 (Phases 13-17): [==============================================] 52% (31/60 plans)
+Overall: [===================================================] 86% (88/100 plans)
 ```
 
 ## Performance Metrics
@@ -465,3 +465,12 @@ Resume file: None
 - ListHotkeys returns empty Vec (not error) for graceful degradation
 - RemoveHotkey and RegisterHotkey both reload GlobalHotkeyManager after config changes
 - SetAutoSwitchRules handler added to complete IPC match arms
+
+*Plan 17-04 - SetAutoSwitchRules IPC Protocol:*
+- Added AutoSwitchRule struct to razermapper-common for IPC use (was daemon-internal only)
+- Added Request::SetAutoSwitchRules variant with rules: Vec<AutoSwitchRule>
+- Added Response::AutoSwitchRulesAck variant for acknowledgment
+- Wrapped AutoProfileSwitcher.rules in Arc<RwLock<>> for runtime mutability
+- Added reload_rules(&self, rules) method to AutoProfileSwitcher for Arc-based access
+- SetAutoSwitchRules handler reloads AutoProfileSwitcher after successful save
+- IPC pattern: save to config -> reload component -> return ack
