@@ -12,25 +12,25 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 11 of 16 (Analog Processing and Calibration)
-Plan: 2 of 8
+Plan: 4 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 11-02 complete: 2D analog processing pipeline with deadzone filtering and sensitivity curves
+Last activity: 2026-02-19 — Plan 11-04 complete: AnalogProcessor integrated into device event loop with D-pad mode and runtime calibration
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [=======================..................] 56% (20/36 plans)
+v1.2 (Phases 9-12): [========================..............] 59% (21/36 plans)
 v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
-Overall: [==========================================....] 68% (51/74 plans)
+Overall: [===========================================...] 69% (52/74 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 50
+- Total plans completed: 52
 - Average duration: ~5-8 minutes per plan
-- Total execution time: ~6 hours
+- Total execution time: ~6.5 hours
 
 **By Phase:**
 
@@ -46,7 +46,7 @@ Overall: [==========================================....] 68% (51/74 plans)
 | 8. GUI Integration | 4 | Complete |
 | 9. Device Detection and Basic Input | 7 | Complete |
 | 10. Layer System and State Management | 8 | Complete |
-| 11. Analog Processing and Calibration | 8 | 2 complete, 6 pending |
+| 11. Analog Processing and Calibration | 8 | 4 complete, 4 pending |
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 8 | Not started |
@@ -228,6 +228,22 @@ Overall: [==========================================....] 68% (51/74 plans)
 - Deadzone scaling uses linear interpolation to prevent "jump" at boundary
 - 12 unit tests covering all pipeline stages, deadzone shapes, and sensitivity curves
 
+*Plan 11-03 - D-pad Mode:*
+- DpadMode enum (Disabled, EightWay, FourWay) for mode selection
+- Direction enum (Up, Down, Left, Right) for cardinal directions
+- map_analog_to_dpad() static method for direction detection using threshold comparison (0.3)
+- direction_to_key_code() function for mapping to Linux key codes (KEY_UP=103, etc.)
+- D-pad mode integrated into event loop with injector for direct key output
+- Four-way mode uses dominant axis selection to prevent diagonal drift
+
+*Plan 11-04 - AnalogProcessor Integration:*
+- Centralized AnalogProcessor in DeviceManager with internal per-device config HashMap
+- Per-device configuration identified by device_id (vendor:product format)
+- Event loop receives AnalogProcessor reference and handles D-pad mode processing
+- IPC handlers for runtime calibration: deadzone, sensitivity, response curve, D-pad mode
+- Profile integration: load_config() and save_config() for configuration persistence
+- Async RwLock for thread-safe configuration access
+
 ### Pending Todos
 
 None.
@@ -244,7 +260,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 11-02 complete - 2D analog processing pipeline with deadzone filtering and sensitivity curves
+Stopped at: Plan 11-04 complete - AnalogProcessor integrated into device event loop with D-pad mode and runtime calibration
 Resume file: None
 
-**Next step:** Execute plan 11-03 - Output mode configuration
+**Next step:** Execute plan 11-05 - Output mode configuration
