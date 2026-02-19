@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 6 of 8
+Plan: 7 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 15-06 complete: Camera mode integration with scroll/key output
+Last activity: 2026-02-19 — Plan 15-07 complete: Analog mode selector GUI with 6 output modes
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [============.................................] 28% (18/40 plans)
-Overall: [================================================] 79% (77/92 plans)
+v1.3 (Phases 13-16): [============...................................] 30% (19/40 plans)
+Overall: [================================================] 79% (78/92 plans)
 ```
 
 ## Performance Metrics
@@ -344,7 +344,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 2 complete - WASD mode event loop integration (2/8 plans complete: 01, 02)
+Stopped at: Phase 15 Plan 7 complete - GUI analog mode selector (7/8 plans complete: 01, 02, 03, 04, 05, 06, 07)
 Resume file: None
 
 **Next step:** Continue Phase 15 - Plan 03 (Mouse Mode Processing) or Plan 06 (GUI Camera Mode Configuration)
@@ -396,3 +396,13 @@ Resume file: None
 - Emits key press/release events via injector for Keys mode (immediate for repeat)
 - Per-layer calibration support via analog_calibration field
 - Default camera_output_mode is Scroll for broader compatibility
+
+*Plan 15-07 - GUI Analog Mode Selector:*
+- AnalogMode enum added to razermapper-common for IPC use (6 variants: Disabled, Dpad, Gamepad, Camera, Mouse, Wasd)
+- CameraOutputMode enum added to razermapper-common for IPC use (2 variants: Scroll, Keys)
+- Display trait implementation for user-friendly names in pick_list widgets
+- ALL constant arrays provide ordered options for pick_list
+- AnalogCalibrationView extended with analog_mode_selected and camera_mode_selected fields
+- Mode selector UI section in calibration dialog with conditional camera sub-mode selector
+- AnalogModeChanged and CameraModeChanged message handlers
+- Camera sub-mode selector only visible when Camera mode is selected
