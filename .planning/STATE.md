@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 11 of 16 (Analog Processing and Calibration)
-Plan: 3 of 8
+Plan: 6 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 11-03 complete: D-pad mode for analog stick with 8-way direction detection
+Last activity: 2026-02-19 — Plans 11-05, 11-06 complete: Per-layer analog calibration configuration and analog macro recording
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [=======================.................] 56% (20/36 plans)
+v1.2 (Phases 9-12): [==========================================.....] 72% (26/36 plans)
 v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
-Overall: [==========================================....] 68% (51/74 plans)
+Overall: [============================================..] 70% (57/74 plans)
 ```
 
 ## Performance Metrics
@@ -46,7 +46,7 @@ Overall: [==========================================....] 68% (51/74 plans)
 | 8. GUI Integration | 4 | Complete |
 | 9. Device Detection and Basic Input | 7 | Complete |
 | 10. Layer System and State Management | 8 | Complete |
-| 11. Analog Processing and Calibration | 8 | 4 complete, 4 pending |
+| 11. Analog Processing and Calibration | 8 | 6 complete, 2 pending |
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 8 | Not started |
@@ -245,6 +245,20 @@ Overall: [==========================================....] 68% (51/74 plans)
 - Profile integration: load_config() and save_config() for configuration persistence
 - Async RwLock for thread-safe configuration access
 
+*Plan 11-05 - Per-Layer Analog Calibration:*
+- Per-layer calibration uses HashMap<usize, AnalogCalibration> indexed by layer_id (0=base, 1, 2, ...)
+- None for analog_calibration field means use AnalogCalibration::default() (graceful defaults)
+- YAML format follows Phase 10-06 pattern for layer state persistence (serde with skip_serializing_if)
+- ConfigManager query methods return Option<AnalogCalibration> for graceful handling of missing config
+- analog_calibration: Option<AnalogCalibration> field added to LayerConfig for per-layer settings
+
+*Plan 11-06 - Analog Event Recording in Macros:*
+- Action::AnalogMove variant with axis_code (61000-61005) and normalized value (-1.0 to 1.0)
+- process_analog_event() records normalized analog movements during macro capture
+- Normalized values enable device-independent macro storage and replay
+- execute_macro() handles Action::AnalogMove by denormalizing and injecting via Injector trait
+- AnalogMove uses axis_code mapping: 61000=ABS_X, 61001=ABS_Y, 61002=ABS_Z, 61003=RX, 61004=RY, 61005=RZ
+
 ### Pending Todos
 
 None.
@@ -261,7 +275,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 11-03 complete - D-pad mode for analog stick with 8-way direction detection
+Stopped at: Plans 11-05, 11-06 complete - Per-layer analog calibration and analog macro recording
 Resume file: None
 
-**Next step:** Execute plan 11-04 - AnalogProcessor integration into device event loop
+**Next step:** Execute plan 11-07 - Per-axis analog calibration configuration
