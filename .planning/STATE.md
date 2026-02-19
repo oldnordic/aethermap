@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 11 of 16 (Analog Processing and Calibration)
-Plan: 1 of 8
+Plan: 2 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 11-01 complete: Analog calibration data types with YAML serialization
+Last activity: 2026-02-19 — Plan 11-02 complete: 2D analog processing pipeline with deadzone filtering and sensitivity curves
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [=======================..................] 53% (19/36 plans)
+v1.2 (Phases 9-12): [=======================..................] 56% (20/36 plans)
 v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
-Overall: [==========================================....] 68% (50/74 plans)
+Overall: [==========================================....] 68% (51/74 plans)
 ```
 
 ## Performance Metrics
@@ -46,7 +46,7 @@ Overall: [==========================================....] 68% (50/74 plans)
 | 8. GUI Integration | 4 | Complete |
 | 9. Device Detection and Basic Input | 7 | Complete |
 | 10. Layer System and State Management | 8 | Complete |
-| 11. Analog Processing and Calibration | 8 | 1 complete, 7 pending |
+| 11. Analog Processing and Calibration | 8 | 2 complete, 6 pending |
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 8 | Not started |
@@ -220,6 +220,14 @@ Overall: [==========================================....] 68% (50/74 plans)
 - Validation method for bounds checking with Result<(), String> return type
 - 19 unit tests covering defaults, serialization, validation, and roundtrip
 
+*Plan 11-02 - Analog Processing Pipeline:*
+- MAX_MAGNITUDE = 0.707 (sqrt(0.5)) for circular deadzone scaling to account for centered coordinate bounds
+- MAX_AXIS = 0.5 for square deadzone (centered coordinates range from -0.5 to 0.5)
+- Process pipeline: normalize (0-255 to 0-1) → center (-0.5 to 0.5) → deadzone → sensitivity → scale (to output range)
+- Polar coordinate transformation for sensitivity curves to maintain direction while scaling magnitude
+- Deadzone scaling uses linear interpolation to prevent "jump" at boundary
+- 12 unit tests covering all pipeline stages, deadzone shapes, and sensitivity curves
+
 ### Pending Todos
 
 None.
@@ -236,7 +244,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 11-01 complete - Analog calibration data types with YAML serialization
+Stopped at: Plan 11-02 complete - 2D analog processing pipeline with deadzone filtering and sensitivity curves
 Resume file: None
 
-**Next step:** Execute plan 11-02 - Integrate AnalogCalibration into config system
+**Next step:** Execute plan 11-03 - Output mode configuration
