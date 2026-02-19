@@ -1,137 +1,126 @@
 # External Integrations
 
-**Analysis Date:** 2026-02-16
+**Analysis Date:** 2026-02-20
 
-## APIs & External Services
+## System-Level
 
-**Linux Kernel Subsystems:**
+**Linux evdev:**
+- Input device event reading from `/dev/input/event*`
+- Key location: `razermapperd/src/device.rs`
+- Purpose: Device discovery, grabbing, event reading
+- Constants: `evdev::Key`, `InputEventKind`, `AbsoluteAxisType`, `RelativeAxisType`
 
-| Service | Purpose | Integration Point |
-|---------|---------|-------------------|
-| evdev | Input device event reading | `razermapperd/src/device.rs` via `evdev` crate |
-| uinput | Virtual input device creation | `razermapperd/src/injector.rs` via `uinput-sys` crate |
-| ioctl | Device control and capability manipulation | `libc::ioctl()` for EVIOCGRAB, UI_SET_EVBIT, UI_DEV_CREATE, etc. |
+**uinput:**
+- Virtual input device creation
+- Key location: `razermapperd/src/injector.rs`, `razermapperd/src/gamepad_device.rs`
+- Purpose: Create virtual keyboard, mouse, gamepad devices
+- ioctl calls: `UI_DEV_CREATE`, `UI_SET_EVBIT`, `UI_SET_KEYBIT`, `UI_SET_ABSBIT`
 
-**OpenRazer (read-only integration):**
-- Sysfs device discovery at `/sys/bus/hid/drivers/razerkbd/`, `/sys/bus/hid/drivers/razermouse/`, `/sys/bus/hid/drivers/razerchroma/`
-- No SDK - direct sysfs reading in `device.rs::scan_razer_sysfs()`
-- VID 1532 detection for Razer devices
+**HIDAPI:**
+- HID device communication for LED control
+- Key location: `razermapperd/src/led_controller.rs`
+- Purpose: Azeron Cyborg 2 LED brightness control
+- Vendor ID: 0x16d0 (Azeron), Product ID: 0x12f7 (Cyborg 2)
+- Interface: Interface 4 (usage_page 0xff01), not keyboard interface
 
-## Data Storage
+**udev:**
+- Device hotplug monitoring
+- Key location: `razermapperd/src/hotplug.rs`
+- Purpose: Detect device add/remove events via MonitorBuilder
+- Subsystem: input devices only
 
-**Configuration:**
-- Location: `/etc/razermapperd/config.yaml`
+**nix/libc:**
+- System calls and ioctl
+- Key locations: `razermapperd/src/security.rs`, `razermapperd/src/gamepad_device.rs`
+- Purpose: Privilege dropping, ioctl calls, file descriptor operations
+
+## Wayland Integration
+
+**xdg-desktop-portal (ashpd):**
+- Window focus tracking for auto-profile switching
+- Key location: `razermapper-gui/src/focus_tracker.rs`
+- Purpose: Detect focused application for profile switching
+- Graceful degradation when portal unavailable
+- Environment check: `WAYLAND_DISPLAY`
+
+## IPC & Communication
+
+**Unix Socket Protocol:**
+- Location: `/run/razermapper/razermapper.sock`
+- Server: `razermapperd/src/ipc.rs`
+- Client: `razermapper-common/src/ipc_client.rs`
+- Transport: AF_UNIX stream socket
+- Serialization: bincode (binary)
+- Message format: 4-byte little-endian length prefix + payload
+- Max message size: 1MB
+
+**Request types:**
+- Device management: GetDevices, GrabDevice, UngrabDevice
+- Profile management: SaveProfile, LoadProfile, ListProfiles
+- Layer management: SetLayerConfig, ActivateLayer, ListLayers
+- Analog calibration: SetAnalogCalibration, GetAnalogCalibration
+- LED control: SetLedColor, SetLedBrightness, SetLedPattern
+- Focus tracking: FocusChanged (GUI to daemon)
+- Hotkey binding: RegisterHotkey, ListHotkeys, RemoveHotkey
+
+## Hardware
+
+**Supported Devices:**
+- Razer devices: Tartarus V2, Orbweaver (VID 0x1532)
+- Azeron Cyborg 2: Full support including LED control (VID 0x16d0, PID 0x12f7)
+- Generic HID gaming devices with configurable modes
+
+**Device Detection:**
+- Scan `/proc/bus/input/devices`
+- evdev capability detection (EV_KEY, EV_REL, EV_ABS)
+- Vendor:Product identification
+
+**Virtual Device Emulation:**
+- Virtual gamepad (Xbox 360 controller compatible)
+- Location: `razermapperd/src/gamepad_device.rs`
+- Vendor ID: 0x045e (Microsoft), Product ID: 0x028e (Xbox 360 Controller)
+- Axes: ABS_X, ABS_Y, ABS_Z, ABS_RX, ABS_RY, ABS_RZ
+- Buttons: Standard gamepad button layout
+
+## Config & State
+
+**Configuration Files:**
+- `/etc/razermapperd/remaps.yaml` - Global key remappings
+- `/etc/razermapperd/device-profiles.yaml` - Per-device remap profiles
+- `/etc/razermapperd/config.yaml` - Main configuration
 - Format: YAML (serde_yaml)
-- Schema: `DaemonConfig` in `razermapperd/src/config.rs`
 
-**Macro Storage:**
-- Primary: `/etc/razermapperd/macros.yaml` (YAML, human-editable)
-- Cache: `/var/cache/razermapperd/macros.bin` (binary, fast load)
-- Profiles: `/etc/razermapperd/profiles/*.yaml`
+**State Persistence:**
+- LED state persisted per-device in DaemonState
+- Restored after hotplug via `DeviceLedState` export/import
+- Layer configurations stored in profiles
 
-**File Storage:**
-- None - no database used, filesystem only
-
-**Caching:**
-- Binary macro cache with magic number header (0xDEADBEEF)
-- Cache validated on load, falls back to YAML if invalid
-
-## Authentication & Identity
-
-**Auth Provider:**
-- Custom token-based authentication (optional, feature-gated: `token-auth`)
-- Implementation: `razermapperd/src/security.rs::SecurityManager`
-- Token generation: Hash-based (timestamp + PID + memory address)
-- Token expiration: 24 hours
-
-**Privilege Management:**
-- Linux capabilities (CAP_SYS_RAWIO) retained after init
-- Socket ownership: group "input", mode 0660
-- Root requirement for daemon startup only
-- Privilege dropping after initialization
-
-## Monitoring & Observability
-
-**Error Tracking:**
-- None - logs to journald via systemd
-
-**Logs:**
-- Framework: tracing + tracing-subscriber
-- Output: stdout/stderr captured by systemd journal
-- Level: INFO (configurable)
-- Format: Structured (target disabled in main.rs)
-
-## CI/CD & Deployment
-
-**Hosting:**
-- Linux distribution packages (systemd integration)
-
-**CI Pipeline:**
-- None detected in repo
-
-**Packaging:**
-- Debian package via cargo-deb metadata
-- Assets: binary + systemd service file
-- Installation paths: `/usr/bin/razermapperd`, `/usr/lib/systemd/system/razermapperd.service`
-
-## Environment Configuration
-
-**Required env vars:**
-- `DISPLAY` - Passed to executed commands for X11 tools
-- `PATH` - Cleared to `/usr/bin:/bin` for command execution
-
-**Runtime directories (systemd-managed):**
-- `RuntimeDirectory=razermapper` → `/run/razermapper/`
-- `StateDirectory=razermapper` → `/var/lib/razermapper/`
-- `CacheDirectory=razermapper` → `/var/cache/razermapper/`
-- `ConfigurationDirectory=razermapper` → `/etc/razermapper/`
-
-**Secrets location:**
-- Auth tokens stored in-memory (HashMap) only
-- No persistent secrets
-
-## Webhooks & Callbacks
-
-**Incoming:**
-- Unix socket IPC at `/run/razermapper/razermapper.sock`
-- Protocol: Length-prefixed bincode messages (4-byte little-endian length)
-- Request types defined in `razermapper-common/src/lib.rs`
-
-**Outgoing:**
-- Command execution via `tokio::process::Command` (whitelisted binaries only)
-- No network requests
+**Hot-reload:**
+- SIGHUP signal handling
+- Reloads remaps and device profiles without restart
 
 ## System Integration
 
 **systemd:**
-- Service file: `razermapperd/systemd/razermapperd.service`
-- Security hardening: CapabilityBoundingSet, NoNewPrivileges, ProtectSystem, PrivateTmp, etc.
-- Signal handling: SIGTERM, SIGINT for graceful shutdown
-- Socket activation: Not used (manual socket binding)
+- Service file: `razermapperd.service`
+- RuntimeDirectory: `/run/razermapper/`
+- Signal handling: SIGTERM, SIGINT, SIGHUP
+- Security: CapabilityBoundingSet, NoNewPrivileges, ProtectSystem
 
-**udev:**
-- Rules file: `pkg/razermapper/usr/lib/udev/rules.d/99-razermapper.rules`
-- Permissions: Sets MODE="0660", GROUP="input" for uinput and Razer devices
-- TAG+="uaccess" for automatic ACLs
+**udev Rules:**
+- File: `99-razermapper.rules`
+- Sets MODE="0660", GROUP="input" for devices
+- TAG+="uaccess" for ACLs
 
-**Command whitelist (for macro Execute action):**
-- `xdotool`, `xrandr`, `amixer`, `notify-send`, `pactl`, `playerctl`, `brightnessctl`, `xbacklight`
+## Authentication
 
-## IPC Protocol
-
-**Transport:**
-- Unix domain socket (AF_UNIX)
-
-**Serialization:**
-- bincode (binary)
-
-**Message flow:**
-1. Client sends: `[u32; 4]` length prefix + bincode(Request)
-2. Server responds: `[u32; 4]` length prefix + bincode(Response)
-
-**Max message size:**
-- 1MB (enforced in both client and server)
+**Token-based (optional):**
+- Feature flag: `token-auth`
+- Implementation: `razermapperd/src/security.rs`
+- Token generation: Hash-based (timestamp + PID + memory address)
+- Expiration: 24 hours
+- In-memory storage only (HashMap)
 
 ---
 
-*Integration audit: 2026-02-16*
+*Integration audit: 2026-02-20*

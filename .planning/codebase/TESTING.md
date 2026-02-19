@@ -1,6 +1,6 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-02-16
+**Analysis Date:** 2026-02-20
 
 ## Test Framework
 
@@ -15,16 +15,18 @@
 ```bash
 cargo test                          # Run all tests
 cargo test --package razermapperd    # Run tests for specific package
+cargo test --package razermapper-gui # Run GUI tests
 cargo test test_device_discovery     # Run specific test
 cargo test -- --nocapture            # Show test output
+cargo test -- --ignored              # Run ignored tests
 ```
 
 ## Test File Organization
 
 **Location:**
 - **Unit tests:** Co-located in `#[cfg(test)]` modules at bottom of each source file
-- **Integration tests:** Separate `tests/` directory at workspace level
-- **GUI tests:** Co-located in `razermapper-gui/tests/`
+- **Integration tests:** Separate `tests/` directories at crate level
+- **E2E tests:** `/home/feanor/Projects/remapper_rs/razermapper/tests/`
 
 **Structure:**
 ```
@@ -34,26 +36,30 @@ razermapper/
 │   └── Cargo.toml                # Test-only package config
 ├── razermapper-common/
 │   └── src/
-│       ├── lib.rs                # Contains unit tests module
-│       └── ipc_client.rs         # Contains unit tests module
+│       ├── lib.rs                # Contains #[cfg(test)] module (serialization tests)
+│       └── ipc_client.rs         # Contains #[cfg(test)] module (IPC tests)
 ├── razermapperd/
-│   └── src/
-│       ├── lib.rs                # No tests currently
-│       ├── main.rs               # No tests currently
-│       ├── config.rs             # Contains unit tests module
-│       ├── device.rs             # Contains unit tests module
-│       ├── injector.rs           # Contains unit tests module
-│       ├── ipc.rs                # Contains unit tests module
-│       ├── macro_engine.rs       # Contains unit tests module
-│       └── security.rs           # Contains unit tests module
+│   ├── src/
+│   │   ├── lib.rs                # No tests (re-exports only)
+│   │   ├── main.rs               # No tests
+│   │   ├── config.rs             # No inline tests (separate test files)
+│   │   ├── remap_engine.rs       # No inline tests
+│   │   └── ...
+│   └── tests/
+│       ├── hotplug_test.rs       # Device hotplug event tests
+│       ├── remap_integration_test.rs  # Virtual device remapping tests
+│       ├── config_reload_test.rs # Config hot-reload tests
+│       └── macro_integration_test.rs  # Macro execution tests
 └── razermapper-gui/
+    ├── src/
+    │   └── focus_tracker.rs      # Contains #[cfg(test)] module
     └── tests/
-        └── gui_sanity.rs         # GUI integration tests
+        └── gui_sanity.rs         # GUI state/update tests
 ```
 
 **Naming:**
 - Test functions: `test_<component>_<behavior>`
-- Test modules: `tests` (within `#[cfg(test)]`)
+- Test modules: `mod tests` (within `#[cfg(test)]`)
 
 ## Test Structure
 
@@ -98,10 +104,14 @@ async fn test_macro_creation() {
 }
 ```
 
-**Teardown Pattern:**
-- Use `tempfile::TempDir` for automatic cleanup
-- Use `drop()` or scope-based cleanup for resources
-- Abort background tasks: `test_env.daemon_handle.abort();`
+**Synchronous Test Pattern:**
+```rust
+#[test]
+fn test_focus_event_creation() {
+    let event = FocusEvent::new("org.alacritty".to_string(), Some("Alacritty".to_string()));
+    assert_eq!(event.app_id, "org.alacritty");
+}
+```
 
 ## Mocking
 
@@ -109,34 +119,36 @@ async fn test_macro_creation() {
 - Manual mock implementations using traits
 - `#[async_trait::async_trait]` for async trait mocking
 
-**Patterns:**
-
-**Mock Injector (from `macro_engine.rs`):**
+**Mock Injector Pattern** (from `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/macro_integration_test.rs`):
 ```rust
-struct MockInjector;
+struct MockInjector {
+    log: Arc<RwLock<Vec<String>>>,
+}
 
 #[async_trait::async_trait]
 impl Injector for MockInjector {
-    async fn initialize(&self) -> Result<(), Box<dyn std::error::Error>> {
+    async fn key_press(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.log_action(&format!("key_press:{}", key_code)).await;
         Ok(())
     }
 
-    async fn key_press(&self, _key_code: u16) -> Result<(), Box<dyn std::error::Error>> {
+    async fn mouse_press(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.log_action(&format!("mouse_press:{}", button)).await;
         Ok(())
     }
 
-    // ... other methods returning Ok(())
+    // ... other methods
 }
 ```
 
-**Mock Daemon (from `e2e.rs`):**
+**Mock Daemon** (from `/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/ipc_client.rs`):
 ```rust
-async fn run_mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let listener = UnixListener::bind(socket_path)?;
 
     loop {
         match listener.accept().await {
-            Ok((stream, _)) => {
+            Ok((mut stream, _)) => {
                 tokio::spawn(async move {
                     // Handle connection with mock responses
                 });
@@ -159,9 +171,8 @@ async fn run_mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Er
 
 ## Fixtures and Factories
 
-**Test Data:**
+**Test Data Helpers** (from `/home/feanor/Projects/remapper_rs/razermapper/razermapper-gui/tests/gui_sanity.rs`):
 ```rust
-// Helper function from gui_sanity.rs
 fn create_test_device(name: &str, path: &str) -> DeviceInfo {
     DeviceInfo {
         name: name.to_string(),
@@ -188,13 +199,26 @@ fn create_test_macro(name: &str, enabled: bool) -> MacroEntry {
         enabled,
     }
 }
+
+fn create_test_state() -> State {
+    let mut state = State {
+        devices: vec![
+            create_test_device("Razer Keyboard", "/dev/input/event0"),
+            create_test_device("Razer Mouse", "/dev/input/event1"),
+        ],
+        macros: vec![
+            create_test_macro("Test Macro 1", true),
+            create_test_macro("Test Macro 2", false),
+        ],
+        selected_device: Some(0),
+        status: "Test initialized".to_string(),
+        // ... other fields
+    };
+    state
+}
 ```
 
-**Location:**
-- In `tests` module for file-local fixtures
-- At top of test files for cross-test fixtures
-
-**Environment Pattern (from `e2e.rs`):**
+**Environment Pattern** (from `/home/feanor/Projects/remapper_rs/razermapper/tests/e2e.rs`):
 ```rust
 struct TestEnvironment {
     temp_dir: TempDir,
@@ -214,6 +238,10 @@ impl TestEnvironment {
 }
 ```
 
+**Location:**
+- In `#[cfg(test)]` module for file-local fixtures
+- At top of test files for cross-test fixtures
+
 ## Coverage
 
 **Requirements:**
@@ -224,15 +252,15 @@ impl TestEnvironment {
 
 | Module | Coverage | Tests Location |
 |--------|----------|----------------|
-| `ipc_client` | Good serialization/communication tests | `ipc_client.rs` tests module |
-| `macro_engine` | Core functionality tests | `macro_engine.rs` tests module |
-| `config` | Persistence tests | `config.rs` tests module |
-| `security` | Auth/token tests | `security.rs` tests module |
-| `device` | Basic creation tests | `device.rs` tests module |
-| `injector` | Basic creation/keymap tests | `injector.rs` tests module |
-| `ipc` | Request handling tests | `ipc.rs` tests module |
-| `gui` | State update/render tests | `gui_sanity.rs` |
-| `e2e` | Comprehensive integration tests | `e2e.rs` |
+| `remap_engine` | Virtual device integration tests | `remap_integration_test.rs` |
+| `macro_engine` | Mock injector tests | `macro_integration_test.rs` |
+| `hotplug` | Device ID format, event structure | `hotplug_test.rs` |
+| `config` | Hot-reload, atomic swap | `config_reload_test.rs` |
+| `ipc_client` | Serialization, round-trip | `ipc_client.rs` tests module |
+| `common/lib` | IPC serialization | `lib.rs` tests module |
+| `focus_tracker` | Pattern matching, creation | `focus_tracker.rs` tests module |
+| `gui` | State updates, view rendering | `gui_sanity.rs` |
+| `e2e` | Full IPC workflows | `e2e.rs` |
 
 ## Test Types
 
@@ -295,10 +323,10 @@ async fn test_error_handling() {
 
 **Serialization Testing:**
 ```rust
-#[tokio::test]
-async fn test_serialization_roundtrip() {
+#[test]
+fn test_ipc_serialization() {
     let request = Request::GetDevices;
-    let serialized = serialize(&request).unwrap();
+    let serialized = serialize(&request);
     let deserialized: Request = deserialize(&serialized).unwrap();
     assert!(matches!(deserialized, Request::GetDevices));
 }
@@ -323,20 +351,65 @@ fn test_devices_loaded_message() {
 }
 ```
 
-**Permission-Skipped Tests:**
+**CI-Skipped Tests:**
 ```rust
-// From device.rs - tests that may fail without /dev/input access
 #[tokio::test]
-async fn test_device_discovery() {
-    let mut manager = DeviceManager::new();
-    let result = manager.start_discovery().await;
-
-    if result.is_ok() {
-        println!("Found {} devices", manager.get_devices().len());
+async fn test_end_to_end_key_remapping() {
+    // Skip if /dev/uinput not available (CI compatibility)
+    if !std::path::Path::new("/dev/uinput").exists() {
+        println!("Skipping: /dev/uinput not available");
+        return;
     }
-    // Test doesn't panic even if discovery fails due to permissions
+
+    // Test continues...
 }
 ```
+
+**Timing Tests:**
+```rust
+#[tokio::test]
+async fn test_delay_action_timing() {
+    let start = std::time::Instant::now();
+    let result = engine.execute_macro(macro_entry).await;
+    assert!(result.is_ok());
+
+    // Wait for macro to complete
+    tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+
+    let elapsed = start.elapsed();
+    // Should take at least 50ms for the delay
+    assert!(elapsed >= tokio::time::Duration::from_millis(50));
+}
+```
+
+## Notable Test Suites
+
+**`/home/feanor/Projects/remapper_rs/razermapper/tests/e2e.rs` (722 lines):**
+- Comprehensive end-to-end IPC tests
+- Mock daemon with Unix socket
+- Tests: authentication, device discovery, macros, profiles, privileged operations
+
+**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/remap_integration_test.rs` (296 lines):**
+- Virtual device tests using `evdev::uinput::VirtualDeviceBuilder`
+- Tests: key remapping, repeat events, complex remappings
+- CI-compatible (skips if `/dev/uinput` not available)
+
+**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/macro_integration_test.rs` (328 lines):**
+- Macro engine tests with MockInjector
+- Tests: mixed keyboard/mouse macros, mouse movement, scroll, delays, concurrent macros
+
+**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/config_reload_test.rs` (513 lines):**
+- Configuration hot-reload tests
+- Tests: atomic swap, invalid rejection, concurrent reload safety
+- Uses `tempfile::TempDir` for isolated test filesystems
+
+**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/hotplug_test.rs` (188 lines):**
+- Device hotplug event handling tests
+- Tests: device ID formatting, event structure, clone behavior
+
+**`/home/feanor/Projects/remapper_rs/razermapper/razermapper-gui/tests/gui_sanity.rs` (325 lines):**
+- GUI state and update tests
+- Tests: device loading, macro loading, recording state, status updates, error handling
 
 ## Test Coverage Gaps
 
@@ -350,25 +423,14 @@ async fn test_device_discovery() {
 | **Uinput injection** | Real input injection (requires root) | High | High |
 | **GUI rendering** | Visual Iced element tree rendering | Low | Medium |
 | **Concurrent connections** | Limited testing of multiple simultaneous clients | Medium | Medium |
-| **Large payload handling** | Only basic test for 1000-action macro | Low | Low |
-| **Edge cases in macro engine** | Macro recursion, self-triggering | Medium | Medium |
-| **Security token expiration** | Basic test exists, needs more coverage | Medium | High |
+| **Macro recursion** | Self-triggering macros, infinite loops | Medium | Medium |
+| **Security token expiration** | Token expiry handling | Medium | High |
 | **Config file corruption** | Handling of malformed YAML | Medium | High |
 
 **Privileged Operation Testing:**
 - Most hardware-access tests require root
-- Pattern: Tests will `panic!()` with descriptive message if run without proper permissions
-- Example from `ipc.rs`:
-```rust
-fn create_test_injector() -> Arc<injector::UinputInjector> {
-    match injector::UinputInjector::new() {
-        Ok(injector) => Arc::new(injector),
-        Err(_) => {
-            panic!("Test requires root access to create UinputInjector. Run with sudo...");
-        }
-    }
-}
-```
+- Pattern: Tests check for `/dev/uinput` existence and skip if not available
+- Example: Virtual device tests in `remap_integration_test.rs`
 
 ## Running Privileged Tests
 
@@ -382,4 +444,4 @@ sudo cargo test test_injector_creation
 
 ---
 
-*Testing analysis: 2026-02-16*
+*Testing analysis: 2026-02-20*

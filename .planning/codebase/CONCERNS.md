@@ -1,302 +1,139 @@
-# Codebase Concerns
+# Technical Concerns & Debt
 
-**Analysis Date:** 2026-02-16
+**Analysis Date:** 2026-02-20
+
+## Known Technical Debt
+
+### LED Animation Architecture
+**Issue:** Software LED animations (`breathing`, `rainbow`) cannot write HID from spawned tokio tasks
+- Files: `razermapper/razermapperd/src/led_controller.rs:887`, `razermapper/razermapperd/src/led_controller.rs:918`
+- Impact: Animation tasks calculate RGB values but never apply them; animations are non-functional
+- Fix approach: Requires channel-based architecture to move HID writes out of spawned tasks
+- Status: Documented in TODO comments, blocking Phase 12 completion
+
+### Global Hotkey Configuration Loading
+**Issue:** Hotkey bindings are hardcoded defaults instead of loading from device configurations
+- Files: `razermapper/razermapperd/src/global_hotkey_manager.rs:129`
+- Impact: User-configured hotkey bindings are not loaded; only Ctrl+Alt+Shift+1-9 work
+- Fix approach: ConfigManager needs to expose `ExtendedDeviceRemapConfig.hotkey_bindings` field
+- Status: TODO comment marks integration point
+
+### Per-Layer Analog Calibration Storage
+**Issue:** Layer-specific analog calibrations are not stored despite the infrastructure being in place
+- Files: `razermapper/razermapperd/src/analog_processor.rs:847`, `razermapper/razermapperd/src/analog_processor.rs:858`
+- Impact: All layers share the base layer calibration; per-layer sensitivity/curves don't persist
+- Fix approach: Extend `LayerConfig` to store `Option<AnalogCalibration>` and update save/load paths
+- Status: TODO comments note "for future per-layer support"
+
+## Unimplemented IPC Handlers
+
+### Hotkey Management (3 handlers)
+**Issue:** IPC handlers exist but return stub responses without implementation
+- Files: `razermapper/razermapperd/src/ipc.rs:1816`, `razermapper/razermapperd/src/ipc.rs:1832`, `razermapper/razermapperd/src/ipc.rs:1844`
+- Handlers affected: `RegisterHotkey`, `ListHotkeys`, `RemoveHotkey`
+- Impact: GUI cannot register, list, or remove custom hotkey bindings via IPC
+- Fix approach: Integrate with `GlobalHotkeyManager.load_bindings()` and persist to YAML
+
+### GUI Auto-Switch Rules Persistence
+**Issue:** Auto-switch rules and hotkey rules in GUI have TODO comments for daemon persistence
+- Files: `razermapper/razermapper-gui/src/gui.rs:918`, `razermapper/razermapper-gui/src/gui.rs:929`, `razermapper/razermapper-gui/src/gui.rs:1050`, `razermapper/razermapper-gui/src/gui.rs:1061`
+- Impact: Rules configured in GUI are not saved to daemon configuration
+- Fix approach: Send to daemon via IPC (add `SetAutoSwitchRules` and `SetHotkeyBindings` requests)
+
+### LED Color/Zone GUI Configuration
+**Issue:** LED color and zone are hardcoded defaults in layer config dialog
+- Files: `razermapper/razermapper-gui/src/gui.rs:1826`, `razermapper/razermapper-gui/src/gui.rs:1827`, `razermapper/razermapper-gui/src/ipc.rs:435`, `razermapper/razermapper-gui/src/ipc.rs:436`
+- Impact: Users cannot configure per-layer LED colors through the GUI
+- Fix approach: Add color picker widget and zone selector to layer config dialog
+
+## Phase 12 LED Control Research Blockers
+
+### Azeron HID LED Protocol Unknown
+**Issue:** Full RGB LED control protocol requires USB packet capture during official software operation
+- Files: `razermapper/razermapperd/src/led_controller.rs:808`, `razermapper/.planning/research/AZERON_STACK.md:302`
+- What's unknown: RGB color control commands, pattern commands (breathing, rainbow, wave)
+- What's known: Brightness control protocol (0x0100-0x0196 range), keepalive packets
+- Hardware limitation: Official Azeron software only exposes brightness control for side LED
+- Fix approach: USB packet capture with Wireshark or usbmon during official software use
+- Risk: Protocol may not be exposed by firmware; may be limited to brightness-only
+
+## File Size Concerns
+
+### Large Source Files (Potential Complexity)
+Files exceeding 3000 lines may benefit from modularization:
+- `razermapper/razermapper-gui/src/gui.rs` - 4489 lines (GUI state, views, message handling)
+- `razermapper/razermapperd/src/analog_processor.rs` - 3969 lines (all analog modes, calibration, tests)
+- `razermapper/razermapperd/src/config.rs` - 3093 lines (YAML structures, manager, tests)
+
+**Impact:** Larger files are harder to navigate, modify, and test. No immediate action required unless modification frequency increases.
 
 ## Security Considerations
 
-**Privilege Escalation Root Access:**
-- Risk: Daemon MUST run as root for evdev/uinput access
-- Files: `razermapperd/src/main.rs:34-37`, `razermapperd/src/device.rs:86-101`
-- Current mitigation: Privilege dropping after initialization in `security.rs`
-- Recommendations:
-  - The `drop_privileges()` function is incomplete - uses simplified prctl approach instead of proper capset/capget
-  - Socket permissions set to 0660 with "input" group, but actual enforcement depends on system configuration
-  - Token authentication exists (`token-auth` feature) but is disabled by default
-  - No rate limiting on IPC requests - vulnerable to resource exhaustion
-  - Command execution whitelist in `injector.rs:426-434` but command injection still possible via shell metacharacters
+### Root Privilege Requirement
+**Files:** `razermapper/razermapperd/src/main.rs:35`, `razermapper/razermapperd/src/security.rs`
+- Daemon must run as root for `/dev/input` device access and `/dev/uinput` virtual device creation
+- Privilege dropping implemented: Keeps only `CAP_SYS_RAWIO` after initialization
+- Socket permissions: Set to 0660 with group "input" ownership
+- Risk: Compromised daemon has input injection capabilities
+- Mitigation: Token-based authentication available via `token-auth` feature
 
-**Insecure Socket Permissions:**
-- Risk: README states socket permissions are 0666 (world-readable/writable)
-- Files: `razermapperd/src/security.rs:97-116`, `README.md:97`
-- Current mitigation: Code attempts to set 0660, but README warns about 0666
-- Recommendations: Socket must enforce strict permissions (0660 minimum) and verify ownership
+### Unsafe Code Blocks
+**Files:** Multiple uses of `unsafe` for `libc` syscalls and `uinput` operations
+- `razermapper/razermapperd/src/injector.rs` - uinput setup, event writing
+- `razermapper/razermapperd/src/gamepad_device.rs` - gamepad device creation
+- `razermapper/razermapperd/src/security.rs` - prctl, chown, setgroups
+- `razermapper/razermapperd/src/device.rs` - EVIOCGRAB ioctl
 
-**Unsafe Token Generation:**
-- Risk: `SecurityManager::generate_auth_token()` uses predictable entropy sources
-- Files: `razermapperd/src/security.rs:150-183`
-- Current mitigation: Uses DefaultHasher with timestamp + PID + memory address
-- Recommendations: Replace with proper cryptographic RNG (e.g., `getrandom` crate)
+**Assessment:** All unsafe blocks are for FFI with Linux kernel APIs. Well-contained and documented.
 
-**Unsafe File Descriptor Handling:**
-- Risk: Raw libc calls without proper error handling
-- Files: `razermapperd/src/injector.rs:167-168`, `razermapperd/src/device.rs:93-95`
-- Current mitigation: `mem::forget` used on file to keep fd valid
-- Recommendations: Audit all ioctl calls and fd handling for proper cleanup on error paths
+## Unresolved unwrap() Calls
 
-## Incomplete Features
+### Test Code
+Most `unwrap()` calls are in test code where failure is acceptable:
+- `razermapper/razermapperd/tests/` - All test files use unwrap for test setup
+- `razermapper/razermapperd/src/config.rs` - Test functions (lines 2360+)
 
-**Actual Key Remapping:**
-- Problem: Core feature not implemented - intercepting key A and outputting key B
-- Files: None - feature completely missing
-- Blocks: Primary use case for the application
-- Priority: HIGH
+### Production Code
+Limited unwrap usage in hot paths (good practice observed):
+- `razermapper/razermapper-gui/src/gui.rs:1329` - `.iter().next().unwrap()` on grabbed_devices
+- `razermapper/razermapper-gui/src/gui.rs:3305` - `auto_switch_view.as_ref().unwrap()` (checked via Option before)
+- `razermapper/razermapper-gui/src/gui.rs:3464` - `hotkey_view.as_ref().unwrap()` (checked via Option before)
 
-**LED/RGB Control:**
-- Problem: Only protocol stubs exist
-- Files: `razermapper-common/src/lib.rs:94-98` (LedSet request), `razermapperd/src/ipc.rs:329-333` (stub handler)
-- Blocks: Custom lighting configuration
-- Priority: MEDIUM
+**Assessment:** Production unwrap calls are defensive and follow established patterns.
 
-**Per-Device Macro Restrictions:**
-- Problem: `device_id` field exists in `MacroEntry` but not enforced in macro engine
-- Files: `razermapperd/src/macro_engine.rs:233-238` (partial check only)
-- Blocks: Device-specific macro isolation
-- Priority: MEDIUM
+## Dead Code Warnings
 
-**GUI Key Binding Configuration:**
-- Problem: No UI for configuring key remaps or editing macro triggers
-- Files: `razermapper-gui/src/gui.rs` (no relevant code)
-- Blocks: User-friendly configuration
-- Priority: HIGH
+### Allowed Dead Code (4 instances)
+All marked with `#[allow(dead_code)]` for valid reasons:
+- `razermapper/razermapper-gui/src/focus_tracker.rs:79` - Future use or async pattern
+- `razermapper/razermapper-gui/src/gui.rs:58`, `razermapper/razermapper-gui/src/gui.rs:692` - Reserved for future features
+- `razermapper/razermapperd/src/gamepad_device.rs:69` - Test utility or future integration
 
-**Trigger Condition Editing:**
-- Problem: Cannot edit macro triggers after recording
-- Files: None
-- Blocks: Macro customization
-- Priority: MEDIUM
+**Assessment:** No concerning dead code accumulation.
 
-**Hot-Reload of Configuration:**
-- Problem: `ReloadConfig` request exists but is a no-op
-- Files: `razermapperd/src/ipc.rs:324-328`
-- Blocks: Runtime configuration changes
-- Priority: LOW
+## Missing Phases
 
-**Multi-Device Macro Coordination:**
-- Problem: No support for macros spanning multiple devices
-- Files: None
-- Blocks: Complex macro scenarios
-- Priority: LOW
+### Phase 12: LED Control (0/8 plans)
+**Blocker:** HID LED protocol research incomplete
+**Files:** Phase 12 implementation in `razermapper/razermapperd/src/led_controller.rs` partially complete
+**What's done:** Device enumeration, brightness control, keepalive, async bridge
+**What's missing:** RGB color control, pattern commands, per-layer colors, GUI color picker
+**Risk:** Hardware may not support RGB beyond brightness
 
-## Tech Debt
+### Phase 16: Calibration GUI (0/8 plans)
+**Status:** Not started
+**Dependencies:** Phase 15 (all analog modes complete)
+**Scope:** Real-time analog input visualization, deadzone/curve/range controls, live preview
+**Files to create:** New GUI views and IPC protocol for calibration read/write
 
-**Excessive unwrap() Calls (Potential Panics):**
-- Problem: Over 80 `.unwrap()` calls across codebase
-- Files: Throughout all modules
-  - `razermapperd/src/ipc.rs`: 15+ unwrap() calls on Mutex/RwLock
-  - `razermapperd/src/injector.rs`: 10+ unwrap() calls on RwLock
-  - `razermapperd/src/macro_engine.rs`: 5+ unwrap() calls
-  - `razermapperd/src/main.rs:79`: `state.devices.lock().unwrap()`
-  - `razermapper-gui/src/gui.rs:273`: `.iter().next().unwrap()` - assumes non-empty set
-- Impact: Potential panics in production if locks are poisoned
-- Fix approach: Replace with proper error handling or `expect()` with descriptive messages
+## Future Work (Prioritized)
 
-**Memory Leak in Macro Execution:**
-- Problem: `MacroEngine::execute_macro()` spawns task but never cleans up `executing` map entry
-- Files: `razermapperd/src/macro_engine.rs:294-355`, comment at line 352-353 explicitly acknowledges this
-- Impact: Memory grows with each macro execution, entry never removed from `executing` HashMap
-- Fix approach: Use channel to notify completion or use `JoinHandle` to clean up after task completion
-
-**Lock Poisoning Risk:**
-- Problem: Extensive use of `lock().unwrap()` pattern
-- Files: `razermapperd/src/ipc.rs`, `razermapperd/src/injector.rs`
-- Impact: If any thread panics while holding lock, entire daemon crashes
-- Fix approach: Use `lock().map_err()` or `RwLock::try_lock()` with proper error propagation
-
-**Incomplete Privilege Dropping:**
-- Problem: `SecurityManager::drop_privileges()` uses simplified prctl approach
-- Files: `razermapperd/src/security.rs:43-92`, comments at lines 77-81 acknowledge this
-- Impact: Process may retain more capabilities than intended
-- Fix approach: Use libcap crate or proper capget/capset system calls
-
-**Hardcoded Paths:**
-- Problem: Configuration paths hardcoded to system directories
-- Files: `razermapperd/src/config.rs:140-143`
-- Impact: Cannot run without root or from different locations
-- Fix approach: Use XDG base directory specification or allow path overrides
-
-## Known Bugs
-
-**Macro Recording May Miss Events:**
-- Symptoms: Key events during recording may not be captured
-- Files: `razermapperd/src/macro_engine.rs:166-189`, `README.md:103`
-- Trigger: Recording while system is under heavy load
-- Workaround: None documented
-- Fix approach: Use dedicated channel for recording events with buffering
-
-**No Trigger Conflict Validation:**
-- Symptoms: Multiple macros can have overlapping triggers
-- Files: `razermapperd/src/macro_engine.rs:69-84` (add_macro doesn't check conflicts)
-- Trigger: Adding macros with same key combo
-- Workaround: Manually ensure unique triggers
-- Fix approach: Validate against `active_combos` in `add_macro()`
-
-**GUI Doesn't Show Key Codes:**
-- Symptoms: Only action counts displayed, not actual key mappings
-- Files: `razermapper-gui/src/gui.rs:819-825`
-- Trigger: Viewing macro details in GUI
-- Workaround: Use daemon logs or inspect profile files
-- Fix approach: Add key code to string conversion display
-
-**Profile Format Undocumented:**
-- Symptoms: Users don't know how to manually edit profiles
-- Files: `README.md:106`, `razermapperd/src/config.rs:353-365`
-- Trigger: Attempting manual profile editing
-- Workaround: Use GUI only
-- Fix approach: Write profile schema documentation
-
-**No Graceful Shutdown on Some Errors:**
-- Symptoms: Devices may remain grabbed after crash
-- Files: `razermapperd/src/device.rs:377-390`, `README.md:108`
-- Trigger: Daemon crash or SIGKILL
-- Workaround: Manually release devices via EVIOCGRAB or reboot
-- Fix approach: Implement signal handler cleanup for more error conditions
-
-## Performance Bottlenecks
-
-**Synchronous Event Reading in Async Context:**
-- Problem: `spawn_blocking` used for evdev reading but channel sends block on runtime handle
-- Files: `razermapperd/src/device.rs:147-192`, specifically line 177
-- Cause: `rt.block_on(sender_clone.send(...))` blocks worker thread
-- Improvement path: Use dedicated async channel or mpsc with try_send
-
-**No Event Rate Limiting:**
-- Problem: Spammable macros could flood system with input events
-- Files: `razermapperd/src/macro_engine.rs:256-358`
-- Cause: No rate limiting on macro execution or event injection
-- Improvement path: Add per-macro rate limits and global event throttle
-
-**Inefficient Device Discovery:**
-- Problem: Scans all of `/dev/input` and sysfs on every discovery
-- Files: `razermapperd/src/device.rs:198-230`
-- Cause: No caching or incremental updates
-- Improvement path: Use inotify for device hotplug detection
-
-## Fragile Areas
-
-**Macro Engine State Management:**
-- Files: `razermapperd/src/macro_engine.rs:21-29`, `razermapperd/src/macro_engine.rs:283-287`
-- Why fragile: Three separate RwLocks for different state aspects, complex locking order
-- Safe modification: Always lock in consistent order: macros -> executing -> recording
-- Test coverage: Unit tests exist but don't cover concurrent modification scenarios
-
-**IPC Handler State Access:**
-- Files: `razermapperd/src/ipc.rs:146-256`
-- Why fragile: Complex state cloning pattern, potential for deadlocks
-- Safe modification: Minimize lock hold time, clone data before processing
-- Test coverage: Basic request handling tested, no concurrency stress tests
-
-**Uinput Initialization:**
-- Files: `razermapperd/src/injector.rs:146-254`
-- Why fragile: Many ioctls must succeed, partial failure leaves inconsistent state
-- Safe modification: Use RAII guard pattern, ensure cleanup on all error paths
-- Test coverage: Only basic creation test, no failure injection tests
-
-**Device Grab/Ungrab:**
-- Files: `razermapperd/src/device.rs:74-137`
-- Why fragile: EVIOCGRAB can fail silently, event reader task orphaned on error
-- Safe modification: Track grab state separately, kill event reader on ungrab
-- Test coverage: Basic grab/ungrab tested, no crash recovery tests
-
-## Scaling Limits
-
-**Concurrent Macro Execution:**
-- Current capacity: `max_concurrent_macros` defaults to 10
-- Limit: Each macro spawns a tokio task, no resource pooling
-- Files: `razermapperd/src/macro_engine.rs:26-27`, `razermapperd/src/macro_engine.rs:219-224`
-- Scaling path: Implement semaphore for concurrency limiting, add macro priority queue
-
-**IPC Connection Handling:**
-- Current capacity: No connection limit, unbounded task spawning
-- Limit: Each connection spawns a new task (line 95 of `ipc.rs`)
-- Files: `razermapperd/src/ipc.rs:82-120`
-- Scaling path: Add connection limit, implement connection pooling
-
-**Event Queue Size:**
-- Current capacity: 1000 events in mpsc channel
-- Limit: Hardcoded in `DeviceManager::new()`
-- Files: `razermapperd/src/device.rs:32`, config defaults at 1000
-- Scaling path: Make configurable, implement backpressure
-
-## Dependencies at Risk
-
-**evdev Crate:**
-- Risk: Direct raw fd manipulation and libc ioctl usage
-- Impact: Breaks on non-Linux platforms or kernel API changes
-- Files: `razermapperd/src/device.rs`
-- Migration plan: Abstract ioctl operations, version-check kernel compatibility
-
-**iced GUI Framework:**
-- Risk: 0.12 version used, API may change significantly
-- Impact: GUI may break with minor version updates
-- Files: `razermapper-gui/src/gui.rs:1-8`
-- Migration plan: Pin to exact version, monitor upstream for breaking changes
-
-**bincode Serialization:**
-- Risk: No schema versioning, protocol changes break compatibility
-- Impact: Old clients cannot talk to new daemon
-- Files: `razermapper-common/src/lib.rs:234-243`, all IPC code
-- Migration plan: Add protocol version field to Request enum, implement version negotiation
-
-## Missing Critical Features
-
-**Key Remapping Engine:**
-- Problem: Cannot remap one key to another (primary use case)
-- Blocks: Basic input remapping functionality
-- Status: Not implemented, no code exists
-
-**Configuration Validation:**
-- Problem: No validation of loaded configs/macros
-- Blocks: Safe error messages for malformed profiles
-- Status: Partial, serde provides some validation
-
-**Audit Logging:**
-- Problem: No logging of security-sensitive operations
-- Blocks: Forensic analysis of potential misuse
-- Status: Not implemented
-
-**User/Group Permission Management:**
-- Problem: Assumes "input" group exists, no fallback
-- Blocks: Running on systems without input group
-- Status: Partial implementation in `security.rs`
-
-## Test Coverage Gaps
-
-**Untested: Concurrent macro execution**
-- What's not tested: Multiple macros executing simultaneously
-- Files: `razermapperd/src/macro_engine.rs:256-358`
-- Risk: Race conditions in injector access
-- Priority: HIGH
-
-**Untested: Lock poisoning recovery**
-- What's not tested: Behavior when locks are poisoned
-- Files: All modules using `.unwrap()` on locks
-- Risk: Unexpected panics in production
-- Priority: MEDIUM
-
-**Untested: Device hotplug handling**
-- What's not tested: Adding/removing devices while daemon is running
-- Files: `razermapperd/src/device.rs`
-- Risk: Daemon state desync on device changes
-- Priority: MEDIUM
-
-**Untested: Malformed IPC messages**
-- What's not tested: Invalid/oversized/corrupted IPC payloads
-- Files: `razermapperd/src/ipc.rs:159-176`
-- Risk: DoS via malicious client
-- Priority: HIGH
-
-**Untested: uinput failure modes**
-- What's not tested: /dev/uinput unavailable, ioctl failures
-- Files: `razermapperd/src/injector.rs:146-254`
-- Risk: Silent failures, inconsistent state
-- Priority: MEDIUM
-
-**Untested: Profile downgrade**
-- What's not tested: Loading profiles from newer version
-- Files: `razermapperd/src/config.rs:369-391`
-- Risk: Data loss or corruption
-- Priority: LOW
+1. **Phase 12: Complete LED Control** - Blocked by protocol research
+2. **Phase 16: Calibration GUI** - Next logical phase after 15
+3. **LED Animation Channel Architecture** - Fix breathing/rainbow animations
+4. **Per-Layer Analog Calibration Persistence** - Already designed, needs storage integration
+5. **Global Hotkey Config Loading** - IPC handlers exist, need ConfigManager integration
 
 ---
 
-*Concerns audit: 2026-02-16*
+*Concerns audit: 2026-02-20*
