@@ -12,23 +12,23 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 11 of 16 (Analog Processing and Calibration)
-Plan: 6 of 8
-Status: In Progress
-Last activity: 2026-02-19 — Plans 11-05, 11-06 complete: Per-layer analog calibration configuration and analog macro recording
+Plan: 8 of 8
+Status: Complete
+Last activity: 2026-02-19 — Plans 11-07, 11-08 complete: IPC protocol for analog calibration and GUI calibration UI
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [==========================================.....] 72% (26/36 plans)
+v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
 v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
-Overall: [============================================..] 70% (57/74 plans)
+Overall: [============================================..] 71% (59/74 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 52
+- Total plans completed: 59
 - Average duration: ~5-8 minutes per plan
 - Total execution time: ~6.5 hours
 
@@ -46,7 +46,7 @@ Overall: [============================================..] 70% (57/74 plans)
 | 8. GUI Integration | 4 | Complete |
 | 9. Device Detection and Basic Input | 7 | Complete |
 | 10. Layer System and State Management | 8 | Complete |
-| 11. Analog Processing and Calibration | 8 | 6 complete, 2 pending |
+| 11. Analog Processing and Calibration | 8 | Complete |
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 8 | Not started |
@@ -259,6 +259,23 @@ Overall: [============================================..] 70% (57/74 plans)
 - execute_macro() handles Action::AnalogMove by denormalizing and injecting via Injector trait
 - AnalogMove uses axis_code mapping: 61000=ABS_X, 61001=ABS_Y, 61002=ABS_Z, 61003=RX, 61004=RY, 61005=RZ
 
+*Plan 11-07 - IPC Protocol for Analog Calibration:*
+- AnalogCalibrationConfig struct in razermapper-common with String-based enum serialization
+- Request::GetAnalogCalibration and SetAnalogCalibration variants for IPC communication
+- Response::AnalogCalibration returns Option<AnalogCalibrationConfig> for graceful default handling
+- config_to_calibration() and calibration_to_config() conversion functions between IPC and internal types
+- save_analog_calibration() method in ConfigManager for YAML persistence
+- set_calibration() method in AnalogProcessor to apply calibration to runtime processing
+
+*Plan 11-08 - GUI Calibration UI:*
+- DeadzoneShape and SensitivityCurve enums with Display trait for pick_list widgets
+- CalibrationConfig struct for local GUI state (separate from IPC type to avoid conflicts)
+- AnalogCalibrationView struct with complete UI layout (sliders, dropdowns, checkboxes)
+- checkbox_button helper using button widget (iced doesn't have checkbox widget)
+- Modal dialog pattern: transparent container overlay with centered box
+- view_analog_calibration() returns Option<Element> for modal integration
+- "Analog Calibration" button only shown for Keypad and Gamepad device types
+
 ### Pending Todos
 
 None.
@@ -275,7 +292,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plans 11-05, 11-06 complete - Per-layer analog calibration and analog macro recording
+Stopped at: Plans 11-07, 11-08 complete - IPC protocol for analog calibration and GUI calibration UI
 Resume file: None
 
-**Next step:** Execute plan 11-07 - Per-axis analog calibration configuration
+**Next step:** Execute Phase 12 - LED Control
