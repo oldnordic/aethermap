@@ -7,22 +7,22 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 11 - Analog Processing and Calibration
+**Current focus:** Phase 14 - Gamepad Emulation Mode
 
 ## Current Position
 
-Phase: 11 of 16 (Analog Processing and Calibration)
-Plan: 8 of 8
+Phase: 14 of 16 (Gamepad Emulation Mode)
+Plan: 2 of 8
 Status: Complete
-Last activity: 2026-02-19 — Plans 11-07, 11-08 complete: IPC protocol for analog calibration and GUI calibration UI
+Last activity: 2026-02-19 — Plan 14-02 complete: AnalogMode enum with Gamepad variant and mode field added to DeviceAnalogConfig
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
-Overall: [============================================..] 71% (59/74 plans)
+v1.3 (Phases 13-16): [==.........................................] 3% (1/40 plans)
+Overall: [============================================...] 72% (60/74 plans)
 ```
 
 ## Performance Metrics
@@ -49,7 +49,7 @@ Overall: [============================================..] 71% (59/74 plans)
 | 11. Analog Processing and Calibration | 8 | Complete |
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
-| 14. Gamepad Emulation Mode | 8 | Not started |
+| 14. Gamepad Emulation Mode | 8 | In Progress (2/8) |
 | 15. WASD Mouse Camera Modes | 8 | Not started |
 | 16. Calibration GUI | 8 | Not started |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
@@ -276,6 +276,15 @@ Overall: [============================================..] 71% (59/74 plans)
 - view_analog_calibration() returns Option<Element> for modal integration
 - "Analog Calibration" button only shown for Keypad and Gamepad device types
 
+**v1.3 Implementation Decisions (Phase 14):**
+
+*Plan 14-02 - AnalogMode Enum:*
+- AnalogMode enum with variants: Disabled, Dpad, Gamepad, Camera, Mouse, Wasd
+- serde(rename_all = "lowercase") for clean YAML output (e.g., "gamepad" not "Gamepad")
+- DpadMode and AnalogMode are separate concepts: DpadMode configures HOW 8-way detection works, AnalogMode selects OUTPUT behavior
+- mode field added to DeviceAnalogConfig with #[serde(default)] for YAML persistence
+- process_as_gamepad() placeholder with #[allow(dead_code)] until GamepadVirtualDevice integration in plan 14-03
+
 ### Pending Todos
 
 None.
@@ -292,7 +301,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plans 11-07, 11-08 complete - IPC protocol for analog calibration and GUI calibration UI
+Stopped at: Plan 14-02 complete - AnalogMode enum with Gamepad variant added to analog_processor.rs
 Resume file: None
 
-**Next step:** Execute Phase 12 - LED Control
+**Next step:** Execute Phase 14 Plan 03 - GamepadVirtualDevice integration
