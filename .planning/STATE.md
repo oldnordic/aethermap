@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 3 of 8
+Plan: 5 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 15-03 complete: Mouse mode processing with velocity-based cursor movement
+Last activity: 2026-02-19 — Plan 15-05 complete: Camera mode processing with scroll and key output
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [============.................................] 25% (15/40 plans)
-Overall: [================================================] 78% (74/92 plans)
+v1.3 (Phases 13-16): [============.................................] 28% (17/40 plans)
+Overall: [================================================] 79% (76/92 plans)
 ```
 
 ## Performance Metrics
@@ -340,10 +340,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 3 complete - Mouse mode processing (3/8 plans)
+Stopped at: Phase 15 Plan 5 complete - Camera mode processing (3/8 plans complete: 01, 03, 05)
 Resume file: None
 
-**Next step:** Continue Phase 15 - Plan 04 (Camera Mode)
+**Next step:** Continue Phase 15 - Plan 06 (GUI Camera Mode Configuration)
 
 **v1.3 Implementation Decisions (Phase 14):**
 
@@ -367,3 +367,13 @@ Resume file: None
 - process_as_mouse() method reuses process_2d() for full calibration pipeline consistency
 - Returns None for deadzone input to prevent cursor drift
 - Velocity calculated as (processed_value / 32768.0) * multiplier
+
+*Plan 15-05 - Camera Mode Processing:*
+- CameraOutputMode enum with Scroll and Keys variants (user-selectable mode)
+- CameraOutput enum with Scroll(i32) and Keys(Vec<Key>) return types
+- CameraOutputMode defaults to Scroll for broader compatibility
+- Scroll mode uses REL_WHEEL events (Y-axis only, vertical scrolling)
+- Key mode emits PageUp/PageDown for vertical, arrow keys for horizontal navigation
+- Diagonals emit key combinations (e.g., UpLeft = PageUp + Left) for multi-axis control
+- process_as_camera() method reuses process_2d() for full calibration pipeline
+- Returns None for deadzone input to prevent unwanted output
