@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 11 of 16 (Analog Processing and Calibration)
-Plan: 4 of 8
+Plan: 3 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 11-04 complete: AnalogProcessor integrated into device event loop with D-pad mode and runtime calibration
+Last activity: 2026-02-19 — Plan 11-03 complete: D-pad mode for analog stick with 8-way direction detection
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
-v1.2 (Phases 9-12): [========================..............] 59% (21/36 plans)
+v1.2 (Phases 9-12): [=======================.................] 56% (20/36 plans)
 v1.3 (Phases 13-16): [...........................................] 0% (0/40 plans)
-Overall: [===========================================...] 69% (52/74 plans)
+Overall: [==========================================....] 68% (51/74 plans)
 ```
 
 ## Performance Metrics
@@ -229,12 +229,13 @@ Overall: [===========================================...] 69% (52/74 plans)
 - 12 unit tests covering all pipeline stages, deadzone shapes, and sensitivity curves
 
 *Plan 11-03 - D-pad Mode:*
-- DpadMode enum (Disabled, EightWay, FourWay) for mode selection
-- Direction enum (Up, Down, Left, Right) for cardinal directions
-- map_analog_to_dpad() static method for direction detection using threshold comparison (0.3)
-- direction_to_key_code() function for mapping to Linux key codes (KEY_UP=103, etc.)
-- D-pad mode integrated into event loop with injector for direct key output
-- Four-way mode uses dominant axis selection to prevent diagonal drift
+- DpadDirection enum with 8 directions + None for complete directional coverage
+- detect_dpad_direction() using 22.5-degree sectors for 8-way direction detection
+- dpad_direction_to_keys() helper mapping directions to evdev::Key codes (KEY_UP=103, KEY_DOWN=108, KEY_LEFT=105, KEY_RIGHT=106)
+- process_as_dpad() method converting analog stick position to Vec<(Key, bool)> for current frame state
+- Axis inversion applied directly in process_as_dpad() before direction detection (invert_x/invert_y support)
+- Y-axis coordinate system: center() negates Y (cy=positive means visual up), accounted for in angle calculation
+- 20 unit tests covering all 8 directions, deadzone filtering, direction threshold, and axis inversion
 
 *Plan 11-04 - AnalogProcessor Integration:*
 - Centralized AnalogProcessor in DeviceManager with internal per-device config HashMap
@@ -260,7 +261,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 11-04 complete - AnalogProcessor integrated into device event loop with D-pad mode and runtime calibration
+Stopped at: Plan 11-03 complete - D-pad mode for analog stick with 8-way direction detection
 Resume file: None
 
-**Next step:** Execute plan 11-05 - Output mode configuration
+**Next step:** Execute plan 11-04 - AnalogProcessor integration into device event loop
