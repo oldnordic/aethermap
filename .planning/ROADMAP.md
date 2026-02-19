@@ -218,10 +218,19 @@ Plans:
 | 12. LED Control | v1.2 | 0/8 | Not started | - |
 | 13. Wayland Portal Integration | v1.3 | 6/6 | Complete | 2026-02-19 |
 | 14. Gamepad Emulation Mode | v1.3 | 6/6 | Complete | 2026-02-19 |
-| 15. WASD, Mouse, and Camera Modes | v1.3 | 8/10 | In Progress | 2026-02-19 |
+| 15. WASD, Mouse, and Camera Modes | v1.3 | 10/10 | Complete | 2026-02-19 |
 | 16. Calibration GUI | v1.3 | 0/8 | Not started | - |
 
-**Overall Progress:** 79/92 plans complete (86%)
+**Overall Progress:** 84/92 plans complete (91%)
+
+### Phase 17: Hotkey and Auto-Switch Persistence
+
+**Goal:** [To be planned]
+**Depends on:** Phase 16
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 17 to break down)
 
 ---
 

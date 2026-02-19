@@ -7,22 +7,22 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 15 - WASD, Mouse, and Camera Modes
+**Current focus:** Phase 15 complete - WASD, Mouse, and Camera Modes (10/10 plans)
 
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 9 of 10
-Status: Complete
-Last activity: 2026-02-19 — Plan 15-09 complete: GUI analog mode persistence with IPC round-trip
+Plan: 10 of 10
+Status: Complete (including gap closure)
+Last activity: 2026-02-19 — Phase 15 complete: All analog modes implemented with GUI persistence and proper WASD state tracking
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [==============================.....................] 38% (23/40 plans)
-Overall: [================================================] 81% (82/92 plans)
+v1.3 (Phases 13-16): [===================================...............] 48% (27/40 plans)
+Overall: [==================================================] 84% (84/92 plans)
 ```
 
 ## Performance Metrics
@@ -60,6 +60,14 @@ Overall: [================================================] 81% (82/92 plans)
 | Phase 15 P02 | 2 | 1 task | 1 file |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+**2026-02-20:**
+- Phase 17 added: Hotkey and Auto-Switch Persistence
+  - Complete IPC handlers for hotkey registration/listing/removal
+  - Persist auto-switch rules and hotkey bindings from GUI to daemon
+  - Address CONCERNS.md unimplemented IPC handlers
 
 ### Decisions
 
@@ -344,10 +352,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 9 complete - GUI analog mode persistence (9/10 plans complete: 01, 02, 03, 04, 05, 06, 07, 08, 09)
+Stopped at: Phase 15 complete - All 10 plans executed including 2 gap closure plans (15-09, 15-10)
 Resume file: None
 
-**Next step:** Continue Phase 15 - Plan 10 (WASD Key State Tracking) or move to Phase 16
+**Next step:** Move to Phase 16 (Calibration GUI) or Phase 12 (LED Control)
 
 **v1.3 Implementation Decisions (Phase 14):**
 
