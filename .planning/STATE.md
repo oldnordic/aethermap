@@ -56,6 +56,7 @@ Overall: [================================================] 79% (76/92 plans)
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
 | Phase 15 P01 | 5 | 2 tasks | 1 file |
+| Phase 15 P04 | 657 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -323,6 +324,8 @@ Overall: [================================================] 79% (76/92 plans)
 - 2 integration tests for per-layer analog_mode and calibration configuration
 - All 24 gamepad-related tests pass successfully
 - Test thresholds adjusted to match actual calibration behavior (15000/10000 instead of 30000)
+- [Phase 15]: Default mouse velocity multiplier 10.0 pixels per unit deflection
+- [Phase 15]: Fire-and-forget mouse events via EV_REL with velocity-based movement
 
 ### Pending Todos
 
