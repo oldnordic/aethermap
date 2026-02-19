@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 1 of 8
+Plan: 2 of 8
 Status: In progress
-Last activity: 2026-02-20 — Phase 17 Plan 01 complete: ConfigManager hotkey binding CRUD methods with YAML persistence
+Last activity: 2026-02-20 — Phase 17 Plan 02 complete: ConfigManager auto-switch rule persistence with Arc<RwLock<DaemonConfig>> runtime mutability
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [==========================================.......] 47% (28/60 plans)
-Overall: [====================================================] 85% (85/100 plans)
+v1.3 (Phases 13-17): [===========================================....] 48% (29/60 plans)
+Overall: [===================================================] 85% (86/100 plans)
 ```
 
 ## Performance Metrics
@@ -450,3 +450,10 @@ Resume file: None
 - get_hotkey_bindings() returns empty Vec for missing file/device (graceful degradation)
 - All methods follow set_analog_calibration pattern: load -> modify -> serialize -> write
 - tokio::fs::write for async file I/O (non-blocking)
+
+*Plan 17-02 - ConfigManager Auto-Switch Rule Persistence:*
+- Wrapped DaemonConfig in Arc<RwLock<>> for runtime mutability (was immutable field)
+- set_auto_switch_rules() acquires write lock, updates in-memory, serializes full config to YAML
+- get_auto_switch_rules() acquires read lock for efficient access (no file I/O)
+- Updated all ConfigManager access patterns: new(), load_config(), save_config(), config() getter
+- Auto-switch rules stored in config.yaml (not device_profiles.yaml) as global daemon config
