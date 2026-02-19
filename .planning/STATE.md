@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 13 of 16 (Wayland Portal Integration and Global Hotkeys)
-Plan: 5 of 6
-Status: In progress
-Last activity: 2026-02-19 — Plan 13-05 complete: Global hotkey detection at daemon level
+Plan: 6 of 6
+Status: Complete
+Last activity: 2026-02-19 — Plan 13-06 complete: GUI views for auto-switch rules and hotkey bindings
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [========================================] 100%
-v1.3 (Phases 13-16): [#####...................................] 8% (5/58 plans)
-Overall: [========================================...] 75% (57/74 plans)
+v1.3 (Phases 13-16): [#########################...............] 10% (6/58 plans)
+Overall: [========================================...] 76% (58/74 plans)
 ```
 
 ## Performance Metrics
@@ -48,7 +48,7 @@ Overall: [========================================...] 75% (57/74 plans)
 | 10. Layer System and State Management | 8 | Complete |
 | 11. Analog Processing and Calibration | 8 | Complete |
 | 12. LED Control | 8 | Complete |
-| 13. Wayland Portal Integration | 6 | 5 complete (13-01, 13-02, 13-03, 13-04, 13-05) |
+| 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 8 | Not started |
 | 15. WASD Mouse Camera Modes | 8 | Not started |
 | 16. Calibration GUI | 8 | Not started |
@@ -199,6 +199,16 @@ Overall: [========================================...] 75% (57/74 plans)
 - Wayland-compatible - no compositor support required
 - Hotkey combo detection uses case-insensitive modifier name matching
 
+*Plan 13-06 - GUI Views for Auto-Switch and Hotkeys:*
+- AutoSwitchRulesView struct with rule management UI (add/edit/delete)
+- HotkeyBindingsView struct with binding management UI and modifier checkboxes
+- FocusTracker integration with GUI main loop (auto-trigger on daemon connect)
+- Navigation buttons added to all device cards for easy access
+- "Use Current App" button fills app_id from detected focus
+- YAML config examples with comprehensive documentation in config.rs
+- View state pattern: Option<View> for modal-like screen management
+- Module visibility workaround: WAYLAND_DISPLAY check instead of ashpd in async closure
+
 ### Pending Todos
 
 None.
@@ -215,7 +225,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Plan 13-05 complete - Global hotkey detection at daemon level
+Stopped at: Plan 13-06 complete - GUI views for auto-switch rules and hotkey bindings
 Resume file: None
 
-**Next step:** Execute plan 13-06 - GUI integration for hotkey configuration
+**Next step:** Execute plan 14-01 - Gamepad emulation mode foundation
