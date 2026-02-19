@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 4 of 8
+Plan: 7 of 8
 Status: In progress
-Last activity: 2026-02-20 — Phase 17 Plan 04 complete: SetAutoSwitchRules IPC protocol with AutoProfileSwitcher reload
+Last activity: 2026-02-20 — Phase 17 Plan 07 complete: GlobalHotkeyManager.load_bindings() implementation
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [==============================================] 52% (31/60 plans)
-Overall: [===================================================] 86% (88/100 plans)
+v1.3 (Phases 13-17): [===============================================] 55% (33/60 plans)
+Overall: [====================================================] 87% (89/100 plans)
 ```
 
 ## Performance Metrics
@@ -474,3 +474,11 @@ Resume file: None
 - Added reload_rules(&self, rules) method to AutoProfileSwitcher for Arc-based access
 - SetAutoSwitchRules handler reloads AutoProfileSwitcher after successful save
 - IPC pattern: save to config -> reload component -> return ack
+
+*Plan 17-07 - GlobalHotkeyManager.load_bindings() Implementation:*
+- Added ConfigManager::get_all_hotkey_bindings() to read bindings from all devices in device_profiles.yaml
+- Implemented GlobalHotkeyManager::load_bindings() to load from ConfigManager with fallback to defaults
+- Applied case-insensitive modifier name normalization using normalize_modifier_name()
+- Used filter_map with normalize_modifier_name() to filter out invalid modifier names (graceful handling)
+- Normalization applied at load time for efficiency (not at match time)
+
