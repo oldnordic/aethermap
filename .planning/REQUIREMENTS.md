@@ -1,50 +1,81 @@
-# Requirements: Razermapper - v1.1
+# Requirements: Razermapper
 
 **Defined:** 2026-02-17
 **Core Value:** Users can remap any input key to any other key, with remaps persisting across reboots and switchable at runtime.
 
-## v1.1 Requirements
+## v1.0 Requirements (COMPLETE)
 
-Requirements for mouse and mixed macro support. Each maps to roadmap phases.
+All v1.0 requirements have been shipped. See `.planning/milestones/v1.0-REQUIREMENTS.md` for archive.
 
-### Device Discovery & Filtering
+## v1.1 Requirements (COMPLETE)
 
-- [ ] **DISC-01**: System only lists devices with input capabilities (keyboard, mouse, gamepad) in GUI
-- [ ] **DISC-02**: Device list shows type indicators (keyboard icon, mouse icon, etc.)
-- [ ] **DISC-03**: Hybrid devices (e.g., keyboard + touchpad) display multiple type indicators
-- [ ] **DISC-04**: System excludes non-input devices (sensors, power buttons, audio devices) from device list
+All v1.1 requirements have been shipped.
 
-### Mouse Event Recording
+## v1.2 Requirements (IN PROGRESS)
 
-- [ ] **MOUSE-01**: User can record mouse button clicks (left, right, middle) in macros
-- [ ] **MOUSE-02**: User can record mouse scroll wheel events (up/down) in macros
-- [ ] **MOUSE-03**: User can record mouse movement (relative dx, dy) in macros
-- [ ] **MOUSE-04**: User can create macros combining keyboard and mouse events in single recording
-- [ ] **MOUSE-05**: System applies movement batching for high-DPI mice during recording
+See `.planning/milestones/v1.2-REQUIREMENTS.md` for v1.2 Azeron Cyborg support requirements.
+
+## v1.3 Requirements
+
+Requirements for Wayland compatibility and advanced analog processing. Each maps to roadmap phases 13-16.
+
+### Wayland Integration
+
+- [ ] **WAYL-01**: Daemon detects window focus changes on Wayland compositors
+- [ ] **WAYL-02**: Window focus triggers automatic profile switching based on app_id
+- [ ] **WAYL-03**: User can configure app-to-profile mapping rules in YAML
+- [ ] **WAYL-04**: Global keyboard shortcuts for profile switching work on Wayland
+- [ ] **WAYL-05**: GUI prompts for Wayland portal permissions on first use
+- [ ] **WAYL-06**: System falls back to manual switching when portal unavailable
+
+### Analog Processing Modes
+
+- [ ] **ANLG-01**: User can configure analog stick to output gamepad events (Xbox 360 emulation)
+- [ ] **ANLG-02**: User can configure analog stick to output WASD keys (8-way directional)
+- [ ] **ANLG-03**: User can configure analog stick to control mouse movement
+- [ ] **ANLG-04**: User can configure analog stick for camera rotation or scrolling
+- [ ] **ANLG-05**: Analog mode switchable via GUI and IPC
+- [ ] **ANLG-06**: Each layer can have different analog mode and calibration
+
+### Analog Calibration
+
+- [ ] **CAL-01**: User can configure deadzone (circular or square, adjustable radius)
+- [ ] **CAL-02**: User can configure sensitivity curve (linear, quadratic, exponential)
+- [ ] **CAL-03**: User can configure sensitivity multiplier
+- [ ] **CAL-04**: User can configure axis range limits (min/max values)
+- [ ] **CAL-05**: User can invert axis (X, Y independently)
+- [ ] **CAL-06**: GUI provides visual preview of calibration settings
 
 ### GUI Integration
 
-- [ ] **GUI-01**: User can click mouse buttons during macro recording to capture them
-- [ ] **GUI-02**: User can select mouse buttons from dropdown list (manual selection)
-- [ ] **GUI-03**: Macro editor visualizes mouse events distinctly from keyboard events
+- [ ] **GUI-01**: Calibration screen shows real-time analog input visualization
+- [ ] **GUI-02**: User can select analog mode from dropdown (Gamepad, WASD, Mouse, Camera)
+- [ ] **GUI-03**: Deadzone control includes slider and shape selector
+- [ ] **GUI-04**: Sensitivity control includes curve selector and multiplier slider
+- [ ] **GUI-05**: Range controls include min/max sliders and inversion checkboxes
+- [ ] **GUI-06**: All calibration changes apply immediately with live preview
 
 ### Quality & Reliability
 
-- [ ] **QUAL-01**: Mouse macros execute with correct event ordering (preserves sequence)
-- [ ] **QUAL-02**: Macro playback handles mixed keyboard+mouse events without desync
-- [ ] **QUAL-03**: System validates uinput EV_REL capabilities before macro playback
+- [ ] **QUAL-01**: Gamepad emulation works with standard Linux gamepad drivers
+- [ ] **QUAL-02**: WASD mode correctly outputs diagonal key combinations
+- [ ] **QUAL-03**: Mouse mode velocity is smooth and responsive
+- [ ] **QUAL-04**: Camera mode scroll/key events have appropriate repeat rate
+- [ ] **QUAL-05**: Portal integration handles permission errors gracefully
+- [ ] **QUAL-06**: Global hotkeys work across all major Wayland compositors
 
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
 
-### Advanced Mouse Features
+### Advanced Features
 
-- **MOUSE-20**: Per-device DPI normalization for mouse movement
-- **MOUSE-21**: Touchpad vs mouse event distinction
-- **MOUSE-22**: Absolute axis device support (tablets, touchpads)
-- **MOUSE-23**: Button hold vs click distinction in macros
-- **MOUSE-24**: Force feedback support in macros
+- **ADV-01**: Per-application profile switching based on window title (beyond app_id)
+- **ADV-02**: Advanced analog curves (Bezier, custom points)
+- **ADV-03**: Multi-monitor aware mouse positioning
+- **ADV-04**: Haptic feedback for analog stick
+- **ADV-05**: Gyro/accelerometer support for motion controls
+- **ADV-06**: Full gamepad button remapping (beyond analog pass-through)
 
 ## Out of Scope
 
@@ -52,38 +83,55 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| Mouse button remapping (not macros) | Different feature; requires RemapEngine refactoring |
-| Absolute position mapping | Requires different approach; relative is standard for macros |
-| Gesture recognition | Complex state machine; defer to later milestone |
-| Multi-device mouse coordination | Event ordering unreliable across devices |
+| X11 support | Project is Wayland-focused (as stated in PROJECT.md constraints) |
+| Window title-based switching | Wayland security model prevents title access beyond app_id |
+| Custom Bezier curves | Advanced feature, standard curves sufficient for v1.3 |
+| Hardware-specific hacks | Generic solutions preferred for maintainability |
 
 ## Traceability
 
 Which phases cover which requirements. Updated during roadmap creation.
 
+### v1.3 Requirement Mapping
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-01 | Phase 5 | Pending |
-| DISC-02 | Phase 5 | Pending |
-| DISC-03 | Phase 5 | Pending |
-| DISC-04 | Phase 5 | Pending |
-| MOUSE-01 | Phase 6 | Pending |
-| MOUSE-02 | Phase 6 | Pending |
-| MOUSE-03 | Phase 6 | Pending |
-| MOUSE-04 | Phase 6 | Pending |
-| MOUSE-05 | Phase 6 | Pending |
-| GUI-01 | Phase 7 | Pending |
-| GUI-02 | Phase 7 | Pending |
-| GUI-03 | Phase 7 | Pending |
-| QUAL-01 | Phase 6 | Pending |
-| QUAL-02 | Phase 6 | Pending |
-| QUAL-03 | Phase 6 | Pending |
+| WAYL-01 | Phase 13 | Pending |
+| WAYL-02 | Phase 13 | Pending |
+| WAYL-03 | Phase 13 | Pending |
+| WAYL-04 | Phase 13 | Pending |
+| WAYL-05 | Phase 13 | Pending |
+| WAYL-06 | Phase 13 | Pending |
+| ANLG-01 | Phase 14 | Pending |
+| ANLG-02 | Phase 15 | Pending |
+| ANLG-03 | Phase 15 | Pending |
+| ANLG-04 | Phase 15 | Pending |
+| ANLG-05 | Phase 15 | Pending |
+| ANLG-06 | Phase 15 | Pending |
+| CAL-01 | Phase 16 | Pending |
+| CAL-02 | Phase 16 | Pending |
+| CAL-03 | Phase 16 | Pending |
+| CAL-04 | Phase 16 | Pending |
+| CAL-05 | Phase 16 | Pending |
+| CAL-06 | Phase 16 | Pending |
+| GUI-01 | Phase 16 | Pending |
+| GUI-02 | Phase 16 | Pending |
+| GUI-03 | Phase 16 | Pending |
+| GUI-04 | Phase 16 | Pending |
+| GUI-05 | Phase 16 | Pending |
+| GUI-06 | Phase 16 | Pending |
+| QUAL-01 | Phase 14 | Pending |
+| QUAL-02 | Phase 15 | Pending |
+| QUAL-03 | Phase 15 | Pending |
+| QUAL-04 | Phase 15 | Pending |
+| QUAL-05 | Phase 13 | Pending |
+| QUAL-06 | Phase 13 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 15 total
-- Mapped to phases: 0 (roadmap not created yet)
-- Unmapped: 15 ⚠️
+- v1.3 requirements: 33 total
+- Mapped to phases: 33
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-17*
-*Last updated: 2026-02-17 after initial definition*
+*Last updated: 2026-02-18 after v1.3 milestone definition*

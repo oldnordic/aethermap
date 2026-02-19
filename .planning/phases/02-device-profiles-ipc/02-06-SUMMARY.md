@@ -105,3 +105,28 @@ None - no external service configuration required.
 *Phase: 02-device-profiles-ipc*
 *Plan: 06*
 *Completed: 2026-02-17*
+
+## Self-Check: PASSED
+
+### Files Created/Modified
+- [x] `.planning/phases/02-device-profiles-ipc/02-06-SUMMARY.md` - Created
+- [x] `.planning/STATE.md` - Updated (Phase 2 now 100% complete)
+
+### Code Changes (razermapper sub-repo)
+- [x] `razermapper/razermapper-gui/src/ipc.rs` - Added 4 IPC client methods (get_active_remaps, list_remap_profiles, activate_remap_profile, deactivate_remap_profile)
+- [x] `razermapper/razermapper-gui/src/gui.rs` - Added remap profile state, messages, handlers, and UI widgets (view_remap_profile_switcher, view_active_remaps_display)
+
+### Commits
+- [x] Task 1 commit (feat): `f477dd3` (in razermapper sub-repo)
+- [x] Task 2 commit (feat): `7ad209f` (in razermapper sub-repo)
+- [x] Final metadata commit: `b42acad` (docs: complete plan)
+
+### Success Criteria
+- [x] All tasks executed (3 tasks)
+- [x] Each task committed individually
+- [x] All deviations documented (none)
+- [x] SUMMARY.md created with substantive content
+- [x] STATE.md updated (position, decisions, session)
+- [x] Final metadata commit made
+
+**Note:** The task commits (f477dd3, 7ad209f) were made in the razermapper sub-repository, which has its own git configuration. The code changes are verified to exist in the files.

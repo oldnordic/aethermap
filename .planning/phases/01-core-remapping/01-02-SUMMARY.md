@@ -119,3 +119,12 @@ cargo check -p razermapperd
 - **Plan 01-03**: Add CLI commands for remap management
 - **Plan 01-04**: Integrate load_remaps into daemon startup
 - **Plan 01-05**: Add comprehensive tests and documentation
+
+## Self-Check: PASSED
+
+- [x] SUMMARY.md created at `.planning/phases/01-core-remapping/01-02-SUMMARY.md`
+- [x] Commit `b1245e9`: feat(01-02): add RemapEntry type and remaps_path to ConfigManager
+- [x] Commit `c2b5bf0`: feat(01-02): implement load_remaps method with validation
+- [x] Commit `0359b2d`: feat(01-02): export RemapEntry and RemapConfigError from lib.rs
+- [x] Commit `848120c`: docs(01-02): complete remap configuration loading plan
+- [x] STATE.md updated with plan 2/5 progress

@@ -205,3 +205,12 @@ test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out
 *Phase: 01-core-remapping*
 *Plan: 01*
 *Completed: 2026-02-16*
+
+## Self-Check: PASSED
+
+- [x] 01-01-SUMMARY.md created at `.planning/phases/01-core-remapping/01-01-SUMMARY.md`
+- [x] Commit `de73721` exists (feat: add KeyParser and RemapEngine modules)
+- [x] Commit `0a4ff76` exists (docs: create SUMMARY.md)
+- [x] Commit `eb16bfd` exists (docs: advance to plan 01-01 complete)
+- [x] 14 key_parser tests pass
+- [x] 14 remap_engine tests pass

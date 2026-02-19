@@ -22,14 +22,14 @@ Build the RemapEngine component that translates input key codes to output key co
 ### Key name format
 - Internal storage uses `evdev::Key` enum directly (not integer codes)
 - Thread-safe wrapper: `Arc<RwLock<HashMap<evdev::Key, evdev::Key>>>`
-- Parse key names lazily on first use (not eager at config load)
+- Eager validation: parse and validate all key names at config load time (fail-fast)
 - Case-insensitive parsing (KEY_A, key_a, Key_A all valid)
 - Expand friendly abbreviations to evdev codes (capslock → KEY_CAPSLOCK, a → KEY_A)
 
 ### Remap storage
 - Simple `HashMap<evdev::Key, evdev::Key>` for O(1) lookup
 - Wrapped in `Arc<RwLock<>>` for concurrent access from event loop
-- Lazy parsing: config stores strings, convert to enum on first lookup
+- Eager validation at config load: all key names validated before daemon accepts config
 
 ### Error handling
 - Config parse errors print detailed message with file/line/position to stderr
