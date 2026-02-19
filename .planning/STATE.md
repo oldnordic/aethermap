@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 1 of 8
+Plan: 3 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 15-01 complete: WASD mode processing with 8-way directional key output
+Last activity: 2026-02-19 — Plan 15-03 complete: Mouse mode processing with velocity-based cursor movement
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [============................................] 23% (13/40 plans)
-Overall: [================================================] 77% (72/92 plans)
+v1.3 (Phases 13-16): [============.................................] 25% (15/40 plans)
+Overall: [================================================] 78% (74/92 plans)
 ```
 
 ## Performance Metrics
@@ -340,10 +340,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 1 complete - WASD mode processing (1/8 plans)
+Stopped at: Phase 15 Plan 3 complete - Mouse mode processing (3/8 plans)
 Resume file: None
 
-**Next step:** Continue Phase 15 - Plan 02 (Mouse Mode)
+**Next step:** Continue Phase 15 - Plan 04 (Camera Mode)
 
 **v1.3 Implementation Decisions (Phase 14):**
 
@@ -360,3 +360,10 @@ Resume file: None
 - Diagonal directions return key combinations (UpRight = W + D) matching standard game expectations
 - process_as_wasd() method follows same calibration pipeline as process_as_dpad()
 - Reused existing DpadDirection enum instead of creating new WASDDirection for consistency
+
+*Plan 15-03 - Mouse Mode Processing:*
+- MouseVelocityConfig struct with configurable multiplier for cursor speed control
+- Default multiplier: 10.0 pixels per 1.0 analog value (~10 pixels at full deflection)
+- process_as_mouse() method reuses process_2d() for full calibration pipeline consistency
+- Returns None for deadzone input to prevent cursor drift
+- Velocity calculated as (processed_value / 32768.0) * multiplier
