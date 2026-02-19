@@ -1,28 +1,28 @@
 # Project State
 
-**Last Updated:** 2026-02-19
+**Last Updated:** 2026-02-20
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 15 complete - WASD, Mouse, and Camera Modes (10/10 plans)
+**Current focus:** Phase 17 - Hotkey and Auto-Switch Persistence
 
 ## Current Position
 
-Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 10 of 10
-Status: Complete (including gap closure)
-Last activity: 2026-02-19 — Phase 15 complete: All analog modes implemented with GUI persistence and proper WASD state tracking
+Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
+Plan: 1 of 8
+Status: In progress
+Last activity: 2026-02-20 — Phase 17 Plan 01 complete: ConfigManager hotkey binding CRUD methods with YAML persistence
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [===================================...............] 48% (27/40 plans)
-Overall: [==================================================] 84% (84/92 plans)
+v1.3 (Phases 13-17): [==========================================.......] 47% (28/60 plans)
+Overall: [====================================================] 85% (85/100 plans)
 ```
 
 ## Performance Metrics
@@ -52,12 +52,14 @@ Overall: [==================================================] 84% (84/92 plans)
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
 | 16. Calibration GUI | 8 | Not started |
+| 17. Hotkey and Auto-Switch Persistence | 8 | In progress (1/8) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
 | Phase 15 P01 | 5 | 2 tasks | 1 file |
 | Phase 15 P04 | 657 | 2 tasks | 2 files |
 | Phase 15 P02 | 2 | 1 task | 1 file |
+| Phase 17 P01 | 42fac6f | 3 tasks | 1 file |
 
 ## Accumulated Context
 
@@ -438,3 +440,13 @@ Resume file: None
 - Keys remaining active get no new events (stay held) - proper game-like key behavior
 - 6 WASD state tracking tests (5 unit tests for transitions, 1 integration test for full event loop)
 - Closed Gap 2 from Phase 15 verification (TODO about state tracking)
+
+**v1.3 Implementation Decisions (Phase 17):**
+
+*Plan 17-01 - ConfigManager Hotkey Binding Persistence:*
+- Added RemapConfigError::Validation variant for structured error handling
+- add_hotkey_binding() uses case-insensitive modifier comparison (to_lowercase) for duplicate detection
+- remove_hotkey_binding() uses retain() for functional iteration instead of index-based removal
+- get_hotkey_bindings() returns empty Vec for missing file/device (graceful degradation)
+- All methods follow set_analog_calibration pattern: load -> modify -> serialize -> write
+- tokio::fs::write for async file I/O (non-blocking)
