@@ -306,3 +306,11 @@ Stopped at: Plan 14-02 complete - AnalogMode enum with Gamepad variant added to 
 Resume file: None
 
 **Next step:** Execute Phase 14 Plan 03 - GamepadVirtualDevice integration
+
+**v1.3 Implementation Decisions (Phase 14):**
+
+*Plan 14-04 - Per-Layer Gamepad Mode Configuration:*
+- LayerConfig extended with analog_mode field for per-layer analog output mode
+- All constructors initialize analog_mode to Disabled for backward compatibility
+- IPC SetLayerConfig handler preserves existing analog_mode when updating other fields
+- Per-layer configuration enables base layer D-pad navigation with Layer 1 Gamepad gaming
