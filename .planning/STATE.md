@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 5 of 8
+Plan: 2 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 15-05 complete: Camera mode processing with scroll and key output
+Last activity: 2026-02-19 — Plan 15-02 complete: WASD mode event loop integration
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [============.................................] 28% (17/40 plans)
-Overall: [================================================] 79% (76/92 plans)
+v1.3 (Phases 13-16): [============.................................] 28% (18/40 plans)
+Overall: [================================================] 79% (77/92 plans)
 ```
 
 ## Performance Metrics
@@ -50,13 +50,14 @@ Overall: [================================================] 79% (76/92 plans)
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
-| 15. WASD Mouse Camera Modes | 8 | In Progress (1/8) |
+| 15. WASD Mouse Camera Modes | 8 | In Progress (2/8) |
 | 16. Calibration GUI | 8 | Not started |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
 | Phase 15 P01 | 5 | 2 tasks | 1 file |
 | Phase 15 P04 | 657 | 2 tasks | 2 files |
+| Phase 15 P02 | 2 | 1 task | 1 file |
 
 ## Accumulated Context
 
@@ -343,10 +344,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 15 Plan 5 complete - Camera mode processing (3/8 plans complete: 01, 03, 05)
+Stopped at: Phase 15 Plan 2 complete - WASD mode event loop integration (2/8 plans complete: 01, 02)
 Resume file: None
 
-**Next step:** Continue Phase 15 - Plan 06 (GUI Camera Mode Configuration)
+**Next step:** Continue Phase 15 - Plan 03 (Mouse Mode Processing) or Plan 06 (GUI Camera Mode Configuration)
 
 **v1.3 Implementation Decisions (Phase 14):**
 
@@ -363,6 +364,12 @@ Resume file: None
 - Diagonal directions return key combinations (UpRight = W + D) matching standard game expectations
 - process_as_wasd() method follows same calibration pipeline as process_as_dpad()
 - Reused existing DpadDirection enum instead of creating new WASDDirection for consistency
+
+*Plan 15-02 - WASD Mode Event Loop Integration:*
+- Reused dpad_state struct for WASD axis tracking (no new state structures)
+- Default calibration fallback: 0.15 deadzone, Circular shape, Linear curve, 1.0 multiplier
+- Immediate key press/release for initial testing (proper state tracking in plan 15-08)
+- WASD mode check placed after gamepad mode in analog event processing
 
 *Plan 15-03 - Mouse Mode Processing:*
 - MouseVelocityConfig struct with configurable multiplier for cursor speed control
