@@ -12,9 +12,9 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 2 of 8
+Plan: 6 of 8
 Status: In Progress
-Last activity: 2026-02-19 — Plan 15-02 complete: WASD mode event loop integration
+Last activity: 2026-02-19 — Plan 15-06 complete: Camera mode integration with scroll/key output
 
 Progress:
 ```
@@ -50,7 +50,7 @@ Overall: [================================================] 79% (77/92 plans)
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
-| 15. WASD Mouse Camera Modes | 8 | In Progress (2/8) |
+| 15. WASD Mouse Camera Modes | 8 | In Progress (6/8) |
 | 16. Calibration GUI | 8 | Not started |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
@@ -387,3 +387,12 @@ Resume file: None
 - Diagonals emit key combinations (e.g., UpLeft = PageUp + Left) for multi-axis control
 - process_as_camera() method reuses process_2d() for full calibration pipeline
 - Returns None for deadzone input to prevent unwanted output
+
+*Plan 15-06 - Camera Mode Integration:*
+- camera_output_mode field added to LayerConfig for per-layer camera mode selection
+- camera_output_mode() accessor method for retrieving layer-specific mode
+- Camera mode handling in device event loop after Mouse mode check
+- Emits REL_WHEEL events via injector.mouse_scroll() for Scroll mode
+- Emits key press/release events via injector for Keys mode (immediate for repeat)
+- Per-layer calibration support via analog_calibration field
+- Default camera_output_mode is Scroll for broader compatibility
