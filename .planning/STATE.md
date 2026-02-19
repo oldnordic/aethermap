@@ -12,9 +12,9 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 14 of 16 (Gamepad Emulation Mode)
-Plan: 5 of 8
-Status: Complete
-Last activity: 2026-02-19 — Plan 14-05 complete: Integrated gamepad output with device event loop and calibration pipeline
+Plan: 6 of 8
+Status: In Progress
+Last activity: 2026-02-19 — Plan 14-04 complete: Per-layer gamepad mode configuration with analog_mode field
 
 Progress:
 ```
