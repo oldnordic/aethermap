@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 15 of 16 (WASD, Mouse, and Camera Modes)
-Plan: 7 of 8
-Status: In Progress
-Last activity: 2026-02-19 — Plan 15-07 complete: Analog mode selector GUI with 6 output modes
+Plan: 8 of 8
+Status: Complete
+Last activity: 2026-02-19 — Plan 15-08 complete: Unit and integration tests for WASD, Mouse, and Camera modes
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-16): [============...................................] 30% (19/40 plans)
-Overall: [================================================] 79% (78/92 plans)
+v1.3 (Phases 13-16): [============...................................] 32% (20/40 plans)
+Overall: [================================================] 79% (79/92 plans)
 ```
 
 ## Performance Metrics
@@ -50,7 +50,7 @@ Overall: [================================================] 79% (78/92 plans)
 | 12. LED Control | 8 | Not started |
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
-| 15. WASD Mouse Camera Modes | 8 | In Progress (6/8) |
+| 15. WASD Mouse Camera Modes | 8 | Complete (8/8) |
 | 16. Calibration GUI | 8 | Not started |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
@@ -406,3 +406,12 @@ Resume file: None
 - Mode selector UI section in calibration dialog with conditional camera sub-mode selector
 - AnalogModeChanged and CameraModeChanged message handlers
 - Camera sub-mode selector only visible when Camera mode is selected
+
+*Plan 15-08 - Unit and Integration Tests:*
+- Added 7 WASD mode unit tests covering all 8 directions, deadzone, and axis inversion
+- Added 9 Mouse mode unit tests covering velocity scaling, multiplier, and deadzone
+- Added 8 Camera mode unit tests covering scroll and key output modes
+- Added 7 integration tests for per-layer analog mode configuration
+- Y-axis centering behavior: cy = 0.5 - ny means raw Y=0 becomes positive output
+- Mouse velocity: positive Y = up, negative Y = down (due to centering inversion)
+- All 29 tests pass successfully
