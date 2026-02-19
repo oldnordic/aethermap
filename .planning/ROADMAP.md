@@ -221,16 +221,23 @@ Plans:
 | 15. WASD, Mouse, and Camera Modes | v1.3 | 10/10 | Complete | 2026-02-19 |
 | 16. Calibration GUI | v1.3 | 0/8 | Not started | - |
 
-**Overall Progress:** 84/92 plans complete (91%)
+**Overall Progress:** 84/100 plans complete (84%)
 
 ### Phase 17: Hotkey and Auto-Switch Persistence
 
-**Goal:** [To be planned]
-**Depends on:** Phase 16
-**Plans:** 0 plans
+**Goal:** Users can configure hotkey bindings and auto-switch rules via the GUI, and these settings persist across daemon restarts.
+**Depends on:** Phase 13 (AutoProfileSwitcher), Phase 15 (Analog modes complete)
+**Plans:** 8 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 17 to break down)
+- [ ] 17-01-PLAN.md — ConfigManager methods for hotkey binding CRUD
+- [ ] 17-02-PLAN.md — ConfigManager methods for auto-switch rule persistence
+- [ ] 17-03-PLAN.md — IPC handler implementations (RegisterHotkey, ListHotkeys, RemoveHotkey)
+- [ ] 17-04-PLAN.md — Missing IPC protocol (SetAutoSwitchRules/AutoSwitchRulesAck)
+- [ ] 17-05-PLAN.md — GUI persistence for auto-switch rules
+- [ ] 17-06-PLAN.md — GUI persistence for hotkey bindings
+- [ ] 17-07-PLAN.md — GlobalHotkeyManager.load_bindings() integration
+- [ ] 17-08-PLAN.md — Unit tests for ConfigManager methods
 
 ---
 

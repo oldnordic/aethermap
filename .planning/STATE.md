@@ -12,23 +12,23 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 2 of 8
+Plan: 3 of 8
 Status: In progress
-Last activity: 2026-02-20 — Phase 17 Plan 02 complete: ConfigManager auto-switch rule persistence with Arc<RwLock<DaemonConfig>> runtime mutability
+Last activity: 2026-02-20 — Phase 17 Plan 03 complete: IPC hotkey handlers with ConfigManager integration and GlobalHotkeyManager reload
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===========================================....] 48% (29/60 plans)
-Overall: [===================================================] 85% (86/100 plans)
+v1.3 (Phases 13-17): [============================================] 50% (30/60 plans)
+Overall: [===================================================] 86% (87/100 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 59
+- Total plans completed: 60
 - Average duration: ~5-8 minutes per plan
 - Total execution time: ~6.5 hours
 
@@ -52,7 +52,7 @@ Overall: [===================================================] 85% (86/100 plans
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
 | 16. Calibration GUI | 8 | Not started |
-| 17. Hotkey and Auto-Switch Persistence | 8 | In progress (1/8) |
+| 17. Hotkey and Auto-Switch Persistence | 8 | In progress (3/8) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
@@ -457,3 +457,11 @@ Resume file: None
 - get_auto_switch_rules() acquires read lock for efficient access (no file I/O)
 - Updated all ConfigManager access patterns: new(), load_config(), save_config(), config() getter
 - Auto-switch rules stored in config.yaml (not device_profiles.yaml) as global daemon config
+
+*Plan 17-03 - IPC Hotkey Handlers:*
+- Added hotkey_manager() getter to DeviceManager for IPC handler access
+- Type conversion between common::HotkeyBinding and config::HotkeyBinding (field-by-field mapping)
+- RegisterHotkey validates profile exists before adding binding
+- ListHotkeys returns empty Vec (not error) for graceful degradation
+- RemoveHotkey and RegisterHotkey both reload GlobalHotkeyManager after config changes
+- SetAutoSwitchRules handler added to complete IPC match arms
