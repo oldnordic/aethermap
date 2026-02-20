@@ -60,6 +60,7 @@ Overall: [===================================================] 86% (88/100 plans
 | Phase 15 P04 | 657 | 2 tasks | 2 files |
 | Phase 15 P02 | 2 | 1 task | 1 file |
 | Phase 17 P01 | 42fac6f | 3 tasks | 1 file |
+| Phase 17-hotkey-and-auto-switch-persistence P05 | 12min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -337,6 +338,8 @@ Overall: [===================================================] 86% (88/100 plans
 - Test thresholds adjusted to match actual calibration behavior (15000/10000 instead of 30000)
 - [Phase 15]: Default mouse velocity multiplier 10.0 pixels per unit deflection
 - [Phase 15]: Fire-and-forget mouse events via EV_REL with velocity-based movement
+- [Phase 17-hotkey-and-auto-switch-persistence]: Added ShowNotification(String, bool) message for GUI user feedback
+- [Phase 17-hotkey-and-auto-switch-persistence]: Used razermapper_common::ipc_client::IpcClient directly instead of wrapped GuiIpcClient for auto-switch rule persistence
 
 ### Pending Todos
 
