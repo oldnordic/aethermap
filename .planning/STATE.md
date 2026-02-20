@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 7 of 8
+Plan: 6 of 8
 Status: In progress
-Last activity: 2026-02-20 — Phase 17 Plan 07 complete: GlobalHotkeyManager.load_bindings() implementation
+Last activity: 2026-02-20 — Phase 17 Plan 06 complete: GUI hotkey binding persistence via IPC
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===============================================] 55% (33/60 plans)
-Overall: [====================================================] 87% (89/100 plans)
+v1.3 (Phases 13-17): [===============================================] 53% (32/60 plans)
+Overall: [===================================================] 86% (88/100 plans)
 ```
 
 ## Performance Metrics
@@ -481,4 +481,14 @@ Resume file: None
 - Applied case-insensitive modifier name normalization using normalize_modifier_name()
 - Used filter_map with normalize_modifier_name() to filter out invalid modifier names (graceful handling)
 - Normalization applied at load time for efficiency (not at match time)
+
+*Plan 17-06 - GUI Hotkey Binding Persistence:*
+- Changed HotkeyBindingsLoaded message from (String, Vec<HotkeyBinding>) to Result<Vec<HotkeyBinding>, String> for proper error handling
+- Added HotkeyBinding as CommonHotkeyBinding import for type conversion between common and GUI types
+- Added HotkeyBindingsUpdated(Vec<HotkeyBinding>) message variant for post-delete state updates
+- LoadHotkeyBindings: IPC call to ListHotkeys with type conversion from common to GUI
+- SaveHotkeyBinding: IPC call to RegisterHotkey with optimistic UI update
+- DeleteHotkeyBinding: IPC call to RemoveHotkey with HotkeyBindingsUpdated message
+- Optimistic UI updates: update local state immediately, sync to daemon via async IPC
+
 
