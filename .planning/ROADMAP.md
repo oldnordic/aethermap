@@ -191,14 +191,14 @@ Plans:
 **Plans:** 8 plans
 
 Plans:
-- [ ] 16-01: Create calibration screen layout with mode selector
-- [ ] 16-02: Implement real-time analog input visualization widget
-- [ ] 16-03: Add deadzone controls (slider, shape selector, visual preview)
-- [ ] 16-04: Add sensitivity controls (curve selector, multiplier slider, curve graph)
-- [ ] 16-05: Add range controls (min/max sliders, inversion checkboxes)
-- [ ] 16-06: Implement live preview with immediate application
-- [ ] 16-07: Add IPC protocol for calibration read/write
-- [ ] 16-08: Integrate calibration with device profile persistence
+- [ ] 16-01-PLAN.md — Canvas infrastructure (AnalogVisualizer base widget)
+- [ ] 16-02-PLAN.md — Stick position visualization integration
+- [ ] 16-03-PLAN.md — Sensitivity curve graph widget
+- [x] 16-04-PLAN.md — IPC subscription protocol
+- [ ] 16-05-PLAN.md — Real-time data streaming integration
+- [ ] 16-06-PLAN.md — Live preview and immediate application
+- [ ] 16-07-PLAN.md — Performance optimization (caching, throttling)
+- [ ] 16-08-PLAN.md — Unit and integration tests
 
 ## Progress
 
