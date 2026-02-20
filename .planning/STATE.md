@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-02-20T07:20:00Z
+**Last Updated:** 2026-02-20T07:27:00Z
 
 ## Project Reference
 
@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 16 of 17 (Calibration GUI)
-Plan: 5 of 8
+Plan: 7 of 8
 Status: In Progress
-Last activity: 2026-02-20 — Phase 16 Plan 05 complete: Real-time data streaming integration
+Last activity: 2026-02-20 — Phase 16 Plan 07 complete: Performance optimization (caching, throttling)
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===================================================] 68% (43/60 plans)
-Overall: [===================================================] 91% (99/104 plans)
+v1.3 (Phases 13-17): [===================================================] 70% (45/60 plans)
+Overall: [===================================================] 92% (101/104 plans)
 ```
 
 ## Performance Metrics
@@ -66,6 +66,7 @@ Overall: [===================================================] 91% (99/104 plans
 | Phase 16-calibration-gui P03 | 934 | 2 tasks | 3 files |
 | Phase 16-calibration-gui P04 | 8min | 2 tasks | 3 files |
 | Phase 16 P05 | 18 | 3 tasks | 5 files |
+| Phase 16-calibration-gui P07 | 11min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -558,4 +559,13 @@ Resume file: None
 - Positioned visualizer between info section and mode section for prominence
 - Deadzone shape conversion: GUI enum to widget enum via match expression
 
+*Plan 16-07 - Performance Optimization (Caching, Throttling):*
+- Added Arc<Cache> to AnalogVisualizer for persistent caching across widget frames
+- Implemented cache.draw() pattern for static elements (outer circle, deadzone, axes)
+- Only stick position dot redraws each frame (dynamic content)
+- Added clear_cache() method to AnalogVisualizer for cache invalidation
+- Added last_visualizer_update: Instant to AnalogCalibrationView for 30 FPS throttling
+- Implemented 33ms (30 FPS) throttling in AnalogInputUpdated handler
+- Cache clearing on deadzone/shape changes via visualizer_cache.clear()
+- Manual Clone/Default impls for AnalogCalibrationView (Instant and Cache don't implement Clone)
 
