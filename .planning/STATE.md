@@ -51,8 +51,8 @@ Overall: [===================================================] 89% (95/104 plans
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
-| 16. Calibration GUI | 8 | Not started |
-| 17. Hotkey and Auto-Switch Persistence | 9 | In Progress (9/10) |
+| 16. Calibration GUI | 8 | In Progress (1/8) |
+| 17. Hotkey and Auto-Switch Persistence | 9 | Complete (9/9) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
@@ -63,6 +63,7 @@ Overall: [===================================================] 89% (95/104 plans
 | Phase 17-hotkey-and-auto-switch-persistence P05 | 12min | 2 tasks | 1 files |
 | Phase 17-hotkey-and-auto-switch-persistence P09 | 8min | 3 tasks | 2 files |
 | Phase 16-calibration-gui P16-02 | 15min | 3 tasks | 5 files |
+| Phase 16-calibration-gui P03 | 934 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -346,6 +347,9 @@ Overall: [===================================================] 89% (95/104 plans
 - [Phase 16-calibration-gui]: Used WidgetDeadzoneShape alias to avoid enum name collision
 - [Phase 16-calibration-gui]: Positioned visualizer between info and mode sections for prominence
 - [Phase 16-calibration-gui]: Default stick position (0.0, 0.0) shows center dot before real-time updates
+- [Phase 16-calibration-gui]: Use GUI's local SensitivityCurve enum (razermapper_common doesn't export it)
+- [Phase 16-calibration-gui]: Default Exponential curve exponent to 2.0 (GUI enum has no field)
+- [Phase 16-calibration-gui]: Plot normalized 0-1 curve only, show multiplier separately for clarity
 
 ### Pending Todos
 
