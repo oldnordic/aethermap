@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-02-20T07:27:00Z
+**Last Updated:** 2026-02-20T09:53:00Z
 
 ## Project Reference
 
@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 16 of 17 (Calibration GUI)
-Plan: 7 of 8
-Status: In Progress
-Last activity: 2026-02-20 — Phase 16 Plan 06 complete: CurveGraph integration verification and immediate application pattern confirmation
+Plan: 8 of 8
+Status: Complete
+Last activity: 2026-02-20 — Phase 16 Plan 08 complete: Unit and integration tests for calibration GUI components
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===================================================] 70% (45/60 plans)
-Overall: [===================================================] 92% (101/104 plans)
+v1.3 (Phases 13-17): [===================================================] 71% (46/60 plans)
+Overall: [===================================================] 93% (102/104 plans)
 ```
 
 ## Performance Metrics
@@ -51,7 +51,7 @@ Overall: [===================================================] 92% (101/104 plan
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
-| 16. Calibration GUI | 8 | In Progress (2/8) |
+| 16. Calibration GUI | 8 | Complete (8/8) |
 | 17. Hotkey and Auto-Switch Persistence | 9 | Complete (9/9) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
@@ -68,6 +68,7 @@ Overall: [===================================================] 92% (101/104 plan
 | Phase 16 P05 | 18 | 3 tasks | 5 files |
 | Phase 16-calibration-gui P06 | 10min | 2 tasks | 1 file |
 | Phase 16-calibration-gui P07 | 11min | 2 tasks | 2 files |
+| Phase 16 P08 | 18min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -357,6 +358,7 @@ Overall: [===================================================] 92% (101/104 plan
 - [Phase 16-calibration-gui]: One GUI client only - UnsubscribeAnalogInput removes all subscribers for device
 - [Phase 16-calibration-gui]: Fire-and-forget UnboundedSender for analog subscription sends (drop silently if client disconnected)
 - [Phase 16-calibration-gui]: Subscriber map pattern: HashMap<device_id, Vec<UnboundedSender<Response>>>
+- [Phase 16]: Made CurveGraph::apply_curve public for testability
 
 ### Pending Todos
 
