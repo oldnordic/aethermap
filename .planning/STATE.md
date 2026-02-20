@@ -12,23 +12,23 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 8 of 8
-Status: Complete
-Last activity: 2026-02-20 — Phase 17 Plan 08 complete: Unit tests for hotkey and auto-switch persistence
+Plan: 9 of 10
+Status: In Progress
+Last activity: 2026-02-20 — Phase 17 Plan 09 complete: GlobalHotkeyManager startup initialization
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [================================================] 60% (36/60 plans)
-Overall: [===================================================] 88% (92/104 plans)
+v1.3 (Phases 13-17): [================================================] 61% (37/60 plans)
+Overall: [===================================================] 89% (93/104 plans)
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 60
+- Total plans completed: 61
 - Average duration: ~5-8 minutes per plan
 - Total execution time: ~6.5 hours
 
@@ -52,7 +52,7 @@ Overall: [===================================================] 88% (92/104 plans
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
 | 16. Calibration GUI | 8 | Not started |
-| 17. Hotkey and Auto-Switch Persistence | 8 | Complete (8/8) |
+| 17. Hotkey and Auto-Switch Persistence | 9 | In Progress (9/10) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
@@ -61,6 +61,7 @@ Overall: [===================================================] 88% (92/104 plans
 | Phase 15 P02 | 2 | 1 task | 1 file |
 | Phase 17 P01 | 42fac6f | 3 tasks | 1 file |
 | Phase 17-hotkey-and-auto-switch-persistence P05 | 12min | 2 tasks | 1 files |
+| Phase 17-hotkey-and-auto-switch-persistence P09 | 8min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -503,5 +504,13 @@ Resume file: None
 - Added test_get_all_hotkey_bindings_aggregates_devices for cross-device binding aggregation
 - Fixed DaemonConfig::default() calls to use Arc<RwLock<>> wrapper across all test files
 - All 6 tests pass, validating correctness of prior plan implementations
+
+*Plan 17-09 - GlobalHotkeyManager Startup Initialization:*
+- Added hotkey_manager field to DaemonState as Option<Arc<Mutex<GlobalHotkeyManager>>>
+- GlobalHotkeyManager initialized with layer_manager and config_manager after macro_engine setup
+- load_bindings() called immediately after GlobalHotkeyManager creation to load from device_profiles.yaml
+- hotkey_manager stored in DaemonState before device_manager creation for later retrieval
+- DeviceManager.set_hotkey_manager() called before start_discovery() to wire event loop integration
+- Hotkey bindings now active immediately after daemon restart (Gap 1 closed)
 
 
