@@ -1,28 +1,28 @@
 # Project State
 
-**Last Updated:** 2026-02-20T01:31:00Z
+**Last Updated:** 2026-02-20T06:56:00Z
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Remap any input key with persist & switch at runtime
-**Current focus:** Phase 17 - Hotkey and Auto-Switch Persistence
+**Current focus:** Phase 16 - Calibration GUI
 
 ## Current Position
 
-Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 10 of 10
-Status: Complete
-Last activity: 2026-02-20 — Phase 17 Plan 10 complete: GetAutoSwitchRules IPC Protocol
+Phase: 16 of 17 (Calibration GUI)
+Plan: 1 of 8
+Status: In Progress
+Last activity: 2026-02-20 — Phase 16 Plan 01 complete: Canvas Infrastructure - AnalogVisualizer Base Widget
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [==================================================] 62% (38/60 plans)
-Overall: [===================================================] 89% (94/104 plans)
+v1.3 (Phases 13-17): [===================================================] 63% (39/60 plans)
+Overall: [===================================================] 89% (95/104 plans)
 ```
 
 ## Performance Metrics
@@ -62,6 +62,7 @@ Overall: [===================================================] 89% (94/104 plans
 | Phase 17 P01 | 42fac6f | 3 tasks | 1 file |
 | Phase 17-hotkey-and-auto-switch-persistence P05 | 12min | 2 tasks | 1 files |
 | Phase 17-hotkey-and-auto-switch-persistence P09 | 8min | 3 tasks | 2 files |
+| Phase 16-calibration-gui P16-02 | 15min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -341,6 +342,10 @@ Overall: [===================================================] 89% (94/104 plans
 - [Phase 15]: Fire-and-forget mouse events via EV_REL with velocity-based movement
 - [Phase 17-hotkey-and-auto-switch-persistence]: Added ShowNotification(String, bool) message for GUI user feedback
 - [Phase 17-hotkey-and-auto-switch-persistence]: Used razermapper_common::ipc_client::IpcClient directly instead of wrapped GuiIpcClient for auto-switch rule persistence
+- [Phase 16-calibration-gui]: Created separate widgets module for reusable Canvas components
+- [Phase 16-calibration-gui]: Used WidgetDeadzoneShape alias to avoid enum name collision
+- [Phase 16-calibration-gui]: Positioned visualizer between info and mode sections for prominence
+- [Phase 16-calibration-gui]: Default stick position (0.0, 0.0) shows center dot before real-time updates
 
 ### Pending Todos
 
