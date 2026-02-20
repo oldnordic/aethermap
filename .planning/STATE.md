@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-02-20T07:00:00Z
+**Last Updated:** 2026-02-20T07:05:00Z
 
 ## Project Reference
 
@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 16 of 17 (Calibration GUI)
-Plan: 2 of 8
+Plan: 4 of 8
 Status: In Progress
-Last activity: 2026-02-20 — Phase 16 Plan 02 complete: Stick Position Visualization Integration
+Last activity: 2026-02-20 — Phase 16 Plan 04 complete: IPC Subscription Protocol
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===================================================] 64% (40/60 plans)
-Overall: [===================================================] 89% (96/104 plans)
+v1.3 (Phases 13-17): [===================================================] 66% (42/60 plans)
+Overall: [===================================================] 90% (98/104 plans)
 ```
 
 ## Performance Metrics
@@ -64,6 +64,7 @@ Overall: [===================================================] 89% (96/104 plans
 | Phase 17-hotkey-and-auto-switch-persistence P09 | 8min | 3 tasks | 2 files |
 | Phase 16-calibration-gui P16-02 | 15min | 3 tasks | 5 files |
 | Phase 16-calibration-gui P03 | 934 | 2 tasks | 3 files |
+| Phase 16-calibration-gui P04 | 8min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -350,6 +351,9 @@ Overall: [===================================================] 89% (96/104 plans
 - [Phase 16-calibration-gui]: Use GUI's local SensitivityCurve enum (razermapper_common doesn't export it)
 - [Phase 16-calibration-gui]: Default Exponential curve exponent to 2.0 (GUI enum has no field)
 - [Phase 16-calibration-gui]: Plot normalized 0-1 curve only, show multiplier separately for clarity
+- [Phase 16-calibration-gui]: One GUI client only - UnsubscribeAnalogInput removes all subscribers for device
+- [Phase 16-calibration-gui]: Fire-and-forget UnboundedSender for analog subscription sends (drop silently if client disconnected)
+- [Phase 16-calibration-gui]: Subscriber map pattern: HashMap<device_id, Vec<UnboundedSender<Response>>>
 
 ### Pending Todos
 
