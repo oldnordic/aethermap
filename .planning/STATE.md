@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-02-20T06:56:00Z
+**Last Updated:** 2026-02-20T07:00:00Z
 
 ## Project Reference
 
@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 16 of 17 (Calibration GUI)
-Plan: 1 of 8
+Plan: 2 of 8
 Status: In Progress
-Last activity: 2026-02-20 — Phase 16 Plan 01 complete: Canvas Infrastructure - AnalogVisualizer Base Widget
+Last activity: 2026-02-20 — Phase 16 Plan 02 complete: Stick Position Visualization Integration
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===================================================] 63% (39/60 plans)
-Overall: [===================================================] 89% (95/104 plans)
+v1.3 (Phases 13-17): [===================================================] 64% (40/60 plans)
+Overall: [===================================================] 89% (96/104 plans)
 ```
 
 ## Performance Metrics
@@ -51,7 +51,7 @@ Overall: [===================================================] 89% (95/104 plans
 | 13. Wayland Portal Integration | 6 | Complete |
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
-| 16. Calibration GUI | 8 | In Progress (1/8) |
+| 16. Calibration GUI | 8 | In Progress (2/8) |
 | 17. Hotkey and Auto-Switch Persistence | 9 | Complete (9/9) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
@@ -534,5 +534,23 @@ Resume file: None
 - hotkey_manager stored in DaemonState before device_manager creation for later retrieval
 - DeviceManager.set_hotkey_manager() called before start_discovery() to wire event loop integration
 - Hotkey bindings now active immediately after daemon restart (Gap 1 closed)
+
+**v1.3 Implementation Decisions (Phase 16):**
+
+*Plan 16-01 - Canvas Infrastructure - AnalogVisualizer Base Widget:*
+- Created widgets module with mod.rs and analog_visualizer.rs
+- Implemented AnalogVisualizer using iced::widget::canvas::Program trait
+- Canvas drawing uses Frame::fill() and Frame::stroke() with Stroke builder pattern
+- Y-axis inversion applied for screen coordinates (analog Y+ = up, screen Y+ = down)
+- Deadzone shapes: Circular (Path::circle) and Square (Path::rectangle)
+- Default values: stick centered (0.0, 0.0), 15% circular deadzone
+
+*Plan 16-02 - Stick Position Visualization Integration:*
+- Added widgets module declaration to lib.rs and main.rs for dual compilation targets
+- Extended AnalogCalibrationView with stick_x and stick_y fields (default 0.0, 0.0)
+- Imported Canvas widget and AnalogVisualizer into gui.rs
+- Created visualizer section in AnalogCalibrationView::view() with Canvas::new()
+- Positioned visualizer between info section and mode section for prominence
+- Deadzone shape conversion: GUI enum to widget enum via match expression
 
 
