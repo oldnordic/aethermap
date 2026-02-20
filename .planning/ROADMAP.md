@@ -227,17 +227,20 @@ Plans:
 
 **Goal:** Users can configure hotkey bindings and auto-switch rules via the GUI, and these settings persist across daemon restarts.
 **Depends on:** Phase 13 (AutoProfileSwitcher), Phase 15 (Analog modes complete)
-**Plans:** 8 plans
+**Status:** gaps_found (4/5 must_haves verified, 2 gap closure plans)
+**Plans:** 10 plans (8 executed + 2 gap closure)
 
 Plans:
-- [ ] 17-01-PLAN.md — ConfigManager methods for hotkey binding CRUD
-- [ ] 17-02-PLAN.md — ConfigManager methods for auto-switch rule persistence
-- [ ] 17-03-PLAN.md — IPC handler implementations (RegisterHotkey, ListHotkeys, RemoveHotkey)
-- [ ] 17-04-PLAN.md — Missing IPC protocol (SetAutoSwitchRules/AutoSwitchRulesAck)
-- [ ] 17-05-PLAN.md — GUI persistence for auto-switch rules
-- [ ] 17-06-PLAN.md — GUI persistence for hotkey bindings
-- [ ] 17-07-PLAN.md — GlobalHotkeyManager.load_bindings() integration
-- [ ] 17-08-PLAN.md — Unit tests for ConfigManager methods
+- [x] 17-01-PLAN.md — ConfigManager methods for hotkey binding CRUD
+- [x] 17-02-PLAN.md — ConfigManager methods for auto-switch rule persistence
+- [x] 17-03-PLAN.md — IPC handler implementations (RegisterHotkey, ListHotkeys, RemoveHotkey)
+- [x] 17-04-PLAN.md — Missing IPC protocol (SetAutoSwitchRules/AutoSwitchRulesAck)
+- [x] 17-05-PLAN.md — GUI persistence for auto-switch rules
+- [x] 17-06-PLAN.md — GUI persistence for hotkey bindings
+- [x] 17-07-PLAN.md — GlobalHotkeyManager.load_bindings() integration
+- [x] 17-08-PLAN.md — Unit tests for ConfigManager methods
+- [ ] 17-09-PLAN.md — GlobalHotkeyManager startup initialization (gap closure)
+- [ ] 17-10-PLAN.md — GetAutoSwitchRules IPC protocol (gap closure)
 
 ---
 
