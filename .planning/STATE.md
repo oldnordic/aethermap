@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 6 of 8
-Status: In progress
-Last activity: 2026-02-20 — Phase 17 Plan 06 complete: GUI hotkey binding persistence via IPC
+Plan: 8 of 8
+Status: Complete
+Last activity: 2026-02-20 — Phase 17 Plan 08 complete: Unit tests for hotkey and auto-switch persistence
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [===============================================] 53% (32/60 plans)
-Overall: [===================================================] 86% (88/100 plans)
+v1.3 (Phases 13-17): [================================================] 60% (36/60 plans)
+Overall: [===================================================] 88% (92/104 plans)
 ```
 
 ## Performance Metrics
@@ -52,7 +52,7 @@ Overall: [===================================================] 86% (88/100 plans
 | 14. Gamepad Emulation Mode | 6 | Complete |
 | 15. WASD Mouse Camera Modes | 10 | Complete (10/10) |
 | 16. Calibration GUI | 8 | Not started |
-| 17. Hotkey and Auto-Switch Persistence | 8 | In progress (3/8) |
+| 17. Hotkey and Auto-Switch Persistence | 8 | Complete (8/8) |
 | Phase 13 P05 | 30 | 6 tasks | 6 files |
 | Phase 14 P03 | 2095 | 3 tasks | 2 files |
 | Phase 14 P06 | 3624 | 4 tasks | 3 files |
@@ -493,5 +493,15 @@ Resume file: None
 - SaveHotkeyBinding: IPC call to RegisterHotkey with optimistic UI update
 - DeleteHotkeyBinding: IPC call to RemoveHotkey with HotkeyBindingsUpdated message
 - Optimistic UI updates: update local state immediately, sync to daemon via async IPC
+
+*Plan 17-08 - Unit Tests for Hotkey and Auto-Switch Persistence:*
+- Added test_add_hotkey_binding_persists_to_yaml for YAML serialization verification
+- Added test_add_hotkey_binding_rejects_duplicate for duplicate detection validation
+- Added test_remove_hotkey_binding for binding removal with multi-binding scenarios
+- Added test_get_hotkey_bindings_returns_empty_for_missing_device for graceful degradation
+- Added test_set_get_auto_switch_rules for auto-switch rule persistence
+- Added test_get_all_hotkey_bindings_aggregates_devices for cross-device binding aggregation
+- Fixed DaemonConfig::default() calls to use Arc<RwLock<>> wrapper across all test files
+- All 6 tests pass, validating correctness of prior plan implementations
 
 
