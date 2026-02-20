@@ -14,7 +14,7 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 Phase: 16 of 17 (Calibration GUI)
 Plan: 7 of 8
 Status: In Progress
-Last activity: 2026-02-20 — Phase 16 Plan 07 complete: Performance optimization (caching, throttling)
+Last activity: 2026-02-20 — Phase 16 Plan 06 complete: CurveGraph integration verification and immediate application pattern confirmation
 
 Progress:
 ```
@@ -66,6 +66,7 @@ Overall: [===================================================] 92% (101/104 plan
 | Phase 16-calibration-gui P03 | 934 | 2 tasks | 3 files |
 | Phase 16-calibration-gui P04 | 8min | 2 tasks | 3 files |
 | Phase 16 P05 | 18 | 3 tasks | 5 files |
+| Phase 16-calibration-gui P06 | 10min | 2 tasks | 1 file |
 | Phase 16-calibration-gui P07 | 11min | 2 tasks | 2 files |
 
 ## Accumulated Context
@@ -558,6 +559,12 @@ Resume file: None
 - Created visualizer section in AnalogCalibrationView::view() with Canvas::new()
 - Positioned visualizer between info section and mode section for prominence
 - Deadzone shape conversion: GUI enum to widget enum via match expression
+
+*Plan 16-06 - Live Preview and Immediate Application:*
+- CurveGraph widget integrated in AnalogCalibrationView sensitivity section (Canvas::new at line 4737)
+- ApplyAnalogCalibration handler calls set_analog_calibration immediately without confirmation
+- Daemon SetAnalogCalibration handler persists to YAML via ConfigManager::save_analog_calibration()
+- Success/failure notifications displayed via AnalogCalibrationApplied message handler
 
 *Plan 16-07 - Performance Optimization (Caching, Throttling):*
 - Added Arc<Cache> to AnalogVisualizer for persistent caching across widget frames
