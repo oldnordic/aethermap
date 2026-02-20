@@ -1,6 +1,6 @@
 # Project State
 
-**Last Updated:** 2026-02-20
+**Last Updated:** 2026-02-20T01:31:00Z
 
 ## Project Reference
 
@@ -12,17 +12,17 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 17 of 17 (Hotkey and Auto-Switch Persistence)
-Plan: 9 of 10
-Status: In Progress
-Last activity: 2026-02-20 — Phase 17 Plan 09 complete: GlobalHotkeyManager startup initialization
+Plan: 10 of 10
+Status: Complete
+Last activity: 2026-02-20 — Phase 17 Plan 10 complete: GetAutoSwitchRules IPC Protocol
 
 Progress:
 ```
 v1.0 (Phases 1-4): [========================================] 100%
 v1.1 (Phases 5-8): [========================================] 100%
 v1.2 (Phases 9-12): [===========================================] 75% (27/36 plans)
-v1.3 (Phases 13-17): [================================================] 61% (37/60 plans)
-Overall: [===================================================] 89% (93/104 plans)
+v1.3 (Phases 13-17): [==================================================] 62% (38/60 plans)
+Overall: [===================================================] 89% (94/104 plans)
 ```
 
 ## Performance Metrics
@@ -502,6 +502,19 @@ Resume file: None
 - Added test_get_hotkey_bindings_returns_empty_for_missing_device for graceful degradation
 - Added test_set_get_auto_switch_rules for auto-switch rule persistence
 - Added test_get_all_hotkey_bindings_aggregates_devices for cross-device binding aggregation
+- Fixed DaemonConfig::default() calls to use Arc<RwLock<>> wrapper across all test files
+- All 6 tests pass, validating correctness of prior plan implementations
+
+*Plan 17-10 - GetAutoSwitchRules IPC Protocol:*
+- Added Request::GetAutoSwitchRules variant for querying auto-switch rules
+- Added Response::AutoSwitchRules variant with rules: Vec<AutoSwitchRule>
+- Implemented daemon handler calling ConfigManager::get_auto_switch_rules()
+- Added get_auto_switch_rules() convenience function to ipc_client module
+- Updated GUI LoadAutoSwitchRules to call IPC and populate view with existing rules
+- Changed AutoSwitchRulesLoaded message to Result<Vec<AutoSwitchRule>, String> for error handling
+- Fixed message signature to match iced::Command::perform (single argument, not device_id + Result)
+- Device_id read from auto_switch_view field instead of message payload
+- Removed TODO comment at gui.rs:845
 - Fixed DaemonConfig::default() calls to use Arc<RwLock<>> wrapper across all test files
 - All 6 tests pass, validating correctness of prior plan implementations
 
