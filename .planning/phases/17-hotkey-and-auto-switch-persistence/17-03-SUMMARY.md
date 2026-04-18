@@ -71,7 +71,7 @@ All tasks were committed atomically in a single commit:
    - hotkey_manager() getter in DeviceManager
    - SetAutoSwitchRules handler (blocking fix)
 
-**Plan metadata:** (pending final docs commit)
+**Plan metadata:** `d8f7000` (docs: complete IPC hotkey handlers plan)
 
 ## Files Created/Modified
 
@@ -143,6 +143,15 @@ None - all issues were resolved via deviation rules.
 - Type conversion pattern established for future common<->internal conversions
 
 **No blockers or concerns.**
+
+## Self-Check: PASSED
+
+**Files created:**
+- FOUND: 17-03-SUMMARY.md
+
+**Commits:**
+- FOUND: 1651e3f (feat: implement IPC handlers for hotkey management)
+- FOUND: d8f7000 (docs: complete IPC hotkey handlers plan)
 
 ---
 *Phase: 17-hotkey-and-auto-switch-persistence*

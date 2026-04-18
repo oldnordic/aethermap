@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "codemcp": {
+      "command": "/home/feanor/Projects/odincode/.codemcp/codemcp",
+      "args": ["serve"],
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "633aceaee3ba4aa795ba39668eb54d3c.3viCQWqyN7gnOB7x",
+        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+        "RUST_LOG": "info"
+      }
+    }
+  }
+}

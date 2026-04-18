@@ -61,12 +61,12 @@
 
 **Depends on:** Phase 8
 
-**Status:** In progress (Phase 10 complete, Phases 11-12 pending)
+**Status:** Complete (Phases 9-12 all done)
 
 - [x] Phase 9: Device Detection and Basic Input (7/7 plans) — completed 2026-02-17
 - [x] Phase 10: Layer System and State Management (8/8 plans) — completed 2026-02-17
-- [ ] Phase 11: Analog Processing and Calibration (8/8 plans) — Ready to execute
-- [ ] Phase 12: LED Control (0/8 plans) — Not started
+- [x] Phase 11: Analog Processing and Calibration (8/8 plans) — completed 2026-02-20
+- [x] Phase 12: LED Control (8/8 plans) — completed 2026-02-18
 
 **Phase 9 Plans (Complete):**
 - [x] 09-01: Azeron device detection
@@ -96,15 +96,15 @@
 - [ ] 11-07: IPC protocol for runtime calibration
 - [ ] 11-08: GUI calibration UI with live preview
 
-**Phase 12 Plans (LED Control):**
-- [ ] 12-01: HID API integration for LED control
-- [ ] 12-02: LED zone enumeration
-- [ ] 12-03: Color set operation
-- [ ] 12-04: Per-layer LED colors
-- [ ] 12-05: LED effect patterns
-- [ ] 12-06: LED state persistence
-- [ ] 12-07: IPC LED protocol
-- [ ] 12-08: GUI LED color picker
+**Phase 12: LED Control**
+
+> **Status:** Complete (8/8 plans) — Already implemented in razermapper
+>
+> **Hardware Limitation:** Azeron Cyborg 2 only supports brightness control (0-100%). RGB control not available due to closed protocol.
+
+The GUI already has a "Configure LEDs" button with brightness slider matching the official Azeron software.
+
+See: `razermapper/.planning/phases/12-led-control/` for completed plans.
 
 </details>
 
@@ -191,14 +191,14 @@ Plans:
 **Plans:** 8 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Canvas infrastructure (AnalogVisualizer base widget)
-- [ ] 16-02-PLAN.md — Stick position visualization integration
-- [ ] 16-03-PLAN.md — Sensitivity curve graph widget
+- [x] 16-01-PLAN.md — Canvas infrastructure (AnalogVisualizer base widget)
+- [x] 16-02-PLAN.md — Stick position visualization integration
+- [x] 16-03-PLAN.md — Sensitivity curve graph widget
 - [x] 16-04-PLAN.md — IPC subscription protocol
-- [ ] 16-05-PLAN.md — Real-time data streaming integration
-- [ ] 16-06-PLAN.md — Live preview and immediate application
-- [ ] 16-07-PLAN.md — Performance optimization (caching, throttling)
-- [ ] 16-08-PLAN.md — Unit and integration tests
+- [x] 16-05-PLAN.md — Real-time data streaming integration
+- [x] 16-06-PLAN.md — Live preview and immediate application
+- [x] 16-07-PLAN.md — Performance optimization (caching, throttling)
+- [x] 16-08-PLAN.md — Unit and integration tests
 
 ## Progress
 
@@ -219,9 +219,9 @@ Plans:
 | 13. Wayland Portal Integration | v1.3 | 6/6 | Complete | 2026-02-19 |
 | 14. Gamepad Emulation Mode | v1.3 | 6/6 | Complete | 2026-02-19 |
 | 15. WASD, Mouse, and Camera Modes | v1.3 | 10/10 | Complete | 2026-02-19 |
-| 16. Calibration GUI | v1.3 | 0/8 | Not started | - |
+| 16. Calibration GUI | v1.3 | 8/8 | Complete | 2026-02-20 |
 
-**Overall Progress:** 85/100 plans complete (85%)
+**Overall Progress:** 93/100 plans complete (93%)
 
 ### Phase 17: Hotkey and Auto-Switch Persistence
 
