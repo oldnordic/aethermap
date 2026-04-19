@@ -9,7 +9,7 @@ authors = ["Aethermap Team"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/oldnordic/aethermap"
 homepage = "https://github.com/oldnordic/aethermap"
-keywords = ["input", "remapper", "macro", "linux", "evdev", "cosmic"]
+keywords = ["input", "remapper", "macro", "linux", "evdev"]
 categories = ["hardware-support", "command-line-utilities"]
 
 [workspace.dependencies]
