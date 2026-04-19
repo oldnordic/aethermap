@@ -26,7 +26,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "aethermap-common"
-version = "1.4.1"
+version = "1.4.2"
 dependencies = [
  "bincode",
  "serde",
@@ -50,7 +50,7 @@ dependencies = [
 
 [[package]]
 name = "aethermap-gui"
-version = "1.4.1"
+version = "1.4.2"
 dependencies = [
  "aethermap-common",
  "ashpd",
@@ -65,7 +65,7 @@ dependencies = [
 
 [[package]]
 name = "aethermapd"
-version = "1.4.1"
+version = "1.4.2"
 dependencies = [
  "aethermap-common",
  "async-trait",
