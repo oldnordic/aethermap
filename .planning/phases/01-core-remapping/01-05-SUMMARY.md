@@ -10,7 +10,7 @@ Fix macro execution memory leak and eliminate unwrap() calls on hot paths.
 
 ### Files Modified
 
-#### 1. `razermapper/razermapperd/src/macro_engine.rs`
+#### 1. `aethermap/aethermapd/src/macro_engine.rs`
 
 **Added cleanup mechanism (Task 1):**
 
@@ -36,7 +36,7 @@ Fix macro execution memory leak and eliminate unwrap() calls on hot paths.
   debug!("Macro {} execution completed and cleanup notification sent", macro_name);
   ```
 
-#### 2. `razermapper/razermapperd/src/injector.rs`
+#### 2. `aethermap/aethermapd/src/injector.rs`
 
 **Replaced all unwrap() calls with proper error handling (Task 2):**
 
@@ -64,7 +64,7 @@ if needs_init {
 
 This pattern ensures RwLockReadGuard is dropped before await, making the future Send.
 
-#### 3. `razermapper/razermapperd/src/device.rs`
+#### 3. `aethermap/aethermapd/src/device.rs`
 
 **Enhanced error messages (Task 3):**
 ```rust
@@ -105,8 +105,8 @@ pub async fn shutdown(&mut self) -> Result<(), Box<dyn std::error::Error>> {
 
 ## Verification
 
-- [x] cargo check -p razermapperd compiles
-- [x] grep -r "unwrap()" razermapper/razermapperd/src/*.rs | grep -v "test" returns no results
+- [x] cargo check -p aethermapd compiles
+- [x] grep -r "unwrap()" aethermap/aethermapd/src/*.rs | grep -v "test" returns no results
 - [x] Macro execution cleanup channel exists
 - [x] executing HashMap doesn't grow unbounded
 - [x] Device shutdown continues even if individual ungrab fails

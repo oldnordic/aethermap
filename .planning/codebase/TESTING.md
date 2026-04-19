@@ -14,8 +14,8 @@
 **Run Commands:**
 ```bash
 cargo test                          # Run all tests
-cargo test --package razermapperd    # Run tests for specific package
-cargo test --package razermapper-gui # Run GUI tests
+cargo test --package aethermapd    # Run tests for specific package
+cargo test --package aethermap-gui # Run GUI tests
 cargo test test_device_discovery     # Run specific test
 cargo test -- --nocapture            # Show test output
 cargo test -- --ignored              # Run ignored tests
@@ -26,19 +26,19 @@ cargo test -- --ignored              # Run ignored tests
 **Location:**
 - **Unit tests:** Co-located in `#[cfg(test)]` modules at bottom of each source file
 - **Integration tests:** Separate `tests/` directories at crate level
-- **E2E tests:** `/home/feanor/Projects/remapper_rs/razermapper/tests/`
+- **E2E tests:** `/home/feanor/Projects/remapper_rs/aethermap/tests/`
 
 **Structure:**
 ```
-razermapper/
+aethermap/
 ├── tests/
 │   ├── e2e.rs                    # End-to-end integration tests
 │   └── Cargo.toml                # Test-only package config
-├── razermapper-common/
+├── aethermap-common/
 │   └── src/
 │       ├── lib.rs                # Contains #[cfg(test)] module (serialization tests)
 │       └── ipc_client.rs         # Contains #[cfg(test)] module (IPC tests)
-├── razermapperd/
+├── aethermapd/
 │   ├── src/
 │   │   ├── lib.rs                # No tests (re-exports only)
 │   │   ├── main.rs               # No tests
@@ -50,7 +50,7 @@ razermapper/
 │       ├── remap_integration_test.rs  # Virtual device remapping tests
 │       ├── config_reload_test.rs # Config hot-reload tests
 │       └── macro_integration_test.rs  # Macro execution tests
-└── razermapper-gui/
+└── aethermap-gui/
     ├── src/
     │   └── focus_tracker.rs      # Contains #[cfg(test)] module
     └── tests/
@@ -119,7 +119,7 @@ fn test_focus_event_creation() {
 - Manual mock implementations using traits
 - `#[async_trait::async_trait]` for async trait mocking
 
-**Mock Injector Pattern** (from `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/macro_integration_test.rs`):
+**Mock Injector Pattern** (from `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/macro_integration_test.rs`):
 ```rust
 struct MockInjector {
     log: Arc<RwLock<Vec<String>>>,
@@ -141,7 +141,7 @@ impl Injector for MockInjector {
 }
 ```
 
-**Mock Daemon** (from `/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/ipc_client.rs`):
+**Mock Daemon** (from `/home/feanor/Projects/remapper_rs/aethermap/aethermap-common/src/ipc_client.rs`):
 ```rust
 async fn mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let listener = UnixListener::bind(socket_path)?;
@@ -171,7 +171,7 @@ async fn mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Error 
 
 ## Fixtures and Factories
 
-**Test Data Helpers** (from `/home/feanor/Projects/remapper_rs/razermapper/razermapper-gui/tests/gui_sanity.rs`):
+**Test Data Helpers** (from `/home/feanor/Projects/remapper_rs/aethermap/aethermap-gui/tests/gui_sanity.rs`):
 ```rust
 fn create_test_device(name: &str, path: &str) -> DeviceInfo {
     DeviceInfo {
@@ -218,7 +218,7 @@ fn create_test_state() -> State {
 }
 ```
 
-**Environment Pattern** (from `/home/feanor/Projects/remapper_rs/razermapper/tests/e2e.rs`):
+**Environment Pattern** (from `/home/feanor/Projects/remapper_rs/aethermap/tests/e2e.rs`):
 ```rust
 struct TestEnvironment {
     temp_dir: TempDir,
@@ -384,30 +384,30 @@ async fn test_delay_action_timing() {
 
 ## Notable Test Suites
 
-**`/home/feanor/Projects/remapper_rs/razermapper/tests/e2e.rs` (722 lines):**
+**`/home/feanor/Projects/remapper_rs/aethermap/tests/e2e.rs` (722 lines):**
 - Comprehensive end-to-end IPC tests
 - Mock daemon with Unix socket
 - Tests: authentication, device discovery, macros, profiles, privileged operations
 
-**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/remap_integration_test.rs` (296 lines):**
+**`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/remap_integration_test.rs` (296 lines):**
 - Virtual device tests using `evdev::uinput::VirtualDeviceBuilder`
 - Tests: key remapping, repeat events, complex remappings
 - CI-compatible (skips if `/dev/uinput` not available)
 
-**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/macro_integration_test.rs` (328 lines):**
+**`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/macro_integration_test.rs` (328 lines):**
 - Macro engine tests with MockInjector
 - Tests: mixed keyboard/mouse macros, mouse movement, scroll, delays, concurrent macros
 
-**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/config_reload_test.rs` (513 lines):**
+**`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/config_reload_test.rs` (513 lines):**
 - Configuration hot-reload tests
 - Tests: atomic swap, invalid rejection, concurrent reload safety
 - Uses `tempfile::TempDir` for isolated test filesystems
 
-**`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/hotplug_test.rs` (188 lines):**
+**`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/hotplug_test.rs` (188 lines):**
 - Device hotplug event handling tests
 - Tests: device ID formatting, event structure, clone behavior
 
-**`/home/feanor/Projects/remapper_rs/razermapper/razermapper-gui/tests/gui_sanity.rs` (325 lines):**
+**`/home/feanor/Projects/remapper_rs/aethermap/aethermap-gui/tests/gui_sanity.rs` (325 lines):**
 - GUI state and update tests
 - Tests: device loading, macro loading, recording state, status updates, error handling
 
@@ -436,7 +436,7 @@ async fn test_delay_action_timing() {
 
 ```bash
 # Run tests requiring root access
-sudo cargo test --package razermapperd
+sudo cargo test --package aethermapd
 
 # Run specific privileged test
 sudo cargo test test_injector_creation

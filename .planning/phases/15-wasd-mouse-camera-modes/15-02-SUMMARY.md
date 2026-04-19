@@ -25,7 +25,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/device.rs
+    - aethermap/aethermapd/src/device.rs
 
 key-decisions:
   - "Reuse dpad_state struct for WASD axis tracking (no new state structures)"
@@ -70,7 +70,7 @@ completed: 2026-02-19
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/device.rs` - Added WASD mode event loop integration (lines 933-1006)
+- `aethermap/aethermapd/src/device.rs` - Added WASD mode event loop integration (lines 933-1006)
 
 ## Decisions Made
 

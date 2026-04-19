@@ -15,23 +15,23 @@
 
 ## Layers
 
-**Daemon Core (razermapperd):**
+**Daemon Core (aethermapd):**
 - Purpose: System-level device management and macro execution
-- Location: `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/`
+- Location: `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/`
 - Contains: Device discovery, input interception, macro engine, uinput injection, IPC server, security
-- Depends on: `razermapper-common`, evdev, uinput-sys, tokio, nix
+- Depends on: `aethermap-common`, evdev, uinput-sys, tokio, nix
 - Used by: Systemd (as service), GUI clients
 
-**GUI Client (razermapper-gui):**
+**GUI Client (aethermap-gui):**
 - Purpose: User interface for device and macro management
-- Location: `/home/feanor/Projects/remapper_rs/razermapper/razermapper-gui/src/`
+- Location: `/home/feanor/Projects/remapper_rs/aethermap/aethermap-gui/src/`
 - Contains: Iced-based UI, IPC client wrapper, state management
-- Depends on: `razermapper-common`, iced, tokio
+- Depends on: `aethermap-common`, iced, tokio
 - Used by: End users
 
-**Common Types (razermapper-common):**
+**Common Types (aethermap-common):**
 - Purpose: Shared IPC protocol and data structures
-- Location: `/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/`
+- Location: `/home/feanor/Projects/remapper_rs/aethermap/aethermap-common/src/`
 - Contains: Request/Response enums, DeviceInfo, MacroEntry, Action types, IPC client
 - Depends on: serde, bincode, tokio, thiserror
 - Used by: Both daemon and GUI
@@ -40,7 +40,7 @@
 
 **Device Discovery Flow:**
 
-1. Daemon starts (`razermapperd/src/main.rs`)
+1. Daemon starts (`aethermapd/src/main.rs`)
 2. `DeviceManager::start_discovery()` scans `/dev/input/event*` and OpenRazer sysfs
 3. Devices are stored in `DaemonState.devices`
 4. GUI sends `Request::GetDevices` via IPC
@@ -73,34 +73,34 @@
 
 **Injector Trait:**
 - Purpose: Abstract input event synthesis
-- Examples: `razermapperd/src/injector.rs:62-73`
+- Examples: `aethermapd/src/injector.rs:62-73`
 - Pattern: Async trait with methods for key press/release, mouse actions, typing, commands
 
 **Request/Response Protocol:**
 - Purpose: Type-safe IPC communication
-- Examples: `razermapper-common/src/lib.rs:71-224`
+- Examples: `aethermap-common/src/lib.rs:71-224`
 - Pattern: Enum-based RPC with bincode serialization over Unix socket
 
 **MacroEntry:**
 - Purpose: Serializable macro definition
-- Examples: `razermapper-common/src/lib.rs:62-69`
+- Examples: `aethermap-common/src/lib.rs:62-69`
 - Pattern: Named trigger + ordered action list with device restriction
 
 ## Entry Points
 
 **Daemon Entry:**
-- Location: `razermapperd/src/main.rs:17-188`
+- Location: `aethermapd/src/main.rs:17-188`
 - Triggers: Systemd startup, manual execution as root
 - Responsibilities: Security initialization, component startup, privilege dropping, signal handling
 
 **GUI Entry:**
-- Location: `razermapper-gui/src/main.rs:11-14`
+- Location: `aethermap-gui/src/main.rs:11-14`
 - Triggers: User launch from desktop/session
 - Responsibilities: Iced application initialization, async command spawning
 
 **IPC Server:**
-- Location: `razermapperd/src/ipc.rs:26-126`
-- Triggers: Client connection to `/run/razermapper/razermapper.sock`
+- Location: `aethermapd/src/ipc.rs:26-126`
+- Triggers: Client connection to `/run/aethermap/aethermap.sock`
 - Responsibilities: Request routing, authentication, response serialization
 
 ## Error Handling
@@ -108,9 +108,9 @@
 **Strategy:** Result<T, Box<dyn Error>> propagation with thiserror
 
 **Patterns:**
-- IPC uses `IpcError` enum for specific failure modes (`razermapper-common/src/ipc_client.rs:19-61`)
+- IPC uses `IpcError` enum for specific failure modes (`aethermap-common/src/ipc_client.rs:19-61`)
 - Device operations return `Box<dyn std::error::Error>`
-- Macro engine uses `EngineResult<T>` alias (`razermapperd/src/macro_engine.rs:11`)
+- Macro engine uses `EngineResult<T>` alias (`aethermapd/src/macro_engine.rs:11`)
 
 ## Cross-Cutting Concerns
 
@@ -129,7 +129,7 @@
 **Privilege Management:**
 - Start as root, drop capabilities after initialization
 - Retain CAP_SYS_RAWIO for uinput access
-- `SecurityManager` handles capability dropping (`razermapperd/src/security.rs:43-92`)
+- `SecurityManager` handles capability dropping (`aethermapd/src/security.rs:43-92`)
 
 ---
 

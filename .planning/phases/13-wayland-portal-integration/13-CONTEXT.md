@@ -35,7 +35,7 @@ This phase enables automatic profile switching based on window focus on Wayland 
 **Wayland Portal Architecture:**
 ```
 ┌─────────────────┐         xdg-desktop-portal         ┌──────────────────┐
-│   razermapper   │ ──────────────────────────────────│  Wayland Compositor│
+│   aethermap   │ ──────────────────────────────────│  Wayland Compositor│
 │   (GUI, user)   │  ashpd (zbus D-Bus)               │  (sway, GNOME, etc)│
 └────────┬────────┘                                     └──────────────────┘
          │
@@ -43,7 +43,7 @@ This phase enables automatic profile switching based on window focus on Wayland 
          │ FocusChanged{app_id, window_title}
          ▼
 ┌─────────────────┐
-│  razermapperd   │
+│  aethermapd   │
 │  (daemon, root) │
 └─────────────────┘
 ```
@@ -76,18 +76,18 @@ Since daemon already grabs input devices, global hotkey detection is straightfor
 
 ## File Context
 
-**Daemon (razermapper/razermapperd):**
+**Daemon (aethermap/aethermapd):**
 - `src/lib.rs` - Main daemon entry, IPC handlers
 - `src/layer_manager.rs` - Profile switching via LayerManager
 - `src/config.rs` - YAML config loading (will need extension)
 
-**GUI (razermapper/razermapper):**
+**GUI (aethermap/aethermap):**
 - `src/main.rs` - GUI entry point
 - `src/ipc.rs` - IPC client for daemon communication
 
 **New Dependencies:**
 ```toml
-# razermapper/Cargo.toml (GUI)
+# aethermap/Cargo.toml (GUI)
 ashpd = { version = "0.8", default-features = false, features = ["wayland"] }
 ```
 

@@ -88,14 +88,14 @@ CalibrationScreen
 ## File Context
 
 **New Files:**
-- `razermapper/razermapper/src/calibration_screen.rs` - Main calibration UI
-- `razermapper/razermapper/src/analog_visualizer.rs` - Stick position widget
-- `razermapper/razermapper/src/curve_graph.rs` - Sensitivity curve plot
+- `aethermap/aethermap/src/calibration_screen.rs` - Main calibration UI
+- `aethermap/aethermap/src/analog_visualizer.rs` - Stick position widget
+- `aethermap/aethermap/src/curve_graph.rs` - Sensitivity curve plot
 
 **Modified Files:**
-- `razermapper/razermapper/src/main.rs` - Add calibration screen navigation
-- `razermapper/razermapper/src/ipc.rs` - Add calibration subscription/messages
-- `razermapper/razermapperd/src/ipc.rs` - Add calibration handlers
+- `aethermap/aethermap/src/main.rs` - Add calibration screen navigation
+- `aethermap/aethermap/src/ipc.rs` - Add calibration subscription/messages
+- `aethermap/aethermapd/src/ipc.rs` - Add calibration handlers
 
 **IPC Protocol:**
 - `GetCalibration(device_id)` → `CalibrationConfig`

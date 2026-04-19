@@ -1,15 +1,15 @@
 # Project Research Summary
 
-**Project:** Razermapper (Linux Input Remapping Daemon)
+**Project:** Aethermap (Linux Input Remapping Daemon)
 **Domain:** Linux Input Remapping (evdev/uinput)
 **Researched:** 2026-02-16
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Razermapper is a Linux input remapping daemon built in Rust that intercepts keyboard events at the evdev layer and injects remapped events via uinput. This is the standard architecture for modern Linux remappers (keyd, xremap, kanata) because it works on both X11 and Wayland, avoiding the X11-specific tools (xmodmap, xkb) that don't work with Wayland compositors.
+Aethermap is a Linux input remapping daemon built in Rust that intercepts keyboard events at the evdev layer and injects remapped events via uinput. This is the standard architecture for modern Linux remappers (keyd, xremap, kanata) because it works on both X11 and Wayland, avoiding the X11-specific tools (xmodmap, xkb) that don't work with Wayland compositors.
 
-The recommended approach is to build on the existing Razermapper foundation, which already has the right core components (DeviceManager with EVIOCGRAB, MacroEngine, UinputInjector, IPC). The critical missing piece is a dedicated RemapEngine for key-to-key translations. Research shows that simple 1:1 key remapping is table stakes—users expect this as the core feature. Differentiators like layers, tap-hold, and key chords are power-user features that should be phased in after the foundation is solid.
+The recommended approach is to build on the existing Aethermap foundation, which already has the right core components (DeviceManager with EVIOCGRAB, MacroEngine, UinputInjector, IPC). The critical missing piece is a dedicated RemapEngine for key-to-key translations. Research shows that simple 1:1 key remapping is table stakes—users expect this as the core feature. Differentiators like layers, tap-hold, and key chords are power-user features that should be phased in after the foundation is solid.
 
 The primary risks are state management bugs (stuck keys, lost release events, modifier desynchronization) and memory leaks in macro execution. The current codebase exhibits several warning signs: 81+ unwrap() calls, acknowledged macro cleanup issues, and incomplete privilege dropping. Phase 1 must prioritize defensive error handling, state cleanup on all error paths, and proper resource management before adding features.
 
@@ -71,7 +71,7 @@ Linux input remapping systems follow a layered event interception architecture: 
 
 **Key pattern:** Layered event processing. Events pass through RemapEngine first (key code lookup), then MacroEngine (trigger detection on remapped keys), then UinputInjector (output). This separation keeps remaps simple and synchronous while macros remain stateful.
 
-**Recommended addition:** Create `razermapperd/src/remap.rs` with RemapEngine struct. Insert into event pipeline between DeviceManager's event channel and MacroEngine in main.rs.
+**Recommended addition:** Create `aethermapd/src/remap.rs` with RemapEngine struct. Insert into event pipeline between DeviceManager's event channel and MacroEngine in main.rs.
 
 ### Critical Pitfalls
 

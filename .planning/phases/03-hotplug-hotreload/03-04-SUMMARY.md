@@ -21,7 +21,7 @@ tech-stack:
 
 key-files:
   created: [.planning/phases/03-hotplug-hotreload/03-04-SUMMARY.md]
-  modified: [.planning/ROADMAP.md, razermapper/README.md, .planning/phases/03-hotplug-hotreload/03-RESEARCH.md]
+  modified: [.planning/ROADMAP.md, aethermap/README.md, .planning/phases/03-hotplug-hotreload/03-RESEARCH.md]
 
 key-decisions:
   - "Documentation update reflects actual implementation (udev, not inotify)"
@@ -67,7 +67,7 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 - `.planning/ROADMAP.md` - Marked Phase 3 complete (4/4 plans), all checkboxes checked
-- `razermapper/README.md` - Added Hotplug Support and Configuration Hot-Reload sections, updated What Works/Not Implemented
+- `aethermap/README.md` - Added Hotplug Support and Configuration Hot-Reload sections, updated What Works/Not Implemented
 - `.planning/phases/03-hotplug-hotreload/03-RESEARCH.md` - Added Verification Results section with implementation status
 
 ## Decisions Made

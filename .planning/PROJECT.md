@@ -1,4 +1,4 @@
-# Razermapper
+# Aethermap
 
 ## What This Is
 
@@ -59,9 +59,9 @@ If key remapping doesn't work reliably, nothing else matters.
 
 ## Context
 
-**Current codebase** (razermapper/) has a complete remapping engine with device discovery, grabbing, IPC, hotplug support, and comprehensive testing. The daemon handles device events through udev monitoring, supports atomic profile switching via RemapTable type alias, and provides configuration hot-reload via SIGHUP. The GUI includes profile switcher widgets for runtime profile management.
+**Current codebase** (aethermap/) has a complete remapping engine with device discovery, grabbing, IPC, hotplug support, and comprehensive testing. The daemon handles device events through udev monitoring, supports atomic profile switching via RemapTable type alias, and provides configuration hot-reload via SIGHUP. The GUI includes profile switcher widgets for runtime profile management.
 
-**Technical environment:** Linux kernel with evdev and uinput support. Daemon runs as root with CAP_SYS_RAWIO for `/dev/uinput` access. Wayland-compatible (no X11 dependencies). Uses Iced 0.12 for GUI. Configuration via YAML at `/etc/razermapperd/remaps.yaml`.
+**Technical environment:** Linux kernel with evdev and uinput support. Daemon runs as root with CAP_SYS_RAWIO for `/dev/uinput` access. Wayland-compatible (no X11 dependencies). Uses Iced 0.12 for GUI. Configuration via YAML at `/etc/aethermapd/remaps.yaml`.
 
 **Current state:** 55,413 LOC (Rust + TOML). 58 passing tests (4 macro_engine tests skipped due to pre-existing hang issue). All 4 phases complete (19 plans total). Shipped as v1.0 on 2026-02-17.
 

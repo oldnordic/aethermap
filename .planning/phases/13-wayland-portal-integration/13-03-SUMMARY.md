@@ -21,7 +21,7 @@ tech-stack:
   patterns: [async IPC request/response pattern, bincode serialization, Option<String> for optional fields]
 
 key-files:
-  modified: [razermapper/razermapper-common/src/lib.rs, razermapper/razermapper-gui/src/ipc.rs, razermapper/razermapperd/src/ipc.rs]
+  modified: [aethermap/aethermap-common/src/lib.rs, aethermap/aethermap-gui/src/ipc.rs, aethermap/aethermapd/src/ipc.rs]
 
 key-decisions:
   - "FocusChanged uses Option<String> for window_title to handle compositors that don't provide titles"
@@ -71,9 +71,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Request::FocusChanged and Response::FocusChangedAck variants
-- `razermapper/razermapper-gui/src/ipc.rs` - send_focus_change() async method
-- `razermapper/razermapperd/src/ipc.rs` - FocusChanged request handler
+- `aethermap/aethermap-common/src/lib.rs` - Request::FocusChanged and Response::FocusChangedAck variants
+- `aethermap/aethermap-gui/src/ipc.rs` - send_focus_change() async method
+- `aethermap/aethermapd/src/ipc.rs` - FocusChanged request handler
 
 ## Decisions Made
 
@@ -89,7 +89,7 @@ Each task was committed atomically:
 - **Found during:** Task 4 (test compilation)
 - **Issue:** Existing tests for LayerConfigInfo were missing led_color and led_zone fields added in earlier phases
 - **Fix:** Added default values for led_color and led_zone in test_layer_config_info_serialization, test_set_layer_config_request, and test_layer_list_response
-- **Files modified:** razermapper/razermapper-common/src/lib.rs
+- **Files modified:** aethermap/aethermap-common/src/lib.rs
 - **Verification:** All tests pass, including new focus_changed tests
 - **Committed in:** d44d609 (Task 4 commit)
 
@@ -97,7 +97,7 @@ Each task was committed atomically:
 - **Found during:** Task 4 (test compilation)
 - **Issue:** test_focus_changed_ack_response_serialization had borrow after partial move when asserting round-trip equality
 - **Fix:** Changed `if let Response::FocusChangedAck { app_id }` to `if let Response::FocusChangedAck { ref app_id }` to avoid moving
-- **Files modified:** razermapper/razermapper-common/src/lib.rs
+- **Files modified:** aethermap/aethermap-common/src/lib.rs
 - **Verification:** Test passes with round-trip equality assertion
 - **Committed in:** d44d609 (Task 4 commit)
 

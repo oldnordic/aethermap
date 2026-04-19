@@ -14,7 +14,7 @@ Implemented IPC protocol for querying device capabilities from the daemon. This 
 
 ## Changes Made
 
-### 1. razermapper-common/src/lib.rs
+### 1. aethermap-common/src/lib.rs
 
 Added `DeviceCapabilities` struct and IPC protocol extensions:
 
@@ -34,7 +34,7 @@ Added `DeviceCapabilities` struct and IPC protocol extensions:
 - `test_get_device_capabilities_request()` - Verifies request serialization
 - `test_device_capabilities_response()` - Verifies response serialization
 
-### 2. razermapperd/src/ipc.rs
+### 2. aethermapd/src/ipc.rs
 
 Added IPC handler for device capability queries:
 
@@ -113,8 +113,8 @@ All tests pass:
 - `test_device_capabilities_serialization` - PASSED
 - `test_get_device_capabilities_request` - PASSED
 - `test_device_capabilities_response` - PASSED
-- All existing razermapper-common tests - PASSED (14/14)
-- All existing razermapperd tests - PASSED
+- All existing aethermap-common tests - PASSED (14/14)
+- All existing aethermapd tests - PASSED
 
 ## Deviations from Plan
 

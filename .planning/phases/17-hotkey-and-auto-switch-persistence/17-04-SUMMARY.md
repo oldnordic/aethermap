@@ -22,7 +22,7 @@ tech-stack:
 
 key-files:
   created: []
-  modified: [razermapper-common/src/lib.rs, razermapperd/src/auto_profile_switcher.rs, razermapperd/src/ipc.rs]
+  modified: [aethermap-common/src/lib.rs, aethermapd/src/auto_profile_switcher.rs, aethermapd/src/ipc.rs]
 
 key-decisions:
   - "Added AutoSwitchRule to common library for IPC use (was daemon-internal only)"
@@ -51,7 +51,7 @@ completed: 2026-02-20
 
 ## Accomplishments
 
-- Added `AutoSwitchRule` struct to razermapper-common for IPC use
+- Added `AutoSwitchRule` struct to aethermap-common for IPC use
 - Added `Request::SetAutoSwitchRules` variant to Request enum with rules: Vec<AutoSwitchRule>
 - Added `Response::AutoSwitchRulesAck` variant to Response enum
 - Added `reload_rules(&self, rules)` method to AutoProfileSwitcher for Arc-based access
@@ -69,9 +69,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added AutoSwitchRule struct, SetAutoSwitchRules Request variant, AutoSwitchRulesAck Response variant
-- `razermapper/razermapperd/src/auto_profile_switcher.rs` - Added reload_rules method, wrapped rules in Arc<RwLock<>>
-- `razermapper/razermapperd/src/ipc.rs` - Implemented SetAutoSwitchRules handler with switcher reload
+- `aethermap/aethermap-common/src/lib.rs` - Added AutoSwitchRule struct, SetAutoSwitchRules Request variant, AutoSwitchRulesAck Response variant
+- `aethermap/aethermapd/src/auto_profile_switcher.rs` - Added reload_rules method, wrapped rules in Arc<RwLock<>>
+- `aethermap/aethermapd/src/ipc.rs` - Implemented SetAutoSwitchRules handler with switcher reload
 
 ## Decisions Made
 
@@ -100,7 +100,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (SetAutoSwitchRules handler implementation)
 - **Issue:** Plan showed `switcher.write().await.load_rules(rules)` but auto_profile_switcher is `Option<Arc<AutoProfileSwitcher>>`, not `Option<Arc<RwLock<AutoProfileSwitcher>>>`
 - **Fix:** Wrapped `rules` field in Arc<RwLock<Vec<AutoSwitchRule>>> and added `reload_rules(&self, rules)` method
-- **Files modified:** razermapper/razermapperd/src/auto_profile_switcher.rs
+- **Files modified:** aethermap/aethermapd/src/auto_profile_switcher.rs
 - **Verification:** cargo check passes, switcher can be reloaded through Arc
 - **Committed in:** 92c925b (Task 3 - reload_rules method)
 
@@ -108,7 +108,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (IPC handler implementation)
 - **Issue:** SetAutoSwitchRules handler already existed but didn't reload AutoProfileSwitcher
 - **Fix:** Added switcher.reload_rules() call after successful save
-- **Files modified:** razermapper/razermapperd/src/ipc.rs
+- **Files modified:** aethermap/aethermapd/src/ipc.rs
 - **Verification:** cargo check passes, handler now reloads switcher
 - **Committed in:** 85d9fed (Task 3 - IPC handler)
 

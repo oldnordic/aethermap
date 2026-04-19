@@ -27,7 +27,7 @@ patterns:
 # Key Files
 created: []
 modified:
-  - path: "razermapper/razermapperd/src/analog_processor.rs"
+  - path: "aethermap/aethermapd/src/analog_processor.rs"
     changes:
       - "Replaced todo!() in process_2d() with full 5-stage pipeline implementation"
       - "Added apply_deadzone_static() helper"
@@ -37,7 +37,7 @@ modified:
       - "Set invert_y=true for gamepad coordinates (up = negative)"
       - "Removed #[allow(dead_code)] from process_as_gamepad()"
       - "Added 13 unit tests for gamepad processing"
-  - path: "razermapper/razermapperd/src/gamepad_device.rs"
+  - path: "aethermap/aethermapd/src/gamepad_device.rs"
     changes:
       - "Added vendor_id() and product_id() getter methods"
       - "Added test_gamepad_device_creation() integration test"

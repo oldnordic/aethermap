@@ -10,7 +10,7 @@ Phase 16 creates a comprehensive calibration GUI with live visualization of anal
 
 **Primary recommendation:** Add a Canvas-based `AnalogVisualizer` widget that draws deadzone (circle/square), stick position (dot), and range limits (bounding box). Use `canvas::Program<Message>` trait with `Path::circle()` for circular deadzone and `Path::rectangle()` for square deadzone. For real-time input, add IPC subscription pattern: daemon broadcasts analog events to subscribed GUI clients via a dedicated socket channel or WebSocket-like streaming protocol.
 
-**Key technical insight:** Iced's Canvas widget uses `canvas::Frame` with `Path::circle()` and `Path::rectangle()` methods for drawing shapes (HIGH confidence from [Iced Canvas画布](https://blog.csdn.net/gitblog_01014/article/details/151127786)). The existing `AnalogCalibrationConfig` (lines 341-377 in razermapper-common) already contains all calibration fields. The `get_analog_calibration` and `set_analog_calibration` IPC functions already exist in `ipc_client.rs` (lines 418-492).
+**Key technical insight:** Iced's Canvas widget uses `canvas::Frame` with `Path::circle()` and `Path::rectangle()` methods for drawing shapes (HIGH confidence from [Iced Canvas画布](https://blog.csdn.net/gitblog_01014/article/details/151127786)). The existing `AnalogCalibrationConfig` (lines 341-377 in aethermap-common) already contains all calibration fields. The `get_analog_calibration` and `set_analog_calibration` IPC functions already exist in `ipc_client.rs` (lines 418-492).
 
 ---
 
@@ -50,8 +50,8 @@ Phase 16 creates a comprehensive calibration GUI with live visualization of anal
 
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| `iced` | 0.12+ | GUI framework, Canvas widget | Project standard; already used for razermapper-gui |
-| `razermapper-common` | local | `AnalogCalibrationConfig`, `AnalogMode`, `DeadzoneShape` | Shared types for IPC between GUI and daemon |
+| `iced` | 0.12+ | GUI framework, Canvas widget | Project standard; already used for aethermap-gui |
+| `aethermap-common` | local | `AnalogCalibrationConfig`, `AnalogMode`, `DeadzoneShape` | Shared types for IPC between GUI and daemon |
 | `bincode` | 2.0 | IPC serialization | Already used for request/response protocol |
 | `tokio` | 1.0+ | Async runtime for IPC | Required for async IPC communication |
 
@@ -79,7 +79,7 @@ Phase 16 creates a comprehensive calibration GUI with live visualization of anal
 ### Recommended Project Structure
 
 ```
-razermapper/razermapper-gui/src/
+aethermap/aethermap-gui/src/
 ├── gui.rs                    # EXTEND: Add AnalogVisualizer Canvas widget
 ├── ipc.rs                    # EXTEND: Add analog input subscription
 └── widgets/                  # NEW: Create widgets module for reusable components
@@ -87,11 +87,11 @@ razermapper/razermapper-gui/src/
     ├── analog_visualizer.rs  # Canvas-based stick position widget
     └── curve_graph.rs        # Canvas-based sensitivity curve plot
 
-razermapper/razermapper-common/src/
+aethermap/aethermap-common/src/
 ├── lib.rs                    # EXTEND: Add AnalogInputData for streaming
 └── ipc_client.rs             # EXTEND: Add subscribe_analog_input()
 
-razermapper/razermapperd/src/
+aethermap/aethermapd/src/
 ├── ipc.rs                    # EXTEND: Add subscription handling
 └── analog_processor.rs       # USE: Existing analog state for streaming
 ```
@@ -272,7 +272,7 @@ fn apply_sensitivity_curve(input: f32, curve: SensitivityCurve, multiplier: f32)
 
 **Example (IPC protocol extension):**
 ```rust
-// razermapper-common/src/lib.rs - Add to Request enum
+// aethermap-common/src/lib.rs - Add to Request enum
 pub enum Request {
     // ... existing requests ...
 
@@ -475,7 +475,7 @@ let output = apply_sensitivity_curve(input, self.curve, self.multiplier).min(1.0
 ### Example 1: Integrating AnalogVisualizer into AnalogCalibrationView
 
 ```rust
-// razermapper/razermapper-gui/src/gui.rs
+// aethermap/aethermap-gui/src/gui.rs
 
 // Add to AnalogCalibrationView
 pub struct AnalogCalibrationView {
@@ -586,7 +586,7 @@ impl<Message> canvas::Program<Message> for AnalogVisualizer {
 ### Example 4: Complete Sensitivity Curve Function (Reused from Daemon)
 
 ```rust
-// This should match razermapperd/src/analog_processor.rs implementation
+// This should match aethermapd/src/analog_processor.rs implementation
 
 fn apply_sensitivity_curve(input: f32, curve: SensitivityCurve, multiplier: f32) -> f32 {
     // Input should be 0.0 to 1.0 (after deadzone and centering)
@@ -685,11 +685,11 @@ Phase 16 adds **visualization only** - no new calibration fields, but **live pre
 
 ### Primary (HIGH confidence)
 
-- [gui.rs:276-4650](/home/feanor/Projects/remapper_rs/razermapper/razermapper-gui/src/gui.rs) - Existing `AnalogCalibrationView` implementation with all controls
-- [lib.rs:341-377](/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/lib.rs) - `AnalogCalibrationConfig` structure with all calibration fields
-- [ipc_client.rs:418-492](/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/ipc_client.rs) - `get_analog_calibration()` and `set_analog_calibration()` functions
-- [ipc.rs:1422-1447](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/ipc.rs) - Daemon handlers for analog calibration IPC
-- [analog_calibration.rs:13-223](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/analog_calibration.rs) - `AnalogCalibration`, `DeadzoneShape`, `SensitivityCurve` definitions
+- [gui.rs:276-4650](/home/feanor/Projects/remapper_rs/aethermap/aethermap-gui/src/gui.rs) - Existing `AnalogCalibrationView` implementation with all controls
+- [lib.rs:341-377](/home/feanor/Projects/remapper_rs/aethermap/aethermap-common/src/lib.rs) - `AnalogCalibrationConfig` structure with all calibration fields
+- [ipc_client.rs:418-492](/home/feanor/Projects/remapper_rs/aethermap/aethermap-common/src/ipc_client.rs) - `get_analog_calibration()` and `set_analog_calibration()` functions
+- [ipc.rs:1422-1447](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/ipc.rs) - Daemon handlers for analog calibration IPC
+- [analog_calibration.rs:13-223](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/analog_calibration.rs) - `AnalogCalibration`, `DeadzoneShape`, `SensitivityCurve` definitions
 - [16-CONTEXT.md](/home/feanor/Projects/remapper_rs/.planning/phases/16-calibration-gui/16-CONTEXT.md) - Phase context with requirements
 
 ### Secondary (MEDIUM confidence)

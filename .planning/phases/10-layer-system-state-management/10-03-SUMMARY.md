@@ -26,7 +26,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/layer_manager.rs
+    - aethermap/aethermapd/src/layer_manager.rs
 
 key-decisions:
   - toggle_layer() uses active_toggle_layers.contains() for state checking instead of active_layers
@@ -75,7 +75,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/layer_manager.rs` - Extended with toggle layer methods and tests
+- `aethermap/aethermapd/src/layer_manager.rs` - Extended with toggle layer methods and tests
 
 ## Decisions Made
 
@@ -97,7 +97,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (cargo check)
 - **Issue:** active_hold_layers field was added but not initialized in DeviceLayerState::new()
 - **Fix:** Added active_hold_layers: HashSet::new() to constructor
-- **Files modified:** razermapper/razermapperd/src/layer_manager.rs
+- **Files modified:** aethermap/aethermapd/src/layer_manager.rs
 - **Verification:** cargo check passes, all tests pass
 - **Committed in:** 56818f0 (Task 1 commit)
 
@@ -105,7 +105,7 @@ Each task was committed atomically:
 - **Found during:** Test execution (test_activate_layer_hold_mode failed)
 - **Issue:** activate_layer() only added to active_layers and active_toggle_layers, not active_hold_layers
 - **Fix:** Modified activate_layer() to add to active_hold_layers for Hold mode layers
-- **Files modified:** razermapper/razermapperd/src/layer_manager.rs
+- **Files modified:** aethermap/aethermapd/src/layer_manager.rs
 - **Verification:** All 30 layer_manager tests pass
 - **Committed in:** Part of hold layer work (interleaved with 10-02)
 
@@ -135,7 +135,7 @@ None - no external service configuration required.
 
 ## Self-Check: PASSED
 
-- FOUND: razermapper/razermapperd/src/layer_manager.rs (43,626 bytes)
+- FOUND: aethermap/aethermapd/src/layer_manager.rs (43,626 bytes)
 - FOUND: 10-03-SUMMARY.md (6,228 bytes)
 - FOUND: commit 56818f0 (Task 1: Add toggle layer activation to DeviceLayerState)
 - FOUND: commit 9959743 (Task 2: Add LayerManager toggle activation methods)

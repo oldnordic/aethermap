@@ -22,9 +22,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/analog_processor.rs
+    - aethermap/aethermapd/src/analog_processor.rs
       - Added default_mouse_velocity_config() function
-    - razermapper/razermapperd/src/device.rs
+    - aethermap/aethermapd/src/device.rs
       - Added Mouse mode handling in event loop
 
 key-decisions:
@@ -71,11 +71,11 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs`
+- `aethermap/aethermapd/src/analog_processor.rs`
   - Added `default_mouse_velocity_config()` function returning MouseVelocityConfig with multiplier 10.0
   - Provides sensible default when device config is not set
 
-- `razermapper/razermapperd/src/device.rs`
+- `aethermap/aethermapd/src/device.rs`
   - Added Mouse mode check after WASD mode in analog event processing
   - Track both axes (ABS_X stores to dpad_state.x, ABS_Y triggers processing)
   - Retrieve layer-specific calibration or use default (15% deadzone, circular)

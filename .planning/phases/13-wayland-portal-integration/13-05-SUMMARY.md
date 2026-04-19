@@ -22,8 +22,8 @@ tech-stack:
   patterns: [event-interception, modifier-state-tracking, early-pipeline-processing]
 
 key-files:
-  created: [razermapper/razermapperd/src/global_hotkey_manager.rs]
-  modified: [razermapper/razermapperd/src/config.rs, razermapper/razermapperd/src/device.rs, razermapper/razermapperd/src/lib.rs, razermapper/razermapperd/src/main.rs, razermapper/razermapperd/src/ipc.rs, razermapper/razermapper-common/src/lib.rs]
+  created: [aethermap/aethermapd/src/global_hotkey_manager.rs]
+  modified: [aethermap/aethermapd/src/config.rs, aethermap/aethermapd/src/device.rs, aethermap/aethermapd/src/lib.rs, aethermap/aethermapd/src/main.rs, aethermap/aethermapd/src/ipc.rs, aethermap/aethermap-common/src/lib.rs]
 
 key-decisions:
   - "Hotkey detection happens before remap processing in event pipeline"
@@ -73,12 +73,12 @@ All tasks committed in single atomic commit:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/global_hotkey_manager.rs` - GlobalHotkeyManager with modifier tracking and key combo detection
-- `razermapper/razermapperd/src/config.rs` - Added HotkeyBinding struct, default_hotkey_bindings(), and hotkey_bindings field
-- `razermapper/razermapperd/src/device.rs` - Added hotkey_manager field and check_key_event() call in event loop
-- `razermapper/razermapperd/src/lib.rs` - Exported global_hotkey_manager module and GlobalHotkeyManager type
-- `razermapper/razermapperd/src/main.rs` - Initialize AutoProfileSwitcher and pass to IPC server
-- `razermapper/razermapper-common/src/lib.rs` - Added HotkeyBinding struct and IPC protocol variants
+- `aethermap/aethermapd/src/global_hotkey_manager.rs` - GlobalHotkeyManager with modifier tracking and key combo detection
+- `aethermap/aethermapd/src/config.rs` - Added HotkeyBinding struct, default_hotkey_bindings(), and hotkey_bindings field
+- `aethermap/aethermapd/src/device.rs` - Added hotkey_manager field and check_key_event() call in event loop
+- `aethermap/aethermapd/src/lib.rs` - Exported global_hotkey_manager module and GlobalHotkeyManager type
+- `aethermap/aethermapd/src/main.rs` - Initialize AutoProfileSwitcher and pass to IPC server
+- `aethermap/aethermap-common/src/lib.rs` - Added HotkeyBinding struct and IPC protocol variants
 
 ## Decisions Made
 
@@ -96,7 +96,7 @@ All tasks committed in single atomic commit:
 - **Found during:** Task 4 (IPC integration)
 - **Issue:** IPC server requires auto_profile_switcher parameter but main.rs didn't initialize it
 - **Fix:** Added AutoProfileSwitcher initialization with layer_manager and config_manager before IPC server start
-- **Files modified:** razermapper/razermapperd/src/main.rs
+- **Files modified:** aethermap/aethermapd/src/main.rs
 - **Verification:** cargo check passes
 - **Committed in:** bad2c20 (part of combined commit)
 
@@ -104,7 +104,7 @@ All tasks committed in single atomic commit:
 - **Found during:** Task 2 (GlobalHotkeyManager implementation)
 - **Issue:** Used non-existent load_extended_config() and set_manual_override() methods
 - **Fix:** Simplified to use load_device_profiles_extended() and removed set_manual_override call (AutoProfileSwitcher handles this)
-- **Files modified:** razermapper/razermapperd/src/global_hotkey_manager.rs
+- **Files modified:** aethermap/aethermapd/src/global_hotkey_manager.rs
 - **Verification:** cargo test passes, 11 unit tests passing
 - **Committed in:** bad2c20 (part of combined commit)
 
@@ -112,7 +112,7 @@ All tasks committed in single atomic commit:
 - **Found during:** Task 6 (unit tests)
 - **Issue:** warn! macro complained about &str not sized - needed reference syntax
 - **Fix:** Changed device_id to &device_id in warn! calls
-- **Files modified:** razermapper/razermapperd/src/global_hotkey_manager.rs
+- **Files modified:** aethermap/aethermapd/src/global_hotkey_manager.rs
 - **Verification:** cargo test passes
 - **Committed in:** bad2c20 (part of combined commit)
 
@@ -123,7 +123,7 @@ All tasks committed in single atomic commit:
 
 ## Issues Encountered
 
-- **Repository structure confusion:** Initially tried to commit to parent repo, but razermapper is a separate repository with its own .git folder
+- **Repository structure confusion:** Initially tried to commit to parent repo, but aethermap is a separate repository with its own .git folder
 - **ConfigManager API mismatch:** trigger_action() used methods that don't exist - simplified implementation to work with available API
 - **Missing AutoProfileSwitcher init:** IPC server signature changed to include auto_profile_switcher parameter, main.rs needed initialization
 

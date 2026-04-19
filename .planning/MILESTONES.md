@@ -1,6 +1,6 @@
-# Milestones: Razermapper
+# Milestones: Aethermap
 
-Release history of Razermapper, shipped with verified capabilities.
+Release history of Aethermap, shipped with verified capabilities.
 
 ## v1.0 MVP
 
@@ -18,7 +18,7 @@ Release history of Razermapper, shipped with verified capabilities.
 
 ### What Shipped
 
-Users can now remap any input key to any other key through YAML configuration (`/etc/razermapperd/remaps.yaml`). Remaps persist across reboots, key repeat works correctly, and the daemon has no memory leaks. Per-device profiles can be switched at runtime via GUI, with hotplug support and configuration hot-reload.
+Users can now remap any input key to any other key through YAML configuration (`/etc/aethermapd/remaps.yaml`). Remaps persist across reboots, key repeat works correctly, and the daemon has no memory leaks. Per-device profiles can be switched at runtime via GUI, with hotplug support and configuration hot-reload.
 
 ### Files
 

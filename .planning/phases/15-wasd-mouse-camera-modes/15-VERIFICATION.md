@@ -8,11 +8,11 @@ gaps:
     status: partial
     reason: "GUI shows mode selector but ApplyAnalogCalibration doesn't include mode in IPC request. Mode can only be set programmatically."
     artifacts:
-      - path: "razermapper/razermapper-gui/src/gui.rs"
+      - path: "aethermap/aethermap-gui/src/gui.rs"
         issue: "ApplyAnalogCalibration handler doesn't send analog_mode_selected to daemon"
-      - path: "razermapper/razermapper-common/src/lib.rs"
+      - path: "aethermap/aethermap-common/src/lib.rs"
         issue: "AnalogCalibrationConfig lacks analog_mode field"
-      - path: "razermapper/razermapperd/src/ipc.rs"
+      - path: "aethermap/aethermapd/src/ipc.rs"
         issue: "SetLayerConfig preserves existing mode but doesn't accept new mode parameter"
     missing:
       - "Add analog_mode field to AnalogCalibrationConfig in common crate"
@@ -23,7 +23,7 @@ gaps:
     status: partial
     reason: "TODO comment in device.rs notes state tracking is deferred. Current implementation emits immediate press/release for each event."
     artifacts:
-      - path: "razermapper/razermapperd/src/device.rs"
+      - path: "aethermap/aethermapd/src/device.rs"
         issue: "Line 989: TODO for previous key state tracking, immediate press/release for testing"
     missing:
       - "Implement previous_keys tracking across analog events"
@@ -64,24 +64,24 @@ gaps:
 
 | Artifact | Expected | Status | Details |
 | -------- | -------- | ------ | ------- |
-| `razermapper/razermapperd/src/analog_processor.rs` | WASD, Mouse, Camera processing | ✓ VERIFIED | wasd_direction_to_keys(), process_as_wasd(), process_as_mouse(), process_as_camera() all exist |
-| `razermapper/razermapperd/src/analog_processor.rs` | MouseVelocityConfig struct | ✓ VERIFIED | Has multiplier field with default 10.0 |
-| `razermapper/razermapperd/src/analog_processor.rs` | CameraOutputMode enum | ✓ VERIFIED | Has Scroll and Keys variants, defaults to Scroll |
-| `razermapper/razermapperd/src/analog_processor.rs` | CameraOutput enum | ✓ VERIFIED | Has Scroll(i32) and Keys(Vec<Key>) variants |
-| `razermapper/razermapperd/src/analog_processor.rs` | Unit tests for all 3 modes | ✓ VERIFIED | 25 tests total: 6 WASD, 9 Mouse, 7 Camera, 3 helper |
-| `razermapper/razermapperd/src/device.rs` | WASD mode event loop handling | ✓ VERIFIED | AnalogMode::Wasd check at line 934, calls process_as_wasd(), emits keys |
-| `razermapper/razermapperd/src/device.rs` | Mouse mode event loop handling | ✓ VERIFIED | AnalogMode::Mouse check at line 1009, calls process_as_mouse(), emits mouse_move |
-| `razermapper/razermapperd/src/device.rs` | Camera mode event loop handling | ✓ VERIFIED | AnalogMode::Camera check at line 1086, calls process_as_camera(), emits scroll/keys |
-| `razermapper/razermapperd/src/device.rs` | Integration tests for mode switching | ✓ VERIFIED | 7 tests: test_wasd_mode_per_layer, test_mouse_mode_per_layer, test_camera_mode_per_layer, test_analog_mode_layer_switching, test_analog_mode_with_calibration_per_layer, test_all_analog_modes_configurable, test_analog_mode_default_is_disabled |
-| `razermapper/razermapperd/src/layer_manager.rs` | camera_output_mode in LayerConfig | ✓ VERIFIED | Field exists with accessor, all constructors initialize to Scroll |
-| `razermapper/razermapper-common/src/lib.rs` | AnalogMode enum for IPC | ✓ VERIFIED | 6 variants with Display trait, ALL constant array |
-| `razermapper/razermapper-common/src/lib.rs` | CameraOutputMode enum for IPC | ✓ VERIFIED | 2 variants with Display trait, ALL constant array |
-| `razermapper/razermapper-gui/src/gui.rs` | Analog mode selector UI | ✓ VERIFIED | AnalogCalibrationView has analog_mode_selected, mode pick_list, message handlers |
-| `razermapper/razermapper-gui/src/gui.rs` | Camera sub-mode selector UI | ✓ VERIFIED | Conditional UI shows camera_mode_selected pick_list when Camera mode active |
-| `razermapper/razermapper-common/src/lib.rs` | AnalogCalibrationConfig includes mode | ✗ MISSING | struct has calibration fields but no analog_mode field |
-| `razermapper/razermapper-gui/src/ipc.rs` | IPC call to persist mode | ✗ MISSING | set_analog_calibration() doesn't include mode parameter |
-| `razermapper/razermapperd/src/ipc.rs` | SetLayerConfig accepts mode | ✗ PARTIAL | Preserves existing mode but doesn't accept mode in request |
-| `razermapper/razermapperd/src/device.rs` | WASD previous key state tracking | ✗ PARTIAL | TODO at line 989, emits immediate press/release |
+| `aethermap/aethermapd/src/analog_processor.rs` | WASD, Mouse, Camera processing | ✓ VERIFIED | wasd_direction_to_keys(), process_as_wasd(), process_as_mouse(), process_as_camera() all exist |
+| `aethermap/aethermapd/src/analog_processor.rs` | MouseVelocityConfig struct | ✓ VERIFIED | Has multiplier field with default 10.0 |
+| `aethermap/aethermapd/src/analog_processor.rs` | CameraOutputMode enum | ✓ VERIFIED | Has Scroll and Keys variants, defaults to Scroll |
+| `aethermap/aethermapd/src/analog_processor.rs` | CameraOutput enum | ✓ VERIFIED | Has Scroll(i32) and Keys(Vec<Key>) variants |
+| `aethermap/aethermapd/src/analog_processor.rs` | Unit tests for all 3 modes | ✓ VERIFIED | 25 tests total: 6 WASD, 9 Mouse, 7 Camera, 3 helper |
+| `aethermap/aethermapd/src/device.rs` | WASD mode event loop handling | ✓ VERIFIED | AnalogMode::Wasd check at line 934, calls process_as_wasd(), emits keys |
+| `aethermap/aethermapd/src/device.rs` | Mouse mode event loop handling | ✓ VERIFIED | AnalogMode::Mouse check at line 1009, calls process_as_mouse(), emits mouse_move |
+| `aethermap/aethermapd/src/device.rs` | Camera mode event loop handling | ✓ VERIFIED | AnalogMode::Camera check at line 1086, calls process_as_camera(), emits scroll/keys |
+| `aethermap/aethermapd/src/device.rs` | Integration tests for mode switching | ✓ VERIFIED | 7 tests: test_wasd_mode_per_layer, test_mouse_mode_per_layer, test_camera_mode_per_layer, test_analog_mode_layer_switching, test_analog_mode_with_calibration_per_layer, test_all_analog_modes_configurable, test_analog_mode_default_is_disabled |
+| `aethermap/aethermapd/src/layer_manager.rs` | camera_output_mode in LayerConfig | ✓ VERIFIED | Field exists with accessor, all constructors initialize to Scroll |
+| `aethermap/aethermap-common/src/lib.rs` | AnalogMode enum for IPC | ✓ VERIFIED | 6 variants with Display trait, ALL constant array |
+| `aethermap/aethermap-common/src/lib.rs` | CameraOutputMode enum for IPC | ✓ VERIFIED | 2 variants with Display trait, ALL constant array |
+| `aethermap/aethermap-gui/src/gui.rs` | Analog mode selector UI | ✓ VERIFIED | AnalogCalibrationView has analog_mode_selected, mode pick_list, message handlers |
+| `aethermap/aethermap-gui/src/gui.rs` | Camera sub-mode selector UI | ✓ VERIFIED | Conditional UI shows camera_mode_selected pick_list when Camera mode active |
+| `aethermap/aethermap-common/src/lib.rs` | AnalogCalibrationConfig includes mode | ✗ MISSING | struct has calibration fields but no analog_mode field |
+| `aethermap/aethermap-gui/src/ipc.rs` | IPC call to persist mode | ✗ MISSING | set_analog_calibration() doesn't include mode parameter |
+| `aethermap/aethermapd/src/ipc.rs` | SetLayerConfig accepts mode | ✗ PARTIAL | Preserves existing mode but doesn't accept mode in request |
+| `aethermap/aethermapd/src/device.rs` | WASD previous key state tracking | ✗ PARTIAL | TODO at line 989, emits immediate press/release |
 
 **Artifact Status:** 15 VERIFIED, 3 PARTIAL, 2 MISSING
 
@@ -222,13 +222,13 @@ From ROADMAP.md Phase 15 requirements:
 **Impact:** Users can see and change mode selection in the GUI, but changes don't persist. The mode remains at its default (Disabled) or previously programmatically-set value. The core functionality works - all three modes process correctly when configured programmatically.
 
 **Evidence:**
-- `razermapper/razermapper-gui/src/gui.rs:1185-1195` - ApplyAnalogCalibration doesn't include analog_mode_selected
-- `razermapper/razermapper-common/src/lib.rs:AnalogCalibrationConfig` - struct lacks analog_mode field
-- `razermapper/razermapperd/src/ipc.rs:997-1013` - SetLayerConfig preserves existing mode, doesn't accept new mode
+- `aethermap/aethermap-gui/src/gui.rs:1185-1195` - ApplyAnalogCalibration doesn't include analog_mode_selected
+- `aethermap/aethermap-common/src/lib.rs:AnalogCalibrationConfig` - struct lacks analog_mode field
+- `aethermap/aethermapd/src/ipc.rs:997-1013` - SetLayerConfig preserves existing mode, doesn't accept new mode
 - `15-07-SUMMARY.md:109` - Notes "Mode selection UI ready for integration with SetLayerConfig IPC (to be added in future plan)"
 
 **Fix required:**
-1. Add `analog_mode: AnalogMode` field to `AnalogCalibrationConfig` in razermapper-common
+1. Add `analog_mode: AnalogMode` field to `AnalogCalibrationConfig` in aethermap-common
 2. Add `camera_output_mode: CameraOutputMode` field to `AnalogCalibrationConfig` when mode is Camera
 3. Update `ApplyAnalogCalibration` handler in gui.rs to include selected mode
 4. Update `SetAnalogCalibration` request in common or extend `SetLayerConfig` to accept mode
@@ -243,7 +243,7 @@ From ROADMAP.md Phase 15 requirements:
 **Impact:** Each analog event cycle emits both press and release events immediately. This creates a rapid repeat effect rather than holding keys down. For gaming, this may work but feels different from true key holding. Diagonal transitions don't properly emit release for keys leaving the active direction.
 
 **Evidence:**
-- `razermapper/razermapperd/src/device.rs:989-993` - TODO comment and immediate press/release
+- `aethermap/aethermapd/src/device.rs:989-993` - TODO comment and immediate press/release
 - `15-02-SUMMARY.md` would note this was deferred (plan stated testing would fix it in 15-08)
 
 **Fix required:**

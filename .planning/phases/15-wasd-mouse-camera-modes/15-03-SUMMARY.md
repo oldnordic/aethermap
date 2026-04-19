@@ -22,7 +22,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/analog_processor.rs
+    - aethermap/aethermapd/src/analog_processor.rs
       - Added MouseVelocityConfig struct
       - Added process_as_mouse() method
 
@@ -68,7 +68,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs`
+- `aethermap/aethermapd/src/analog_processor.rs`
   - Added `MouseVelocityConfig` struct (lines ~313-332)
   - Added `process_as_mouse()` method (lines ~1250-1300)
   - Default multiplier: 10.0 pixels per 1.0 analog value

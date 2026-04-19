@@ -26,12 +26,12 @@ tech-stack:
 key-files:
   created: []
   modified:
-  - razermapper/razermapperd/src/config.rs
-  - razermapper/razermapper-gui/src/gui.rs
+  - aethermap/aethermapd/src/config.rs
+  - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Simplified FocusTracker integration to check WAYLAND_DISPLAY instead of using ashpd in async closure due to Rust module visibility constraints"
-  - "AutoSwitchRule and HotkeyBinding structs redefined in GUI crate to avoid circular dependencies with razermapper-common"
+  - "AutoSwitchRule and HotkeyBinding structs redefined in GUI crate to avoid circular dependencies with aethermap-common"
   - "Auto-trigger focus tracking on daemon connection (seamless UX per CONTEXT decision)"
   - "Navigation buttons added to all device cards for easy access to auto-switch and hotkey configuration"
 
@@ -83,13 +83,13 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/config.rs` - Added EXAMPLE_CONFIG_WITH_AUTO_SWITCH constant with comprehensive YAML examples
-- `razermapper/razermapper-gui/src/gui.rs` - Added AutoSwitchRulesView, HotkeyBindingsView structs, view methods, message handlers, and navigation integration
+- `aethermap/aethermapd/src/config.rs` - Added EXAMPLE_CONFIG_WITH_AUTO_SWITCH constant with comprehensive YAML examples
+- `aethermap/aethermap-gui/src/gui.rs` - Added AutoSwitchRulesView, HotkeyBindingsView structs, view methods, message handlers, and navigation integration
 
 ## Decisions Made
 
 - Simplified FocusTracker integration to check WAYLAND_DISPLAY environment variable instead of calling ashpd's FocusTracker::new() in async closure due to Rust module visibility issues with the crate::focus_tracker path in iced async closures
-- Redefined AutoSwitchRule and HotkeyBinding structs in GUI crate to avoid circular dependency issues with razermapper-common where the structs would need to be shared but have different serialization requirements
+- Redefined AutoSwitchRule and HotkeyBinding structs in GUI crate to avoid circular dependency issues with aethermap-common where the structs would need to be shared but have different serialization requirements
 - Auto-trigger focus tracking when daemon connection is confirmed for seamless user experience (per CONTEXT decision about when to prompt for portal permissions)
 - Navigation buttons added to all device cards (not just specific device types) since auto-switch and hotkey features are useful for any device type
 

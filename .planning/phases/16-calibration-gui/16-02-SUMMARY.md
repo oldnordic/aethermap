@@ -11,7 +11,7 @@ dependency_graph:
     - "16-03: Real-time analog input streaming"
     - "16-05: Live preview with calibration changes"
   affects:
-    - "razermapper-gui: AnalogCalibrationView layout"
+    - "aethermap-gui: AnalogCalibrationView layout"
 tech_stack:
   added:
     - "iced::widget::Canvas for custom drawing"
@@ -21,18 +21,18 @@ tech_stack:
     - "Module visibility for lib/bin dual compilation"
 key_files:
   created:
-    - path: "razermapper/razermapper-gui/src/widgets/mod.rs"
+    - path: "aethermap/aethermap-gui/src/widgets/mod.rs"
       lines: 4
       purpose: "Module declaration for widgets"
-    - path: "razermapper/razermapper-gui/src/widgets/analog_visualizer.rs"
+    - path: "aethermap/aethermap-gui/src/widgets/analog_visualizer.rs"
       lines: 157
       purpose: "Canvas-based stick position widget"
   modified:
-    - path: "razermapper/razermapper-gui/src/lib.rs"
+    - path: "aethermap/aethermap-gui/src/lib.rs"
       changes: "Added pub mod widgets declaration"
-    - path: "razermapper/razermapper-gui/src/main.rs"
+    - path: "aethermap/aethermap-gui/src/main.rs"
       changes: "Added mod widgets for binary compilation"
-    - path: "razermapper/razermapper-gui/src/gui.rs"
+    - path: "aethermap/aethermap-gui/src/gui.rs"
       changes: "Added visualizer section to AnalogCalibrationView"
 decisions:
   - "Created separate widgets module for reusable Canvas components"
@@ -81,7 +81,7 @@ Plan 16-02 successfully integrated the AnalogVisualizer widget into the analog c
 - **Found during:** Task 1 (16-02)
 - **Issue:** Plan 16-01 (AnalogVisualizer widget creation) was marked as incomplete but widgets module didn't exist
 - **Fix:** Created widgets/mod.rs and widgets/analog_visualizer.rs with complete Canvas::Program implementation as specified in 16-01
-- **Files modified:** razermapper-gui/src/widgets/mod.rs, razermapper-gui/src/widgets/analog_visualizer.rs
+- **Files modified:** aethermap-gui/src/widgets/mod.rs, aethermap-gui/src/widgets/analog_visualizer.rs
 - **Commit:** 5a1a85b
 
 **2. [Rule 1 - Bug] Canvas API signature changes**
@@ -92,27 +92,27 @@ Plan 16-02 successfully integrated the AnalogVisualizer widget into the analog c
   - `Program::update()` takes 5 parameters including bounds and cursor
   - `iced::mouse::Cursor` instead of `iced_core::mouse`
 - **Fix:** Updated all drawing calls to use Stroke builder pattern, corrected update() signature, used proper imports
-- **Files modified:** razermapper-gui/src/widgets/analog_visualizer.rs
+- **Files modified:** aethermap-gui/src/widgets/analog_visualizer.rs
 
 **3. [Rule 3 - Blocking Issue] Module visibility for dual compilation**
 - **Found during:** Binary target compilation
 - **Issue:** gui.rs uses `crate::widgets` but main.rs doesn't declare widgets module, causing unresolved import error in binary compilation
 - **Fix:** Added `mod widgets;` declaration to main.rs alongside existing gui and ipc modules
-- **Files modified:** razermapper-gui/src/main.rs
+- **Files modified:** aethermap-gui/src/main.rs
 
 ## Verification Results
 
 ### Compilation
-- `cargo check --manifest-path razermapper/razermapper-gui/Cargo.toml` - PASSED
+- `cargo check --manifest-path aethermap/aethermap-gui/Cargo.toml` - PASSED
 - Library compiles with 2 warnings (dead code, lifetime syntax - pre-existing)
 - Binary compiles with 9 warnings (unused imports/fields - pre-existing)
 
 ### Code Verification
-- `grep -q "pub mod widgets" razermapper/razermapper-gui/src/lib.rs` - PASSED
-- `grep -q "Canvas::new(AnalogVisualizer" razermapper/razermapper-gui/src/gui.rs` - PASSED
-- `grep -q "deadzone" razermapper/razermapper-gui/src/gui.rs` - PASSED
-- `grep -q "sensitivity" razermapper/razermapper-gui/src/gui.rs` - PASSED
-- `grep -q "ApplyAnalogCalibration" razermapper/razermapper-gui/src/gui.rs` - PASSED
+- `grep -q "pub mod widgets" aethermap/aethermap-gui/src/lib.rs` - PASSED
+- `grep -q "Canvas::new(AnalogVisualizer" aethermap/aethermap-gui/src/gui.rs` - PASSED
+- `grep -q "deadzone" aethermap/aethermap-gui/src/gui.rs` - PASSED
+- `grep -q "sensitivity" aethermap/aethermap-gui/src/gui.rs` - PASSED
+- `grep -q "ApplyAnalogCalibration" aethermap/aethermap-gui/src/gui.rs` - PASSED
 
 ### Structure Verification
 - AnalogVisualizer widget compiles and implements canvas::Program trait
@@ -135,11 +135,11 @@ Plan 16-02 successfully integrated the AnalogVisualizer widget into the analog c
 **Message:** feat(16-02): integrate AnalogVisualizer into AnalogCalibrationView
 
 Files changed:
-- razermapper-gui/src/lib.rs (added widgets module)
-- razermapper-gui/src/main.rs (added widgets module)
-- razermapper-gui/src/gui.rs (integrated visualizer, added stick fields)
-- razermapper-gui/src/widgets/analog_visualizer.rs (Canvas widget implementation)
-- razermapper-gui/src/widgets/mod.rs (module declaration)
+- aethermap-gui/src/lib.rs (added widgets module)
+- aethermap-gui/src/main.rs (added widgets module)
+- aethermap-gui/src/gui.rs (integrated visualizer, added stick fields)
+- aethermap-gui/src/widgets/analog_visualizer.rs (Canvas widget implementation)
+- aethermap-gui/src/widgets/mod.rs (module declaration)
 
 ## Self-Check: PASSED
 

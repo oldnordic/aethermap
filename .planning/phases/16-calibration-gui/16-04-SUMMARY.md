@@ -23,9 +23,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-common/src/lib.rs
-    - razermapper/razermapperd/src/lib.rs
-    - razermapper/razermapperd/src/ipc.rs
+    - aethermap/aethermap-common/src/lib.rs
+    - aethermap/aethermapd/src/lib.rs
+    - aethermap/aethermapd/src/ipc.rs
 
 key-decisions:
   - "One GUI client only - UnsubscribeAnalogInput removes all subscribers for device (deferred per-client tracking to Phase 17)"
@@ -64,7 +64,7 @@ completed: 2026-02-20T07:05:00Z
 
 Each task was committed atomically:
 
-1. **Task 1: Add IPC subscription protocol to razermapper-common** - `1383355` (feat)
+1. **Task 1: Add IPC subscription protocol to aethermap-common** - `1383355` (feat)
    - Added Request::SubscribeAnalogInput variant
    - Added Request::UnsubscribeAnalogInput variant
    - Added Response::AnalogInputUpdate variant (axis_x, axis_y)
@@ -79,9 +79,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added subscription protocol variants to Request and Response enums
-- `razermapper/razermapperd/src/lib.rs` - Added analog_subscribers field to DaemonState
-- `razermapper/razermapperd/src/ipc.rs` - Added handlers for SubscribeAnalogInput and UnsubscribeAnalogInput
+- `aethermap/aethermap-common/src/lib.rs` - Added subscription protocol variants to Request and Response enums
+- `aethermap/aethermapd/src/lib.rs` - Added analog_subscribers field to DaemonState
+- `aethermap/aethermapd/src/ipc.rs` - Added handlers for SubscribeAnalogInput and UnsubscribeAnalogInput
 
 ## Deviations from Plan
 
@@ -91,8 +91,8 @@ Each task was committed atomically:
 - **Found during:** Task 2 (Initial compilation attempt)
 - **Issue:** Chained write locks (`state.write().await.analog_subscribers.write().await`) created temporary value that was freed while still borrowed (E0716)
 - **Fix:** Split into two statements: first acquire state write lock, then acquire subscribers write lock from state_guard
-- **Files modified:** razermapper/razermapperd/src/ipc.rs
-- **Verification:** `cargo check --manifest-path razermapper/razermapperd/Cargo.toml` passes successfully
+- **Files modified:** aethermap/aethermapd/src/ipc.rs
+- **Verification:** `cargo check --manifest-path aethermap/aethermapd/Cargo.toml` passes successfully
 - **Committed in:** Part of Task 2
 
 ---
@@ -102,7 +102,7 @@ Each task was committed atomically:
 
 ## Issues Encountered
 
-- **Source files not tracked in git:** The razermapper source code is in a separate repository. Files committed in razermapper/.git but not visible in planning repo.
+- **Source files not tracked in git:** The aethermap source code is in a separate repository. Files committed in aethermap/.git but not visible in planning repo.
 
 ## User Setup Required
 

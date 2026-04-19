@@ -45,18 +45,18 @@ human_verification:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `razermapper/razermapperd/src/config.rs` | ConfigManager hotkey CRUD methods | ✓ VERIFIED | add_hotkey_binding (line 2446), remove_hotkey_binding (line 2533), get_hotkey_bindings (line 2593) - all substantive implementations with YAML persistence |
-| `razermapper/razermapperd/src/config.rs` | ConfigManager auto-switch persistence | ✓ VERIFIED | set_auto_switch_rules (line 1025), get_auto_switch_rules (line 1073) - read/write to config.yaml via Arc<RwLock<>> |
-| `razermapper/razermapperd/src/ipc.rs` | Hotkey IPC handlers | ✓ VERIFIED | RegisterHotkey (line 1812), ListHotkeys (line 1867), RemoveHotkey (line 1900) - all call ConfigManager methods and reload GlobalHotkeyManager |
-| `razermapper/razermapperd/src/ipc.rs` | Auto-switch IPC handler | ✓ VERIFIED | SetAutoSwitchRules (line 1931) - calls ConfigManager::set_auto_switch_rules and reloads AutoProfileSwitcher |
-| `razermapper/razermapper-common/src/lib.rs` | IPC protocol definitions | ✓ VERIFIED | Request::SetAutoSwitchRules (line 698), Request::GetAutoSwitchRules (line 703), Response::AutoSwitchRulesAck (line 1118), Response::AutoSwitchRules (line 1123) |
-| `razermapper/razermapper-gui/src/gui.rs` | GUI hotkey persistence | ✓ VERIFIED | SaveHotkeyBinding (line 1101), LoadHotkeyBindings (line 1032), DeleteHotkeyBinding (line 1167) - full IPC integration |
-| `razermapper/razermapper-gui/src/gui.rs` | GUI auto-switch persistence | ✓ VERIFIED | SaveAutoSwitchRule (line 918), DeleteAutoSwitchRule (line 958), LoadAutoSwitchRules (line 840) - full IPC integration with GetAutoSwitchRules |
-| `razermapper/razermapperd/src/global_hotkey_manager.rs` | load_bindings() implementation | ✓ VERIFIED | load_bindings() (line 128) reads from ConfigManager::get_all_hotkey_bindings, normalizes modifiers, falls back to defaults |
-| `razermapper/razermapperd/src/config.rs` | get_all_hotkey_bindings method | ✓ VERIFIED | get_all_hotkey_bindings() (line 2692) aggregates bindings from all devices in device_profiles.yaml |
-| `razermapper/razermapperd/src/main.rs` | GlobalHotkeyManager startup initialization | ✓ VERIFIED | GlobalHotkeyManager::new at line 114, load_bindings() at line 123, stored in DaemonState at line 131 |
-| `razermapper/razermapperd/src/lib.rs` | DaemonState hotkey_manager field | ✓ VERIFIED | hotkey_manager field added at line 79, initialized to None in DaemonState::new at line 97 |
-| `razermapper/razermapperd/src/ipc.rs` | GetAutoSwitchRules handler | ✓ VERIFIED | Request::GetAutoSwitchRules handler at line 1968, calls ConfigManager::get_auto_switch_rules, returns Response::AutoSwitchRules |
+| `aethermap/aethermapd/src/config.rs` | ConfigManager hotkey CRUD methods | ✓ VERIFIED | add_hotkey_binding (line 2446), remove_hotkey_binding (line 2533), get_hotkey_bindings (line 2593) - all substantive implementations with YAML persistence |
+| `aethermap/aethermapd/src/config.rs` | ConfigManager auto-switch persistence | ✓ VERIFIED | set_auto_switch_rules (line 1025), get_auto_switch_rules (line 1073) - read/write to config.yaml via Arc<RwLock<>> |
+| `aethermap/aethermapd/src/ipc.rs` | Hotkey IPC handlers | ✓ VERIFIED | RegisterHotkey (line 1812), ListHotkeys (line 1867), RemoveHotkey (line 1900) - all call ConfigManager methods and reload GlobalHotkeyManager |
+| `aethermap/aethermapd/src/ipc.rs` | Auto-switch IPC handler | ✓ VERIFIED | SetAutoSwitchRules (line 1931) - calls ConfigManager::set_auto_switch_rules and reloads AutoProfileSwitcher |
+| `aethermap/aethermap-common/src/lib.rs` | IPC protocol definitions | ✓ VERIFIED | Request::SetAutoSwitchRules (line 698), Request::GetAutoSwitchRules (line 703), Response::AutoSwitchRulesAck (line 1118), Response::AutoSwitchRules (line 1123) |
+| `aethermap/aethermap-gui/src/gui.rs` | GUI hotkey persistence | ✓ VERIFIED | SaveHotkeyBinding (line 1101), LoadHotkeyBindings (line 1032), DeleteHotkeyBinding (line 1167) - full IPC integration |
+| `aethermap/aethermap-gui/src/gui.rs` | GUI auto-switch persistence | ✓ VERIFIED | SaveAutoSwitchRule (line 918), DeleteAutoSwitchRule (line 958), LoadAutoSwitchRules (line 840) - full IPC integration with GetAutoSwitchRules |
+| `aethermap/aethermapd/src/global_hotkey_manager.rs` | load_bindings() implementation | ✓ VERIFIED | load_bindings() (line 128) reads from ConfigManager::get_all_hotkey_bindings, normalizes modifiers, falls back to defaults |
+| `aethermap/aethermapd/src/config.rs` | get_all_hotkey_bindings method | ✓ VERIFIED | get_all_hotkey_bindings() (line 2692) aggregates bindings from all devices in device_profiles.yaml |
+| `aethermap/aethermapd/src/main.rs` | GlobalHotkeyManager startup initialization | ✓ VERIFIED | GlobalHotkeyManager::new at line 114, load_bindings() at line 123, stored in DaemonState at line 131 |
+| `aethermap/aethermapd/src/lib.rs` | DaemonState hotkey_manager field | ✓ VERIFIED | hotkey_manager field added at line 79, initialized to None in DaemonState::new at line 97 |
+| `aethermap/aethermapd/src/ipc.rs` | GetAutoSwitchRules handler | ✓ VERIFIED | Request::GetAutoSwitchRules handler at line 1968, calls ConfigManager::get_auto_switch_rules, returns Response::AutoSwitchRules |
 
 ### Key Link Verification
 
@@ -104,11 +104,11 @@ Previous TODO at gui.rs:845 ("Load from daemon") has been removed and replaced w
 #### 1. Hotkey Persistence Across Restarts
 
 **Test:** 
-1. Start razermapperd daemon
+1. Start aethermapd daemon
 2. Open GUI, navigate to device hotkey settings
 3. Add a hotkey binding (e.g., Ctrl+1 → Gaming profile)
 4. Close GUI
-5. Restart daemon: `systemctl restart razermapperd`
+5. Restart daemon: `systemctl restart aethermapd`
 6. Open GUI, verify hotkey still appears in list
 7. Press the hotkey combination, verify profile switches
 
@@ -121,7 +121,7 @@ Previous TODO at gui.rs:845 ("Load from daemon") has been removed and replaced w
 #### 2. Auto-Switch Rules Persistence and Functionality
 
 **Test:**
-1. Start razermapperd daemon with Wayland portal available
+1. Start aethermapd daemon with Wayland portal available
 2. Open GUI, navigate to auto-switch rules
 3. Add rule: "org.alacritty" → Terminal profile
 4. Close GUI
@@ -159,7 +159,7 @@ Previous TODO at gui.rs:845 ("Load from daemon") has been removed and replaced w
 
 **Evidence:** 
 ```
-main.rs:114:        razermapperd::GlobalHotkeyManager::new(
+main.rs:114:        aethermapd::GlobalHotkeyManager::new(
 main.rs:123:            if let Err(e) = hotkey_mgr.load_bindings().await {
 main.rs:131:            state.hotkey_manager = Some(global_hotkey_manager);
 main.rs:150:        device_manager.set_hotkey_manager(Some(hotkey_mgr));
@@ -227,7 +227,7 @@ gui.rs:847:                            Ok(Response::AutoSwitchRules { rules }) =
 ✅ **Code Quality:**
 - No stub implementations (all code substantive with proper error handling)
 - No TODO/FIXME/HACK comments in critical paths
-- Both razermapperd and razermapper-gui compile successfully
+- Both aethermapd and aethermap-gui compile successfully
 - Proper async/await patterns throughout
 - Error handling with logging for edge cases
 

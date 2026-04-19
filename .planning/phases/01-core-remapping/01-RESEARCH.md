@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 1 requires building a RemapEngine component that translates input key codes to output key codes within the existing razermapperd daemon. The engine must integrate with DeviceManager (input interception), UinputInjector (output synthesis), and MacroEngine (event processing), while loading configuration from flat YAML files.
+Phase 1 requires building a RemapEngine component that translates input key codes to output key codes within the existing aethermapd daemon. The engine must integrate with DeviceManager (input interception), UinputInjector (output synthesis), and MacroEngine (event processing), while loading configuration from flat YAML files.
 
 **Primary recommendation:** Use the existing `evdev::Key` enum (via u16 key codes) with a `Arc<RwLock<HashMap<u16, u16>>>` storage pattern, parsing config via `serde_yaml` with custom friendly-name expansion, and handle all three event values (press=1, release=0, repeat=2) explicitly.
 
@@ -96,7 +96,7 @@ Phase 1 requires building a RemapEngine component that translates input key code
 ### Recommended Project Structure
 
 ```
-razermapperd/src/
+aethermapd/src/
 ├── remap_engine.rs     # NEW: RemapEngine implementation
 ├── key_parser.rs       # NEW: Friendly name -> u16 key code parser
 ├── mod.rs              # UPDATE: Export remap_engine, key_parser modules
@@ -204,7 +204,7 @@ impl KeyParser {
 }
 ```
 
-**Source:** Key code mappings from `razermapperd/src/bin/test_grab.rs:101-180` and `injector.rs:89-136`.
+**Source:** Key code mappings from `aethermapd/src/bin/test_grab.rs:101-180` and `injector.rs:89-136`.
 
 ### Pattern 3: Event Value Handling (Press/Release/Repeat)
 
@@ -317,7 +317,7 @@ match event.value() {
 
 **Example error message:**
 ```
-Error: Invalid key name 'KEY_AA' in /etc/razermapperd/remaps.yaml:3:15
+Error: Invalid key name 'KEY_AA' in /etc/aethermapd/remaps.yaml:3:15
     |
   3 |   KEY_AA: KEY_B
     |               ^^^^^^ Did you mean KEY_A?
@@ -346,7 +346,7 @@ Error: Invalid key name 'KEY_AA' in /etc/razermapperd/remaps.yaml:3:15
 ### Example 1: Basic RemapEngine Structure
 
 ```rust
-// razermapperd/src/remap_engine.rs
+// aethermapd/src/remap_engine.rs
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -424,7 +424,7 @@ pub enum RemapError {
 ### Example 2: KeyParser with Friendly Names
 
 ```rust
-// razermapperd/src/key_parser.rs
+// aethermapd/src/key_parser.rs
 
 use std::collections::HashMap;
 
@@ -523,7 +523,7 @@ use insert;
 ### Example 3: Integration with Event Loop (device.rs modification)
 
 ```rust
-// In razermapperd/src/device.rs or main.rs event loop
+// In aethermapd/src/device.rs or main.rs event loop
 
 async fn handle_input_event(
     device_path: String,
@@ -609,9 +609,9 @@ async fn handle_input_event(
 - [Linux Kernel Input Documentation](https://www.kernel.org/doc/Documentation/input/input.txt) - Official input subsystem documentation
 - [libevdev Documentation](https://www.freedesktop.org/software/libevdev/doc/latest/) - Authoritative libevdev API reference
 - [PITFALLS.md](/home/feanor/Projects/remapper_rs/.planning/research/PITFALLS.md) - Project-specific pitfalls research (2026-02-16)
-- [test_grab.rs:101-180](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/bin/test_grab.rs) - Existing key code to name mappings
-- [injector.rs:89-136](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/injector.rs) - Existing key mapping implementation
-- [macro_engine.rs:21-28](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/macro_engine.rs) - Arc<RwLock<HashMap<>> pattern reference
+- [test_grab.rs:101-180](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/bin/test_grab.rs) - Existing key code to name mappings
+- [injector.rs:89-136](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/injector.rs) - Existing key mapping implementation
+- [macro_engine.rs:21-28](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/macro_engine.rs) - Arc<RwLock<HashMap<>> pattern reference
 
 ### Secondary (MEDIUM confidence)
 

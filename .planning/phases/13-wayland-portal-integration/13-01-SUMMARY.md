@@ -7,7 +7,7 @@ tags: [ashpd, xdg-desktop-portal, wayland]
 # Dependency graph
 requires: []
 provides:
-  - ashpd dependency in razermapper-gui for Wayland portal integration
+  - ashpd dependency in aethermap-gui for Wayland portal integration
   - Foundation for FocusTracker component to detect window focus changes
 affects:
   - 13-02-focus-tracker
@@ -22,7 +22,7 @@ tech-stack:
 
 key-files:
   modified:
-    - razermapper/razermapper-gui/Cargo.toml
+    - aethermap/aethermap-gui/Cargo.toml
 
 key-decisions:
   - "Added tokio feature to ashpd for compatibility with existing async runtime"
@@ -51,7 +51,7 @@ completed: 2026-02-19
 
 ## Accomplishments
 
-- Added ashpd 0.8 dependency to razermapper-gui with minimal features
+- Added ashpd 0.8 dependency to aethermap-gui with minimal features
 - Configured with `default-features = false` and `features = ["wayland", "tokio"]`
 - Verified compilation passes with cargo check
 - Foundation laid for FocusTracker component in next plan
@@ -60,13 +60,13 @@ completed: 2026-02-19
 
 Each task was committed atomically:
 
-1. **Task 1: Add ashpd dependency to razermapper-gui Cargo.toml** - `7ee27d0` (feat)
+1. **Task 1: Add ashpd dependency to aethermap-gui Cargo.toml** - `7ee27d0` (feat)
 
 **Plan metadata:** (to be added after summary creation)
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/Cargo.toml` - Added ashpd 0.8 dependency with wayland and tokio features
+- `aethermap/aethermap-gui/Cargo.toml` - Added ashpd 0.8 dependency with wayland and tokio features
 
 ## Decisions Made
 
@@ -83,7 +83,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (cargo check after adding dependency)
 - **Issue:** Initial configuration with only `["wayland"]` feature caused zbus compilation errors due to missing async runtime integration
 - **Fix:** Added `tokio` feature to ashpd dependency configuration. Cargo's dependency resolver automatically pulled in async-io, async-lock, and other required transitive dependencies
-- **Files modified:** razermapper/razermapper-gui/Cargo.toml
+- **Files modified:** aethermap/aethermap-gui/Cargo.toml
 - **Verification:** cargo check passes with only pre-existing dead code warnings
 - **Committed in:** 7ee27d0 (Task 1 commit)
 

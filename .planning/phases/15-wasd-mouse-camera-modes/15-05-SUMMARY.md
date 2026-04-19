@@ -24,7 +24,7 @@ tech-stack:
   patterns: [mode-based output selection, Y-axis-only scroll, 8-way key mapping]
 
 key-files:
-  modified: razermapper/razermapperd/src/analog_processor.rs
+  modified: aethermap/aethermapd/src/analog_processor.rs
 
 key-decisions:
   - "CameraOutputMode defaults to Scroll for broader compatibility"
@@ -74,7 +74,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs` - Camera mode enums and processing method
+- `aethermap/aethermapd/src/analog_processor.rs` - Camera mode enums and processing method
 
 ## Decisions Made
 

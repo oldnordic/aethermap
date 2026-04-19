@@ -23,8 +23,8 @@ tech-stack:
   patterns: [serde derives with snake_case renaming, Default trait for config structs, YAML config serialization]
 
 key-files:
-  created: [razermapper/razermapperd/src/analog_calibration.rs]
-  modified: [razermapper/razermapperd/src/lib.rs]
+  created: [aethermap/aethermapd/src/analog_calibration.rs]
+  modified: [aethermap/aethermapd/src/lib.rs]
 
 key-decisions:
   - "Circular deadzone as default - smoother diagonal response for analog sticks"
@@ -78,8 +78,8 @@ _Note: All tasks were committed together as they form a cohesive unit._
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_calibration.rs` - New module with AnalogCalibration, DeadzoneShape, SensitivityCurve (466 lines)
-- `razermapper/razermapperd/src/lib.rs` - Added module declaration and re-exports
+- `aethermap/aethermapd/src/analog_calibration.rs` - New module with AnalogCalibration, DeadzoneShape, SensitivityCurve (466 lines)
+- `aethermap/aethermapd/src/lib.rs` - Added module declaration and re-exports
 
 ## Decisions Made
 
@@ -95,7 +95,7 @@ _Note: All tasks were committed together as they form a cohesive unit._
 - **Found during:** Task 3 (test execution)
 - **Issue:** test_calibration_yaml_with_defaults used `assert_eq!(deserialized, calib)` but AnalogCalibration didn't implement PartialEq
 - **Fix:** Added `#[derive(PartialEq)]` to AnalogCalibration struct
-- **Files modified:** razermapper/razermapperd/src/analog_calibration.rs
+- **Files modified:** aethermap/aethermapd/src/analog_calibration.rs
 - **Verification:** All 19 tests pass
 - **Committed in:** 62b4337 (part of task commit)
 
@@ -126,8 +126,8 @@ None - no external service configuration required.
 ## Self-Check: PASSED
 
 - **Created files:**
-  - `razermapper/razermapperd/src/analog_calibration.rs` - EXISTS
+  - `aethermap/aethermapd/src/analog_calibration.rs` - EXISTS
   - `.planning/phases/11-analog-processing-and-calibration/11-01-SUMMARY.md` - EXISTS
 - **Commit:** `62b4337` - EXISTS
 - **Tests:** 19/19 passed - PASS
-- **Exports:** `AnalogCalibration`, `DeadzoneShape`, `SensitivityCurve` accessible from `razermapperd` crate root - VERIFIED
+- **Exports:** `AnalogCalibration`, `DeadzoneShape`, `SensitivityCurve` accessible from `aethermapd` crate root - VERIFIED

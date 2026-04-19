@@ -84,13 +84,13 @@ Game seen as standard Xbox 360 controller
 ## File Context
 
 **New Files:**
-- `razermapper/razermapperd/src/gamepad_device.rs` - Virtual gamepad device
-- `razermapper/razermapperd/src/analog_modes.rs` - Mode-specific processing (or extend analog_processor.rs)
+- `aethermap/aethermapd/src/gamepad_device.rs` - Virtual gamepad device
+- `aethermap/aethermapd/src/analog_modes.rs` - Mode-specific processing (or extend analog_processor.rs)
 
 **Modified Files:**
-- `razermapper/razermapperd/src/analog_processor.rs` - Add Gamepad mode
-- `razermapper/razermapperd/src/config.rs` - Add gamepad config to YAML
-- `razermapper/razermapperd/Cargo.toml` - Verify evdev::uinput capabilities
+- `aethermap/aethermapd/src/analog_processor.rs` - Add Gamepad mode
+- `aethermap/aethermapd/src/config.rs` - Add gamepad config to YAML
+- `aethermap/aethermapd/Cargo.toml` - Verify evdev::uinput capabilities
 
 ---
 *Context created: 2026-02-18*

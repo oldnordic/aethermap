@@ -13,7 +13,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - path: razermapper/razermapperd/src/device.rs
+    - path: aethermap/aethermapd/src/device.rs
       changes: Added AbsoluteAxis event handling in event reader
 decisions: []
 metrics:
@@ -30,7 +30,7 @@ Added EV_ABS (absolute axis) event handling to the event reader for analog stick
 
 ### Changes Made
 
-**File: `razermapper/razermapperd/src/device.rs`**
+**File: `aethermap/aethermapd/src/device.rs`**
 
 1. **Import Added (line 10):**
    - Added `AbsoluteAxisType` to the evdev imports
@@ -61,7 +61,7 @@ The high event code range (61000+) ensures analog events don't conflict with:
 
 ### Compilation
 ```bash
-$ cargo check -p razermapperd
+$ cargo check -p aethermapd
 Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.08s
 ```
 

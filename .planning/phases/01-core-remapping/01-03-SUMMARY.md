@@ -10,11 +10,11 @@ Initialize RemapEngine in main daemon startup and store in DaemonState.
 
 ### Files Modified
 
-#### 1. `razermapper/razermapperd/src/lib.rs`
+#### 1. `aethermap/aethermapd/src/lib.rs`
 - Added `pub remap_engine: Option<Arc<remap_engine::RemapEngine>>` field to `DaemonState` (line 36)
 - Module already exported from prior plan
 
-#### 2. `razermapper/razermapperd/src/main.rs`
+#### 2. `aethermap/aethermapd/src/main.rs`
 - Added RemapEngine initialization (lines 123-152):
   - Creates Arc<RemapEngine> instance
   - Loads remap configuration with eager validation

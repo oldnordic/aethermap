@@ -27,7 +27,7 @@ No CONTEXT.md exists for this phase. This is a fresh phase based on CONCERNS.md 
 | `serde_yaml` | latest (workspace) | YAML serialization | Already used throughout config.rs for all persistence |
 | `bincode` | latest (workspace) | IPC binary protocol | Already used for all IPC messages |
 | `tokio` | 1.x | Async runtime | Async file I/O and IPC handlers |
-| `razermapper-common` | workspace | Shared types | HotkeyBinding, AutoSwitchRule already defined |
+| `aethermap-common` | workspace | Shared types | HotkeyBinding, AutoSwitchRule already defined |
 
 ### Supporting
 | Library | Version | Purpose | When to Use |
@@ -451,7 +451,7 @@ Message::SaveAutoSwitchRule => {
 
 ### Primary (HIGH confidence)
 
-- **razermapper/razermapperd/src/config.rs** - Full file read, lines 1-2465
+- **aethermap/aethermapd/src/config.rs** - Full file read, lines 1-2465
   - HotkeyBinding struct (line 40)
   - AutoSwitchRule struct (line 164)
   - ExtendedDeviceRemapConfig.hotkey_bindings (line 552)
@@ -459,33 +459,33 @@ Message::SaveAutoSwitchRule => {
   - save_config, load_config patterns (lines 974-971)
   - set_analog_calibration pattern (lines 2022-2048)
 
-- **razermapper/razermapperd/src/global_hotkey_manager.rs** - Full file read, lines 1-502
+- **aethermap/aethermapd/src/global_hotkey_manager.rs** - Full file read, lines 1-502
   - load_bindings() stub (line 128-141)
   - Modifier normalization (lines 73-81)
   - Trigger action (lines 275-326)
 
-- **razermapper/razermapperd/src/auto_profile_switcher.rs** - Full file read, lines 1-589
+- **aethermap/aethermapd/src/auto_profile_switcher.rs** - Full file read, lines 1-589
   - load_rules() implementation (line 86-89)
   - Rule matching logic (lines 209-253)
 
-- **razermapper/razermapperd/src/ipc.rs** - Unimplemented handlers
+- **aethermap/aethermapd/src/ipc.rs** - Unimplemented handlers
   - RegisterHotkey stub (line 1812-1827)
   - ListHotkeys stub (line 1829-1838)
   - RemoveHotkey stub (line 1841-1854)
   - SetAnalogCalibration reference (line 1566-1615)
 
-- **razermapper/razermapper-common/src/lib.rs** - IPC protocol definitions
+- **aethermap/aethermap-common/src/lib.rs** - IPC protocol definitions
   - HotkeyBinding struct (line 71-94)
   - Request enum (line 376-682) - RegisterHotkey, ListHotkeys, RemoveHotkey exist
   - Response enum (line 813-1094) - HotkeyRegistered, HotkeyList, HotkeyRemoved exist
 
-- **razermapper/razermapper-gui/src/gui.rs** - GUI persistence TODOs
+- **aethermap/aethermap-gui/src/gui.rs** - GUI persistence TODOs
   - Auto-switch rule save TODO (line 918)
   - Auto-switch rule delete TODO (line 929)
   - Hotkey binding save TODO (line 1050)
   - Hotkey binding delete TODO (line 1061)
 
-- **razermapper/razermapper-common/src/ipc_client.rs** - IPC client patterns
+- **aethermap/aethermap-common/src/ipc_client.rs** - IPC client patterns
   - send() method (line 146-148)
   - set_analog_calibration helper (line 476-492)
 

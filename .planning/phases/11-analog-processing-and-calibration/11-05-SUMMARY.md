@@ -28,11 +28,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-  - razermapper/razermapperd/src/layer_manager.rs (analog_calibration field in LayerConfig)
-  - razermapper/razermapperd/src/config.rs (YAML structures and ConfigManager methods)
-  - razermapper/razermapperd/src/ipc.rs (LayerConfig construction fix)
-  - razermapper/razermapperd/tests/config_reload_test.rs (layer_state_path fix)
-  - razermapper/razermapperd/tests/macro_integration_test.rs (analog_move method)
+  - aethermap/aethermapd/src/layer_manager.rs (analog_calibration field in LayerConfig)
+  - aethermap/aethermapd/src/config.rs (YAML structures and ConfigManager methods)
+  - aethermap/aethermapd/src/ipc.rs (LayerConfig construction fix)
+  - aethermap/aethermapd/tests/config_reload_test.rs (layer_state_path fix)
+  - aethermap/aethermapd/tests/macro_integration_test.rs (analog_move method)
 
 key-decisions:
   - "Per-layer calibration uses HashMap<usize, AnalogCalibration> indexed by layer_id"
@@ -79,11 +79,11 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/layer_manager.rs` - Added analog_calibration field to LayerConfig with getter method
-- `razermapper/razermapperd/src/config.rs` - Added analog_calibration HashMap to ExtendedDeviceRemapConfig and ConfigManager query methods
-- `razermapper/razermapperd/src/ipc.rs` - Fixed LayerConfig construction to include analog_calibration
-- `razermapper/razermapperd/tests/config_reload_test.rs` - Fixed ConfigManager construction with layer_state_path
-- `razermapper/razermapperd/tests/macro_integration_test.rs` - Added analog_move method to MockInjector
+- `aethermap/aethermapd/src/layer_manager.rs` - Added analog_calibration field to LayerConfig with getter method
+- `aethermap/aethermapd/src/config.rs` - Added analog_calibration HashMap to ExtendedDeviceRemapConfig and ConfigManager query methods
+- `aethermap/aethermapd/src/ipc.rs` - Fixed LayerConfig construction to include analog_calibration
+- `aethermap/aethermapd/tests/config_reload_test.rs` - Fixed ConfigManager construction with layer_state_path
+- `aethermap/aethermapd/tests/macro_integration_test.rs` - Added analog_move method to MockInjector
 
 ## Decisions Made
 

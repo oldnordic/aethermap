@@ -25,9 +25,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapperd/src/layer_manager.rs
-    - razermapperd/src/config.rs
-    - razermapperd/src/ipc.rs
+    - aethermapd/src/layer_manager.rs
+    - aethermapd/src/config.rs
+    - aethermapd/src/ipc.rs
 
 key-decisions:
   - "Use YAML instead of TOML for consistency with existing profile serialization"
@@ -78,9 +78,9 @@ _Note: Task 1 (LayerStateSnapshot structure) was already implemented as part of 
 
 ## Files Created/Modified
 
-- `razermapperd/src/layer_manager.rs` - Added save_to_path/load_from_path methods, Path import
-- `razermapperd/src/config.rs` - Added layer_state_path field, getter method, initialization in new()
-- `razermapperd/src/ipc.rs` - Fixed LayerMode imports and type conversions for IPC handlers
+- `aethermapd/src/layer_manager.rs` - Added save_to_path/load_from_path methods, Path import
+- `aethermapd/src/config.rs` - Added layer_state_path field, getter method, initialization in new()
+- `aethermapd/src/ipc.rs` - Fixed LayerMode imports and type conversions for IPC handlers
 
 ## Decisions Made
 
@@ -105,7 +105,7 @@ _Note: Task 1 (LayerStateSnapshot structure) was already implemented as part of 
 - **Found during:** Task 2 (compilation after adding save/load methods)
 - **Issue:** IPC handlers used InternalLayerMode alias that didn't exist after rebase
 - **Fix:** Added proper imports: LayerMode from common, LayerMode from layer_manager, with conversion in IPC handlers
-- **Files modified:** razermapperd/src/ipc.rs
+- **Files modified:** aethermapd/src/ipc.rs
 - **Verification:** cargo check passes, all tests pass
 - **Committed in:** Part of task 2-4 commits (IPC fixes were necessary for compilation)
 
@@ -113,7 +113,7 @@ _Note: Task 1 (LayerStateSnapshot structure) was already implemented as part of 
 - **Found during:** Task 4 (test compilation)
 - **Issue:** All test struct literals for ConfigManager missing new layer_state_path field
 - **Fix:** Added layer_state_path: temp_dir.path().join("layer_state.yaml") to all test instances using Python script
-- **Files modified:** razermapperd/src/config.rs, razermapperd/src/ipc.rs
+- **Files modified:** aethermapd/src/config.rs, aethermapd/src/ipc.rs
 - **Verification:** cargo check passes, all tests pass
 - **Committed in:** Part of task 4 commit
 

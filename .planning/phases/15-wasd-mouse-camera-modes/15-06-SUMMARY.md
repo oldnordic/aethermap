@@ -25,14 +25,14 @@ tech-stack:
 
 key-files:
   modified:
-    - razermapper/razermapperd/src/layer_manager.rs
+    - aethermap/aethermapd/src/layer_manager.rs
       - Added camera_output_mode field to LayerConfig
       - Added camera_output_mode() accessor method
       - Updated all LayerConfig constructors
-    - razermapper/razermapperd/src/ipc.rs
+    - aethermap/aethermapd/src/ipc.rs
       - Imported CameraOutputMode for IPC handling
       - Initialized camera_output_mode in LayerConfig creation
-    - razermapper/razermapperd/src/device.rs
+    - aethermap/aethermapd/src/device.rs
       - Added Camera mode handling in start_event_reader()
       - Integrated with process_as_camera() for scroll/key output
       - Fixed pre-existing WASD bug (use &current_keys in debug!)
@@ -87,18 +87,18 @@ _Note: This work was completed in a previous session. All changes are present in
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/layer_manager.rs`
+- `aethermap/aethermapd/src/layer_manager.rs`
   - Added `camera_output_mode: CameraOutputMode` field to LayerConfig
   - Added `camera_output_mode()` accessor method
   - Updated LayerConfig::default() to initialize with CameraOutputMode::Scroll
   - Updated LayerConfig::new() to initialize with CameraOutputMode::Scroll
   - Updated DeviceLayerState::new() layer_configs to initialize with CameraOutputMode::Scroll
 
-- `razermapper/razermapperd/src/ipc.rs`
+- `aethermap/aethermapd/src/ipc.rs`
   - Added CameraOutputMode to imports from analog_processor
   - Initialized camera_output_mode in IPC LayerConfig creation
 
-- `razermapper/razermapperd/src/device.rs`
+- `aethermap/aethermapd/src/device.rs`
   - Added Camera mode handling in start_event_reader() after Mouse mode
   - Tracks both axes (ABS_X stores value, ABS_Y triggers processing)
   - Retrieves layer-specific calibration and camera_output_mode from LayerConfig
@@ -122,7 +122,7 @@ _Note: This work was completed in a previous session. All changes are present in
 - **Found during:** Task 2 (verifying compilation after adding Camera mode)
 - **Issue:** WASD mode had a borrow checker error - `current_keys` was moved in the for loop but used again in debug! macro
 - **Fix:** Changed `debug!("WASD output: device={}, keys={:?}", id_clone, current_keys);` to use `&current_keys`
-- **Files modified:** razermapper/razermapperd/src/device.rs
+- **Files modified:** aethermap/aethermapd/src/device.rs
 - **Verification:** cargo check passes with no errors
 - **Committed in:** Part of Task 2 commit (Camera mode integration)
 
@@ -130,7 +130,7 @@ _Note: This work was completed in a previous session. All changes are present in
 - **Found during:** Task 2 (initial compilation)
 - **Issue:** CameraOutput::Keys(keys) moved the keys Vec in the for loop, causing borrow error in subsequent debug! macro
 - **Fix:** Changed `for key in keys` to `for key in &keys` and `debug!(..., keys)` to `debug!(..., &keys)`
-- **Files modified:** razermapper/razermapperd/src/device.rs
+- **Files modified:** aethermap/aethermapd/src/device.rs
 - **Verification:** cargo check passes with no errors
 - **Committed in:** Part of Task 2 commit
 
@@ -138,7 +138,7 @@ _Note: This work was completed in a previous session. All changes are present in
 - **Found during:** Task 2 (initial compilation)
 - **Issue:** `get_layer_config()` returns a reference tied to lm_read, but the code tried to extract values after dropping lm_read
 - **Fix:** Restructured to extract layer_calibration and camera_mode before dropping lm_read, using explicit if-let instead of and_then chains
-- **Files modified:** razermapper/razermapperd/src/device.rs
+- **Files modified:** aethermap/aethermapd/src/device.rs
 - **Verification:** cargo check passes with no errors
 - **Committed in:** Part of Task 2 commit
 

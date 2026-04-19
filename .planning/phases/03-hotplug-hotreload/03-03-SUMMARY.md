@@ -25,10 +25,10 @@ tech-stack:
 
 key-files:
   created:
-    - razermapper/razermapperd/tests/hotplug_test.rs
-    - razermapper/razermapperd/tests/config_reload_test.rs
+    - aethermap/aethermapd/tests/hotplug_test.rs
+    - aethermap/aethermapd/tests/config_reload_test.rs
   modified:
-    - razermapper/razermapperd/src/hotplug.rs (made format_device_id public)
+    - aethermap/aethermapd/src/hotplug.rs (made format_device_id public)
 
 key-decisions:
   - "Made hotplug::format_device_id public to enable testing of device ID format"
@@ -74,9 +74,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/tests/hotplug_test.rs` - Integration tests for DeviceEvent structure, device ID formatting, and event completeness
-- `razermapper/razermapperd/tests/config_reload_test.rs` - Integration tests for validate-then-swap reload pattern, invalid config rejection, and concurrent reload safety
-- `razermapper/razermapperd/src/hotplug.rs` - Made `format_device_id` public for testing
+- `aethermap/aethermapd/tests/hotplug_test.rs` - Integration tests for DeviceEvent structure, device ID formatting, and event completeness
+- `aethermap/aethermapd/tests/config_reload_test.rs` - Integration tests for validate-then-swap reload pattern, invalid config rejection, and concurrent reload safety
+- `aethermap/aethermapd/src/hotplug.rs` - Made `format_device_id` public for testing
 
 ## Test Coverage
 

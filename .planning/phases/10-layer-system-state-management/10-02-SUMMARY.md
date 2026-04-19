@@ -25,7 +25,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/layer_manager.rs
+    - aethermap/aethermapd/src/layer_manager.rs
 
 key-decisions:
   - "Hold layers tracked separately from toggle layers in active_hold_layers HashSet"
@@ -74,7 +74,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/layer_manager.rs` - Added active_hold_layers field and hold layer methods
+- `aethermap/aethermapd/src/layer_manager.rs` - Added active_hold_layers field and hold layer methods
 
 ## Decisions Made
 
@@ -91,7 +91,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (test execution)
 - **Issue:** Existing test `test_activate_layer_hold_mode` failed because `activate_layer()` only added to `active_toggle_layers` for toggle mode, not tracking hold mode layers in `active_hold_layers`. This caused `get_effective_layer()` to return 0 instead of expected active layer.
 - **Fix:** Updated `activate_layer()` to check `config.mode` and add hold mode layers to `active_hold_layers`, toggle mode layers to `active_toggle_layers`
-- **Files modified:** razermapperd/src/layer_manager.rs
+- **Files modified:** aethermapd/src/layer_manager.rs
 - **Verification:** All 30 layer_manager tests pass, including `test_activate_layer_hold_mode`
 - **Committed in:** `32dfe73` (part of Task 3 commit)
 

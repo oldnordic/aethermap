@@ -25,18 +25,18 @@ patterns:
 # Key Files
 created: []
 modified:
-  - path: "razermapper/razermapperd/src/layer_manager.rs"
+  - path: "aethermap/aethermapd/src/layer_manager.rs"
     changes:
       - "Added import: use crate::analog_processor::AnalogMode"
       - "Added analog_mode field to LayerConfig struct with documentation"
       - "Updated LayerConfig::default() to initialize analog_mode: AnalogMode::Disabled"
       - "Updated LayerConfig::new() to initialize analog_mode: AnalogMode::Disabled"
       - "Updated DeviceLayerState::new() all three layer configs with analog_mode: AnalogMode::Disabled"
-  - path: "razermapper/razermapperd/src/ipc.rs"
+  - path: "aethermap/aethermapd/src/ipc.rs"
     changes:
       - "Added import: use crate::analog_processor::AnalogMode"
       - "Updated SetLayerConfig handler to preserve existing analog_mode value"
-  - path: "razermapper/razermapperd/src/config.rs"
+  - path: "aethermap/aethermapd/src/config.rs"
     changes:
       - "Added EXAMPLE_CONFIG_WITH_ANALOG_MODES constant with per-layer configuration examples"
 
@@ -145,7 +145,7 @@ Each layer can independently configure its analog mode. This enables:
 - Specialized layers with Mouse, Camera, or WASD modes (Phase 15)
 
 ### IPC Integration
-The IPC handler preserves the existing `analog_mode` value when other layer config fields are updated, preventing accidental resets. Full IPC support for setting `analog_mode` will require `razermapper-common` changes in future phases.
+The IPC handler preserves the existing `analog_mode` value when other layer config fields are updated, preventing accidental resets. Full IPC support for setting `analog_mode` will require `aethermap-common` changes in future phases.
 
 ## Verification
 

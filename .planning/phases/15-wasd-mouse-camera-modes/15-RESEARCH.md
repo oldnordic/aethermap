@@ -77,7 +77,7 @@ Phase 15 extends the analog processing system (Phase 11) and gamepad mode (Phase
 ### Recommended Project Structure
 
 ```
-razermapperd/src/
+aethermapd/src/
 ├── analog_processor.rs    # EXTEND: Add process_as_wasd(), process_as_mouse(), process_as_camera()
 ├── injector.rs            # USE: Existing mouse_move(), mouse_scroll() for output
 ├── layer_manager.rs       # USE: Existing LayerConfig.analog_mode for per-layer config
@@ -93,7 +93,7 @@ razermapperd/src/
 
 **Example:**
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/analog_processor.rs:979-1033
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/analog_processor.rs:979-1033
 
 pub fn detect_dpad_direction(&self, x: f32, y: f32) -> DpadDirection {
     const DIRECTION_THRESHOLD: f32 = 0.1;
@@ -423,7 +423,7 @@ loop {
 ### Example 1: WASD Mode Processing
 
 ```rust
-// razermapper/razermapperd/src/analog_processor.rs
+// aethermap/aethermapd/src/analog_processor.rs
 
 /// Convert D-pad direction to WASD keys
 ///
@@ -485,7 +485,7 @@ pub fn process_as_wasd(
 ### Example 2: Mouse Mode with Velocity Scaling
 
 ```rust
-// razermapper/razermapperd/src/analog_processor.rs
+// aethermap/aethermapd/src/analog_processor.rs
 
 /// Mouse velocity configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -541,7 +541,7 @@ pub fn process_as_mouse(
 ### Example 3: Camera Mode with Scroll Output
 
 ```rust
-// razermapper/razermapperd/src/analog_processor.rs
+// aethermap/aethermapd/src/analog_processor.rs
 
 /// Camera output mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -683,12 +683,12 @@ fn camera_direction_to_keys(direction: DpadDirection) -> Vec<Key> {
 
 ### Primary (HIGH confidence)
 
-- [analog_processor.rs:979-1033](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/analog_processor.rs) - 8-way direction detection algorithm (atan2 with 22.5-degree sectors)
-- [analog_processor.rs:1075-1104](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/analog_processor.rs) - `process_as_dpad()` pattern for directional key output
-- [analog_processor.rs:1122-1152](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/analog_processor.rs) - `process_as_gamepad()` pattern for calibrated 2D processing
-- [injector.rs:205-251](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/injector.rs) - uinput EV_REL configuration (REL_X, REL_Y, REL_WHEEL)
-- [injector.rs:448-470](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/injector.rs) - `mouse_move()` and `mouse_scroll()` implementation
-- [layer_manager.rs:180-191](/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/layer_manager.rs) - `LayerConfig.analog_mode` field for per-layer configuration
+- [analog_processor.rs:979-1033](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/analog_processor.rs) - 8-way direction detection algorithm (atan2 with 22.5-degree sectors)
+- [analog_processor.rs:1075-1104](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/analog_processor.rs) - `process_as_dpad()` pattern for directional key output
+- [analog_processor.rs:1122-1152](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/analog_processor.rs) - `process_as_gamepad()` pattern for calibrated 2D processing
+- [injector.rs:205-251](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/injector.rs) - uinput EV_REL configuration (REL_X, REL_Y, REL_WHEEL)
+- [injector.rs:448-470](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/injector.rs) - `mouse_move()` and `mouse_scroll()` implementation
+- [layer_manager.rs:180-191](/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/layer_manager.rs) - `LayerConfig.analog_mode` field for per-layer configuration
 - [15-CONTEXT.md](/home/feanor/Projects/remapper_rs/.planning/phases/15-wasd-mouse-camera-modes/15-CONTEXT.md) - Phase context with locked decisions
 
 ### Secondary (MEDIUM confidence)

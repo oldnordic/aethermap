@@ -22,7 +22,7 @@ tech-stack:
   patterns: [virtual device testing, /dev/uinput graceful skip, tokio::test async tests]
 
 key-files:
-  created: [razermapper/razermapperd/tests/remap_integration_test.rs]
+  created: [aethermap/aethermapd/tests/remap_integration_test.rs]
   modified: []
 
 key-decisions:
@@ -73,7 +73,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/tests/remap_integration_test.rs` - End-to-end integration tests with virtual devices
+- `aethermap/aethermapd/tests/remap_integration_test.rs` - End-to-end integration tests with virtual devices
   - `test_end_to_end_key_remapping` - Basic KEY_A -> KEY_B remapping
   - `test_end_to_end_repeat_events` - Repeat event (value=2) handling
   - `test_end_to_end_complex_remapping` - Multiple concurrent remappings
@@ -111,7 +111,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (test creation)
 - **Issue:** Plan specified `VirtualDeviceBuilder::new().name().expect().with_event_type()` which doesn't exist
 - **Fix:** Used correct API: `VirtualDeviceBuilder::new().name().with_keys().build()`
-- **Files modified:** razermapper/razermapperd/tests/remap_integration_test.rs
+- **Files modified:** aethermap/aethermapd/tests/remap_integration_test.rs
 - **Verification:** Tests compile and pass
 - **Committed in:** 35e7bcc (Task 1 commit)
 
@@ -119,7 +119,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (compilation error)
 - **Issue:** `key_set!` macro was defined at end of file but used earlier
 - **Fix:** Moved macro definition to top of file before first use
-- **Files modified:** razermapper/razermapperd/tests/remap_integration_test.rs
+- **Files modified:** aethermap/aethermapd/tests/remap_integration_test.rs
 - **Verification:** Compilation successful
 - **Committed in:** 35e7bcc (Task 1 commit)
 
@@ -127,7 +127,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (compilation error)
 - **Issue:** `.emit()` requires `&mut self` but devices weren't declared `mut`
 - **Fix:** Changed device declarations to `let mut`
-- **Files modified:** razermapper/razermapperd/tests/remap_integration_test.rs
+- **Files modified:** aethermap/aethermapd/tests/remap_integration_test.rs
 - **Verification:** Compilation successful, tests pass
 - **Committed in:** 35e7bcc (Task 1 commit)
 
@@ -135,7 +135,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (compilation error)
 - **Issue:** VirtualDevice struct has no `name()` method
 - **Fix:** Removed device name verification, relying on successful build as verification
-- **Files modified:** razermapper/razermapperd/tests/remap_integration_test.rs
+- **Files modified:** aethermap/aethermapd/tests/remap_integration_test.rs
 - **Verification:** Compilation successful
 - **Committed in:** 35e7bcc (Task 1 commit)
 

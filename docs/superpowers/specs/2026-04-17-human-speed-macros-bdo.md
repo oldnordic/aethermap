@@ -1,7 +1,7 @@
 # Design Spec: Human-Speed Ergonomic Macros (BDO Focused)
 
 ## 1. Overview
-The goal is to implement "Human-Speed" macros in Razermapper, specifically optimized for high-APM games like Black Desert Online (BDO). These macros will reduce repetitive strain (hand pain) by automating complex **Keyboard + Mouse combos** with "Ergonomic Automation" that mimics natural human speed and accounts for network latency.
+The goal is to implement "Human-Speed" macros in Aethermap, specifically optimized for high-APM games like Black Desert Online (BDO). These macros will reduce repetitive strain (hand pain) by automating complex **Keyboard + Mouse combos** with "Ergonomic Automation" that mimics natural human speed and accounts for network latency.
 
 ## 2. Success Criteria
 - [ ] Macros can trigger and execute mixed sequences of keyboard keys and mouse buttons (LMB, RMB, etc.).
@@ -12,7 +12,7 @@ The goal is to implement "Human-Speed" macros in Razermapper, specifically optim
 
 ## 3. Architecture & Data Model
 
-### 3.1 Common Data Structures (`razermapper-common`)
+### 3.1 Common Data Structures (`aethermap-common`)
 - **MacroSettings (New)**:
     - `latency_offset_ms: u32`: Global buffer added to every delay.
     - `jitter_pct: f32`: Randomization range (0.0 to 1.0).
@@ -20,14 +20,14 @@ The goal is to implement "Human-Speed" macros in Razermapper, specifically optim
     - `humanize: bool`: Flag to enable/disable jitter for this macro.
     - `capture_mouse: bool`: Instruction for the recorder to listen for mouse events.
 
-### 3.2 Daemon Logic (`razermapperd`)
+### 3.2 Daemon Logic (`aethermapd`)
 - **MacroEngine**:
     - Update `execute_macro` to apply the formula: `ActualSleep = Base_ms + Latency_Offset + (Random_Jitter * Base_ms)`.
     - Update `process_input_event` and `process_analog_event` to handle mouse button clicks and relative moves when `is_recording` is true.
 - **Injector**:
     - Ensure `UinputInjector` can interleave keyboard and mouse events without blocking.
 
-### 3.3 GUI Logic (`razermapper-gui`)
+### 3.3 GUI Logic (`aethermap-gui`)
 - **Settings Tab**:
     - Implement `Slider` widgets for Latency and Jitter Intensity.
 - **Macro Recorder**:

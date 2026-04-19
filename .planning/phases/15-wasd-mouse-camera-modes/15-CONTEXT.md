@@ -94,8 +94,8 @@ emit(REL_Y, velocity_y as i32);
 ## File Context
 
 **Modified Files:**
-- `razermapper/razermapperd/src/analog_processor.rs` - Add WASD, Mouse, Camera modes
-- `razermapper/razermapperd/src/analog_modes.rs` - (if extracted in Phase 14)
+- `aethermap/aethermapd/src/analog_processor.rs` - Add WASD, Mouse, Camera modes
+- `aethermap/aethermapd/src/analog_modes.rs` - (if extracted in Phase 14)
 
 **IPC Extensions:**
 - Add mode switching commands to IPC protocol

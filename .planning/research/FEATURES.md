@@ -246,6 +246,6 @@ All modern remappers use a privileged daemon with unprivileged client:
 
 ---
 
-*Feature research for: Razermapper (Linux input remapper)*
+*Feature research for: Aethermap (Linux input remapper)*
 *Researched: 2026-02-16*
 *Research mode: Ecosystem*

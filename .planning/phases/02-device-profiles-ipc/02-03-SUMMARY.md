@@ -2,7 +2,7 @@
 phase: 02-device-profiles-ipc
 plan: 03
 subsystem: ipc
-tags: [ipc, serde, remap-profiles, request-response, razermapper-common]
+tags: [ipc, serde, remap-profiles, request-response, aethermap-common]
 
 # Dependency graph
 requires:
@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-common/src/lib.rs (added RemapProfileInfo, RemapEntry, Request/Response variants)
-    - razermapper/razermapperd/src/ipc.rs (added handler scaffolds)
+    - aethermap/aethermap-common/src/lib.rs (added RemapProfileInfo, RemapEntry, Request/Response variants)
+    - aethermap/aethermapd/src/ipc.rs (added handler scaffolds)
 
 key-decisions:
   - "Prefix scaffold parameters with underscore (_device_path, _profile_name) to suppress unused variable warnings while maintaining type safety"
@@ -68,8 +68,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added RemapProfileInfo, RemapEntry structs, 4 Request variants, 4 Response variants
-- `razermapper/razermapperd/src/ipc.rs` - Added 4 handler match arms with TODO scaffolds
+- `aethermap/aethermap-common/src/lib.rs` - Added RemapProfileInfo, RemapEntry structs, 4 Request variants, 4 Response variants
+- `aethermap/aethermapd/src/ipc.rs` - Added 4 handler match arms with TODO scaffolds
 
 ## Decisions Made
 

@@ -10,7 +10,7 @@ Implement key repeat handling (event value 2), stuck key prevention during devic
 
 ### Files Modified
 
-#### 1. `razermapper/razermapperd/src/device.rs`
+#### 1. `aethermap/aethermapd/src/device.rs`
 
 **Updated channel types (lines 28-29):**
 - Changed from `mpsc::Sender<(String, u16, bool)>` to `mpsc::Sender<(String, u16, i32)>`
@@ -58,7 +58,7 @@ if let Some(remap_engine) = &remap_engine {
 }
 ```
 
-#### 2. `razermapper/razermapperd/src/remap_engine.rs`
+#### 2. `aethermap/aethermapd/src/remap_engine.rs`
 
 **Added process_event() method (lines 210-253):**
 ```rust
@@ -75,7 +75,7 @@ pub async fn process_event(&self, key_code: Key, value: i32) -> Option<(Key, i32
 }
 ```
 
-#### 3. `razermapper/razermapperd/src/main.rs`
+#### 3. `aethermap/aethermapd/src/main.rs`
 
 **Updated event loop (lines 139-156):**
 - Changed from `pressed: bool` to `value: i32`
@@ -94,7 +94,7 @@ if let Some((device_path, key_code, value)) = event_receiver.recv().await {
 }
 ```
 
-#### 4. `razermapper/razermapperd/src/bin/test_grab.rs`
+#### 4. `aethermap/aethermapd/src/bin/test_grab.rs`
 
 **Updated event loop (lines 78-90):**
 - Changed from `pressed: bool` to `value: i32`
@@ -122,7 +122,7 @@ remap_engine.process_event(key, value)
 
 ## Verification
 
-- [x] cargo check -p razermapperd compiles
+- [x] cargo check -p aethermapd compiles
 - [x] Event value 2 (repeat) is preserved through the pipeline
 - [x] Remapped keys repeat when held down (via value forwarding)
 - [x] GrabbedDevice has Drop implementation

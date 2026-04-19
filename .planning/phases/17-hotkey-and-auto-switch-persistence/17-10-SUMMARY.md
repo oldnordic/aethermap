@@ -2,7 +2,7 @@
 phase: 17-hotkey-and-auto-switch-persistence
 plan: 10
 subsystem: ipc
-tags: [auto-switch, ipc, gui, daemon, razermapper-common]
+tags: [auto-switch, ipc, gui, daemon, aethermap-common]
 
 # Dependency graph
 requires:
@@ -29,10 +29,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-common/src/lib.rs
-    - razermapper/razermapper-common/src/ipc_client.rs
-    - razermapper/razermapperd/src/ipc.rs
-    - razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermap-common/src/lib.rs
+    - aethermap/aethermap-common/src/ipc_client.rs
+    - aethermap/aethermapd/src/ipc.rs
+    - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "AutoSwitchRulesLoaded message takes single Result argument (not device_id) to match iced::Command::perform signature"
@@ -77,10 +77,10 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added Request::GetAutoSwitchRules and Response::AutoSwitchRules variants
-- `razermapper/razermapper-common/src/ipc_client.rs` - Added get_auto_switch_rules() convenience function
-- `razermapper/razermapperd/src/ipc.rs` - Added GetAutoSwitchRules handler calling ConfigManager::get_auto_switch_rules()
-- `razermapper/razermapper-gui/src/gui.rs` - Updated LoadAutoSwitchRules to use IPC, changed AutoSwitchRulesLoaded message signature
+- `aethermap/aethermap-common/src/lib.rs` - Added Request::GetAutoSwitchRules and Response::AutoSwitchRules variants
+- `aethermap/aethermap-common/src/ipc_client.rs` - Added get_auto_switch_rules() convenience function
+- `aethermap/aethermapd/src/ipc.rs` - Added GetAutoSwitchRules handler calling ConfigManager::get_auto_switch_rules()
+- `aethermap/aethermap-gui/src/gui.rs` - Updated LoadAutoSwitchRules to use IPC, changed AutoSwitchRulesLoaded message signature
 
 ## Deviations from Plan
 
@@ -90,8 +90,8 @@ Each task was committed atomically:
 - **Found during:** Task 3 compilation
 - **Issue:** iced::Command::perform requires function taking 1 argument, but message was defined with 2 (device_id, Result)
 - **Fix:** Changed AutoSwitchRulesLoaded to take single Result argument, device_id read from auto_switch_view field
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
-- **Verification:** Build passes with `cargo check -p razermapper-gui`
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
+- **Verification:** Build passes with `cargo check -p aethermap-gui`
 - **Committed in:** `2e8b800`
 
 ---

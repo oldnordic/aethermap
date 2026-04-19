@@ -17,7 +17,7 @@ tags: [azeron, device-detection, keypad, vid-pid]
 dependency_graph:
   requires: []
   provides: ["DeviceType::Keypad", "is_azeron_device()", "keypad classification logic"]
-  affects: ["razermapper-common", "razermapperd", "razermapper-gui"]
+  affects: ["aethermap-common", "aethermapd", "aethermap-gui"]
 
 tech_stack:
   added: []
@@ -32,11 +32,11 @@ tech_stack:
 key_files:
   created: []
   modified:
-    - path: "razermapper-common/src/lib.rs"
+    - path: "aethermap-common/src/lib.rs"
       changes: "Added DeviceType::Keypad variant and Display impl"
-    - path: "razermapperd/src/device.rs"
+    - path: "aethermapd/src/device.rs"
       changes: "Added AZERON_VENDOR_ID constant, is_azeron_device() function, updated detect_device_type() with keypad logic"
-    - path: "razermapper-gui/src/gui.rs"
+    - path: "aethermap-gui/src/gui.rs"
       changes: "Added Keypad match arm for icon (🎹) and text display"
 
 decisions:
@@ -73,13 +73,13 @@ deviations_from_plan:
     impact: "none"
 
 verification_results:
-  - "DeviceType::Keypad enum variant exists in razermapper-common"
+  - "DeviceType::Keypad enum variant exists in aethermap-common"
   - "is_azeron_device() function checks for VID 0x32b6"
   - "detect_device_type() returns Keypad for Azeron devices (first check)"
   - "detect_device_type() returns Keypad for devices with EV_ABS and >50 keys"
   - "GUI handles DeviceType::Keypad without panic"
   - "GUI shows Keypad icon (🎹) and 'Keypad' text for keypad devices"
-  - "All cargo checks pass for razermapper-common, razermapperd, razermapper-gui"
+  - "All cargo checks pass for aethermap-common, aethermapd, aethermap-gui"
 
 self_check: "PASSED"
   - DeviceType::Keypad exists: "yes"
@@ -102,12 +102,12 @@ This plan successfully added Azeron Cyborg device detection via USB VID/PID matc
 
 ### What Was Implemented
 
-1. **DeviceType::Keypad enum variant** (`razermapper-common/src/lib.rs`)
+1. **DeviceType::Keypad enum variant** (`aethermap-common/src/lib.rs`)
    - Added `Keypad` variant to the `DeviceType` enum
    - Updated `Display` implementation to output "Keypad"
    - Placed after `Gamepad` and before `Other` variants
 
-2. **Azeron detection** (`razermapperd/src/device.rs`)
+2. **Azeron detection** (`aethermapd/src/device.rs`)
    - Added `AZERON_VENDOR_ID` constant with value `0x32b6`
    - Implemented `is_azeron_device()` helper function using USB vendor ID matching
    - Updated `detect_device_type()` to check for Azeron devices first (returning Keypad)
@@ -115,7 +115,7 @@ This plan successfully added Azeron Cyborg device detection via USB VID/PID matc
    - Updated `is_input_device()` to include `DeviceType::Keypad` in valid device types
    - Fixed `AbsoluteAxisType` import for existing analog axis event handling
 
-3. **GUI display** (`razermapper-gui/src/gui.rs`)
+3. **GUI display** (`aethermap-gui/src/gui.rs`)
    - Added `DeviceType::Keypad` match arm with icon "🎹" (musical keyboard)
    - Added `DeviceType::Keypad` match arm for text display "Keypad"
    - Keypad devices now show distinct visual indicator from Gamepad (🎮) and Keyboard (⌨️)

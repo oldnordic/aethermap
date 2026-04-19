@@ -22,7 +22,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/config.rs
+    - aethermap/aethermapd/src/config.rs
 
 key-decisions:
   - "Added Validation variant to RemapConfigError for hotkey duplicate detection"
@@ -72,7 +72,7 @@ All three tasks were committed atomically in a single commit:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/config.rs`
+- `aethermap/aethermapd/src/config.rs`
   - Added `RemapConfigError::Validation` variant for validation errors
   - Added `add_hotkey_binding()` method (lines ~2337-2415)
   - Added `remove_hotkey_binding()` method (lines ~2417-2495)
@@ -98,9 +98,9 @@ None - plan executed exactly as written. All three methods follow the `set_analo
 
 ## Issues Encountered
 
-**Repository structure:** The planning repository (`remapper_rs`) is separate from the code repository (`razermapper/`). Commits were made to the razermapper git repository instead of the parent planning repository.
+**Repository structure:** The planning repository (`remapper_rs`) is separate from the code repository (`aethermap/`). Commits were made to the aethermap git repository instead of the parent planning repository.
 
-**Resolution:** Committed changes in the razermapper directory as expected. The planning repository only tracks plan files and documentation.
+**Resolution:** Committed changes in the aethermap directory as expected. The planning repository only tracks plan files and documentation.
 
 ## Next Phase Readiness
 

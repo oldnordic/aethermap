@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/device.rs
-    - razermapper/razermapperd/src/lib.rs
+    - aethermap/aethermapd/src/device.rs
+    - aethermap/aethermapd/src/lib.rs
 
 key-decisions:
   - "Used HashMap<String, Arc<RwLock<RemapTable>>> for profile_remaps to enable O(1) profile switching"
@@ -71,8 +71,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/device.rs` - Added device_profiles HashMap, profile_remaps field, set_device_profiles/get_device_profiles methods, DeviceProfileInfo struct
-- `razermapper/razermapperd/src/lib.rs` - Exported DeviceProfileInfo and GrabbedDevice
+- `aethermap/aethermapd/src/device.rs` - Added device_profiles HashMap, profile_remaps field, set_device_profiles/get_device_profiles methods, DeviceProfileInfo struct
+- `aethermap/aethermapd/src/lib.rs` - Exported DeviceProfileInfo and GrabbedDevice
 
 ## Deviations from Plan
 

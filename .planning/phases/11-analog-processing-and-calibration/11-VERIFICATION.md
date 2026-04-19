@@ -32,15 +32,15 @@ score: 6/6 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `razermapper/razermapperd/src/analog_calibration.rs` | AnalogCalibration, DeadzoneShape, SensitivityCurve types | ✓ VERIFIED | 463 lines, all types with Serialize/Deserialize, Default impl, validate() method, 19 tests pass |
-| `razermapper/razermapperd/src/analog_processor.rs` | AnalogProcessor with process() method | ✓ VERIFIED | 2406 lines, process() pipeline complete, process_as_dpad() for D-pad mode, 52 tests pass |
-| `razermapper/razermapperd/src/layer_manager.rs` | AnalogCalibration in LayerConfig | ✓ VERIFIED | Line 179: `pub analog_calibration: Option<AnalogCalibration>`, getter method provided |
-| `razermapper/razermapperd/src/config.rs` | YAML structures for analog_calibration | ✓ VERIFIED | Line 478: `pub analog_calibration: HashMap<usize, AnalogCalibration>` in ExtendedDeviceRemapConfig |
-| `razermapper/razermapperd/src/device.rs` | Event loop integration | ✓ VERIFIED | Lines 161, 179, 195-196: analog_processor field, set_analog_processor(), event reader integration |
-| `razermapper/razermapperd/src/macro_engine.rs` | Analog event recording | ✓ VERIFIED | Line 335: `process_analog_event()`, Action::AnalogMove in razermapper-common, tests pass |
-| `razermapper/razermapper-common/src/lib.rs` | IPC Request/Response variants | ✓ VERIFIED | Lines 661-667: GetAnalogCalibration/SetAnalogCalibration requests, Lines 988-995: responses |
-| `razermapper/razermapperd/src/ipc.rs` | IPC handlers | ✓ VERIFIED | Lines 1389-1441: GetAnalogCalibration/SetAnalogCalibration handlers with validation |
-| `razermapper/razermapper-gui/src/gui.rs` | AnalogCalibrationView UI | ✓ VERIFIED | Line 274: AnalogCalibrationView struct, lines 4265-4395: view_analog_calibration() implementation |
+| `aethermap/aethermapd/src/analog_calibration.rs` | AnalogCalibration, DeadzoneShape, SensitivityCurve types | ✓ VERIFIED | 463 lines, all types with Serialize/Deserialize, Default impl, validate() method, 19 tests pass |
+| `aethermap/aethermapd/src/analog_processor.rs` | AnalogProcessor with process() method | ✓ VERIFIED | 2406 lines, process() pipeline complete, process_as_dpad() for D-pad mode, 52 tests pass |
+| `aethermap/aethermapd/src/layer_manager.rs` | AnalogCalibration in LayerConfig | ✓ VERIFIED | Line 179: `pub analog_calibration: Option<AnalogCalibration>`, getter method provided |
+| `aethermap/aethermapd/src/config.rs` | YAML structures for analog_calibration | ✓ VERIFIED | Line 478: `pub analog_calibration: HashMap<usize, AnalogCalibration>` in ExtendedDeviceRemapConfig |
+| `aethermap/aethermapd/src/device.rs` | Event loop integration | ✓ VERIFIED | Lines 161, 179, 195-196: analog_processor field, set_analog_processor(), event reader integration |
+| `aethermap/aethermapd/src/macro_engine.rs` | Analog event recording | ✓ VERIFIED | Line 335: `process_analog_event()`, Action::AnalogMove in aethermap-common, tests pass |
+| `aethermap/aethermap-common/src/lib.rs` | IPC Request/Response variants | ✓ VERIFIED | Lines 661-667: GetAnalogCalibration/SetAnalogCalibration requests, Lines 988-995: responses |
+| `aethermap/aethermapd/src/ipc.rs` | IPC handlers | ✓ VERIFIED | Lines 1389-1441: GetAnalogCalibration/SetAnalogCalibration handlers with validation |
+| `aethermap/aethermap-gui/src/gui.rs` | AnalogCalibrationView UI | ✓ VERIFIED | Line 274: AnalogCalibrationView struct, lines 4265-4395: view_analog_calibration() implementation |
 
 ### Key Link Verification
 
@@ -79,7 +79,7 @@ No blocker anti-patterns found. TODO comments document future enhancement (per-l
 
 ### 1. Analog Calibration UI Interaction
 
-**Test:** Launch razermapper-gui, connect to daemon, select a Keypad/Gamepad device, click "Analog Calibration" button
+**Test:** Launch aethermap-gui, connect to daemon, select a Keypad/Gamepad device, click "Analog Calibration" button
 **Expected:** Modal dialog appears with deadzone slider (0-100%), shape dropdown (Circular/Square), sensitivity multiplier slider (0.1-5.0), sensitivity curve dropdown (Linear/Quadratic/Exponential), range sliders, inversion checkboxes, Apply/Close buttons
 **Why human:** Visual UI rendering and user interaction flow cannot be verified programmatically
 
@@ -117,7 +117,7 @@ No blocker anti-patterns found. TODO comments document future enhancement (per-l
 2. **Deadzone Scaling:** Circular deadzone properly scales output to avoid "jump" at boundary using MAX_MAGNITUDE=0.707 (sqrt(0.5))
 3. **Sensitivity Curves:** Exponential curve supports configurable exponent field (not hardcoded to 3.0 as originally planned)
 4. **Macro Integration:** Analog events recorded as normalized values (-1.0 to 1.0) for device independence, replay uses injector.analog_move()
-5. **IPC Protocol:** String-based enum serialization in AnalogCalibrationConfig avoids circular dependency between razermapper-common and razermapperd
+5. **IPC Protocol:** String-based enum serialization in AnalogCalibrationConfig avoids circular dependency between aethermap-common and aethermapd
 6. **GUI Integration:** Modal dialog pattern follows existing LED config pattern, AnalogCalibrationView provides complete UI for all calibration fields
 
 ### Test Coverage Summary

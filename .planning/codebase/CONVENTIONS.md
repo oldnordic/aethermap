@@ -6,7 +6,7 @@
 
 **Files:**
 - Use `snake_case` for all Rust source files: `device.rs`, `macro_engine.rs`, `ipc_client.rs`
-- Module directories use `kebab-case`: `razermapper-common/`, `razermapper-gui/`, `razermapperd/`
+- Module directories use `kebab-case`: `aethermap-common/`, `aethermap-gui/`, `aethermapd/`
 - Test files: `<module>_test.rs` in `tests/` directory, or co-located in `#[cfg(test)]` modules
 
 **Functions:**
@@ -46,12 +46,12 @@
 **Order:**
 1. Standard library imports (`std::*`)
 2. Third-party crates (`tokio`, `serde`, `tracing`, `thiserror`, `evdev`, etc.)
-3. Workspace-local imports (`razermapper_common::*`)
+3. Workspace-local imports (`aethermap_common::*`)
 4. Crate-relative imports (`crate::*`)
 5. Module declarations (`pub mod xyz;`)
 6. Re-exports (`pub use xyz::Abc;`)
 
-**Example from `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/lib.rs`:**
+**Example from `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/lib.rs`:**
 ```rust
 // std
 use std::sync::{Arc, Mutex};
@@ -62,7 +62,7 @@ use std::collections::HashMap;
 use tokio::sync::RwLock;
 
 // workspace
-use razermapper_common::{DeviceInfo, MacroEntry, Profile};
+use aethermap_common::{DeviceInfo, MacroEntry, Profile};
 
 // crate
 use crate::remap_engine::RemapEngine;
@@ -76,7 +76,7 @@ pub use config::{RemapEntry, RemapConfigError};
 ```
 
 **Path Aliases:**
-- Workspace dependencies use `razermapper_` prefix: `razermapper_common`, `razermapperd`
+- Workspace dependencies use `aethermap_` prefix: `aethermap_common`, `aethermapd`
 - Re-exports at crate root for common types
 
 ## Error Handling
@@ -148,7 +148,7 @@ tracing_subscriber::fmt()
 - `//!` doc comments at top of every file
 - Describe purpose, key functionality, usage patterns
 
-**Example from `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/remap_engine.rs`:**
+**Example from `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/remap_engine.rs`:**
 ```rust
 //! RemapEngine for translating input key codes to output key codes
 //!
@@ -211,7 +211,7 @@ pub fn with_timeout(mut self, timeout_ms: u64) -> Self {
 
 **Barrel Files:**
 - `lib.rs` serves as barrel for each crate
-- Example from `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/lib.rs`:
+- Example from `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/lib.rs`:
 ```rust
 pub mod config;
 pub mod device;
@@ -219,7 +219,7 @@ pub mod macro_engine;
 pub mod injector;
 pub mod ipc;
 
-pub use razermapper_common::{DeviceInfo, MacroEntry, Profile};
+pub use aethermap_common::{DeviceInfo, MacroEntry, Profile};
 pub use config::{RemapEntry, RemapConfigError, AutoSwitchRule};
 pub use remap_engine::{RemapProfile, RemapTable};
 ```
@@ -256,10 +256,10 @@ pub use remap_engine::{RemapProfile, RemapTable};
 **Max LOC Per File:**
 - Target: Under 600 lines
 - Large files (exceptions):
-  - `razermapper-gui/src/gui.rs` - 4489 lines (GUI view code)
-  - `razermapperd/src/analog_processor.rs` - 3969 lines (complex analog processing)
-  - `razermapperd/src/config.rs` - 3093 lines (configuration management)
-  - `razermapperd/src/device.rs` - 2543 lines (device management)
+  - `aethermap-gui/src/gui.rs` - 4489 lines (GUI view code)
+  - `aethermapd/src/analog_processor.rs` - 3969 lines (complex analog processing)
+  - `aethermapd/src/config.rs` - 3093 lines (configuration management)
+  - `aethermapd/src/device.rs` - 2543 lines (device management)
 
 **Module Structure:**
 - One module per file
@@ -270,7 +270,7 @@ pub use remap_engine::{RemapProfile, RemapTable};
 - Config types in `config.rs`
 - Business logic in engine modules (`remap_engine`, `macro_engine`)
 - Hardware abstraction in `device.rs`, `injector.rs`
-- IPC boundaries defined in `ipc.rs` and `razermapper-common`
+- IPC boundaries defined in `ipc.rs` and `aethermap-common`
 
 ## Thread Safety
 
@@ -292,7 +292,7 @@ pub use remap_engine::{RemapProfile, RemapTable};
 
 **Constants:**
 - Kernel constants defined as `const` items
-- Example from `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/injector.rs`:
+- Example from `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/injector.rs`:
 ```rust
 const EV_SYN: u16 = 0x00;
 const EV_KEY: u16 = 0x01;

@@ -26,9 +26,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-gui/src/widgets/analog_visualizer.rs
-    - razermapper/razermapper-gui/src/widgets/curve_graph.rs
-    - razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermap-gui/src/widgets/analog_visualizer.rs
+    - aethermap/aethermap-gui/src/widgets/curve_graph.rs
+    - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Made CurveGraph::apply_curve public for testability (was private)"
@@ -116,9 +116,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/widgets/analog_visualizer.rs` - Added #[cfg(test)] module with 6 tests
-- `razermapper/razermapper-gui/src/widgets/curve_graph.rs` - Made apply_curve public, added #[cfg(test)] module with 9 tests
-- `razermapper/razermapper-gui/src/gui.rs` - Added #[cfg(test)] calibration_tests module with 12 integration tests
+- `aethermap/aethermap-gui/src/widgets/analog_visualizer.rs` - Added #[cfg(test)] module with 6 tests
+- `aethermap/aethermap-gui/src/widgets/curve_graph.rs` - Made apply_curve public, added #[cfg(test)] module with 9 tests
+- `aethermap/aethermap-gui/src/gui.rs` - Added #[cfg(test)] calibration_tests module with 12 integration tests
 
 ## Deviations from Plan
 
@@ -128,7 +128,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 implementation
 - **Issue:** Plan assumed apply_curve was public, but it was private
 - **Fix:** Changed `fn apply_curve` to `pub fn apply_curve` in CurveGraph
-- **Files modified:** razermapper/razermapper-gui/src/widgets/curve_graph.rs
+- **Files modified:** aethermap/aethermap-gui/src/widgets/curve_graph.rs
 - **Committed in:** `40a0784` (Task 2)
 
 **2. [Rule 3 - Blocking] Adjusted quadratic test expectation**

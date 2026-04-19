@@ -34,14 +34,14 @@ human_verification: []
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| razermapper/razermapperd/src/layer_manager.rs | LayerManager, DeviceLayerState, LayerConfig, LayerMode | VERIFIED | File exists (1870 lines). All types exported. Tests pass (44 tests). |
-| razermapper/razermapperd/src/remap_engine.rs | layer_manager, layer_remaps, remap_layer_aware | VERIFIED | File has layer_manager: Arc<RwLock<LayerManager>> and layer_remaps: Vec<Arc<RwLock<HashMap<Key, Key>>>>>. remap_layer_aware() with cascade fallback. |
-| razermapper/razermapper-common/src/lib.rs | LayerMode, LayerConfigInfo, GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers | VERIFIED | All Request/Response variants added. Serialization tests pass (9 tests). |
-| razermapper/razermapperd/src/ipc.rs | IPC handlers for layer requests | VERIFIED | GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers match arms implemented. |
-| razermapper/razermapperd/src/lib.rs | layer_manager field in DaemonState | VERIFIED | pub layer_manager: Arc<RwLock<LayerManager>> added. Initialized in new(). |
-| razermapper/razermapper-gui/src/ipc.rs | get_active_layer, set_layer_config, activate_layer, list_layers | VERIFIED | All 4 async IPC client methods implemented. |
-| razermapper/razermapper-gui/src/gui.rs | layer_indicator, layer activation buttons, layer settings view | VERIFIED | layer_indicator(), layer_activation_buttons(), layer_settings_view(), layer_config_dialog() exist. Message handlers implemented. |
-| razermapper/razermapperd/src/config.rs | layer_state_path field | VERIFIED | layer_state_path: PathBuf field added. Getter method exists. |
+| aethermap/aethermapd/src/layer_manager.rs | LayerManager, DeviceLayerState, LayerConfig, LayerMode | VERIFIED | File exists (1870 lines). All types exported. Tests pass (44 tests). |
+| aethermap/aethermapd/src/remap_engine.rs | layer_manager, layer_remaps, remap_layer_aware | VERIFIED | File has layer_manager: Arc<RwLock<LayerManager>> and layer_remaps: Vec<Arc<RwLock<HashMap<Key, Key>>>>>. remap_layer_aware() with cascade fallback. |
+| aethermap/aethermap-common/src/lib.rs | LayerMode, LayerConfigInfo, GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers | VERIFIED | All Request/Response variants added. Serialization tests pass (9 tests). |
+| aethermap/aethermapd/src/ipc.rs | IPC handlers for layer requests | VERIFIED | GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers match arms implemented. |
+| aethermap/aethermapd/src/lib.rs | layer_manager field in DaemonState | VERIFIED | pub layer_manager: Arc<RwLock<LayerManager>> added. Initialized in new(). |
+| aethermap/aethermap-gui/src/ipc.rs | get_active_layer, set_layer_config, activate_layer, list_layers | VERIFIED | All 4 async IPC client methods implemented. |
+| aethermap/aethermap-gui/src/gui.rs | layer_indicator, layer activation buttons, layer settings view | VERIFIED | layer_indicator(), layer_activation_buttons(), layer_settings_view(), layer_config_dialog() exist. Message handlers implemented. |
+| aethermap/aethermapd/src/config.rs | layer_state_path field | VERIFIED | layer_state_path: PathBuf field added. Getter method exists. |
 
 ### Key Link Verification
 
@@ -63,10 +63,10 @@ N/A — No REQUIREMENTS.md mapping for this phase.
 ### Anti-Patterns Found
 
 None. No TODO, FIXME, PLACEHOLDER, or stub implementations detected in:
-- razermapper/razermapperd/src/layer_manager.rs
-- razermapper/razermapperd/src/remap_engine.rs
-- razermapper/razermapper-common/src/lib.rs
-- razermapper/razermapperd/src/ipc.rs
+- aethermap/aethermapd/src/layer_manager.rs
+- aethermap/aethermapd/src/remap_engine.rs
+- aethermap/aethermap-common/src/lib.rs
+- aethermap/aethermapd/src/ipc.rs
 
 All implementations are substantive with proper error handling.
 

@@ -25,9 +25,9 @@ tech-stack:
 
 key-files:
   created:
-    - razermapper/razermapperd/src/layer_manager.rs
+    - aethermap/aethermapd/src/layer_manager.rs
   modified:
-    - razermapper/razermapperd/src/lib.rs
+    - aethermap/aethermapd/src/lib.rs
 
 key-decisions:
   - LayerConfig uses custom serialize/deserialize for HashMap<Key, Key> compatibility
@@ -75,8 +75,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/layer_manager.rs` - 750 lines including LayerManager, DeviceLayerState, LayerConfig, LayerMode, and 12 unit tests
-- `razermapper/razermapperd/src/lib.rs` - Added `pub mod layer_manager` and re-exports
+- `aethermap/aethermapd/src/layer_manager.rs` - 750 lines including LayerManager, DeviceLayerState, LayerConfig, LayerMode, and 12 unit tests
+- `aethermap/aethermapd/src/lib.rs` - Added `pub mod layer_manager` and re-exports
 
 ## Decisions Made
 
@@ -97,7 +97,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (LayerConfig struct compilation)
 - **Issue:** evdev::Key doesn't implement Serialize/Deserialize, causing compile error
 - **Fix:** Added custom serialize_remaps/deserialize_remaps functions using Visitor pattern
-- **Files modified:** razermapper/razermapperd/src/layer_manager.rs
+- **Files modified:** aethermap/aethermapd/src/layer_manager.rs
 - **Verification:** cargo check passes, LayerConfig now serializes correctly
 - **Committed in:** 9867710 (Task 2 commit)
 
@@ -105,7 +105,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 implementation
 - **Issue:** Plan specified 6 tests but added 12 for better coverage
 - **Fix:** Added additional tests for LayerConfig, toggle functionality, layer manager operations
-- **Files modified:** razermapper/razermapperd/src/layer_manager.rs
+- **Files modified:** aethermap/aethermapd/src/layer_manager.rs
 - **Verification:** All 12 tests pass (test_layer_manager_creation through test_layer_mode_display)
 - **Committed in:** 143af9b (Task 1 commit)
 
@@ -136,7 +136,7 @@ None - no external service configuration required.
 
 ## Self-Check: PASSED
 
-- FOUND: razermapper/razermapperd/src/layer_manager.rs (22,146 bytes)
+- FOUND: aethermap/aethermapd/src/layer_manager.rs (22,146 bytes)
 - FOUND: 10-01-SUMMARY.md (5,228 bytes)
 - FOUND: commit 143af9b (Task 1: Create layer_manager.rs module)
 - FOUND: commit 9867710 (Task 2: Export LayerManager types from lib.rs)

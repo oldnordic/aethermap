@@ -24,7 +24,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Changed HotkeyBindingsLoaded message from (String, Vec<HotkeyBinding>) to Result<Vec<HotkeyBinding>, String> for proper error handling"
@@ -73,7 +73,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/gui.rs` (lines 9, 646-648, 663, 987-1016, 1066-1120, 1122-1167)
+- `aethermap/aethermap-gui/src/gui.rs` (lines 9, 646-648, 663, 987-1016, 1066-1120, 1122-1167)
   - Added `HotkeyBinding as CommonHotkeyBinding` import for type conversion
   - Changed `HotkeyBindingsLoaded` from `(String, Vec<HotkeyBinding>)` to `Result<Vec<HotkeyBinding>, String>`
   - Added `HotkeyBindingsUpdated(Vec<HotkeyBinding>)` message variant
@@ -106,21 +106,21 @@ Each task was committed atomically:
 - **Found during:** Task 1 compilation
 - **Issue:** Initially tried to construct `CommonHotkeyBinding` when receiving `CommonHotkeyBinding` from daemon, should construct `HotkeyBinding` (GUI type)
 - **Fix:** Changed map closure to construct `HotkeyBinding` instead of `CommonHotkeyBinding`
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Committed in:** 09646a3 (part of Task 1 commit)
 
 **2. [Rule 1 - Bug] Fixed message variant name**
 - **Found during:** Task 2 compilation
 - **Issue:** Used `Message::AddNotification` but the actual variant is `Message::ShowNotification`
 - **Fix:** Changed all `AddNotification` to `ShowNotification` in SaveHotkeyBinding
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Committed in:** 2c6f773 (part of Task 2 commit)
 
 **3. [Rule 1 - Bug] Fixed IPC client usage**
 - **Found during:** Task 1 implementation
 - **Issue:** Initially used `crate::ipc::IpcClient::new()` which is `GuiIpcClient` without `send()` method
-- **Fix:** Use `IpcClient::with_socket_path()` from `razermapper_common::ipc_client` which has the generic `send()` method
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Fix:** Use `IpcClient::with_socket_path()` from `aethermap_common::ipc_client` which has the generic `send()` method
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Committed in:** 09646a3 (part of Task 1 commit)
 
 ---

@@ -29,8 +29,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-gui/src/ipc.rs
-    - razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermap-gui/src/ipc.rs
+    - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Layer config dialog state stored as Option<(String, usize, String, LayerMode)> for (device_id, layer_id, name, mode)"
@@ -84,8 +84,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/ipc.rs` - Added 4 async IPC methods for layer operations
-- `razermapper/razermapper-gui/src/gui.rs` - Added layer state tracking, view components, and message handlers
+- `aethermap/aethermap-gui/src/ipc.rs` - Added 4 async IPC methods for layer operations
+- `aethermap/aethermap-gui/src/gui.rs` - Added layer state tracking, view components, and message handlers
 
 ## Decisions Made
 

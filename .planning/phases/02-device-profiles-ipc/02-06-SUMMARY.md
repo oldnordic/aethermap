@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-gui/src/ipc.rs
-    - razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermap-gui/src/ipc.rs
+    - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Use device_path parameter for remap profiles (vs device_id for macro profiles)"
@@ -74,8 +74,8 @@ _Note: Tasks 2 and 3 were combined into a single commit as the ActiveRemapsDispl
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/ipc.rs` - Added 4 IPC client methods (113 lines)
-- `razermapper/razermapper-gui/src/gui.rs` - Added remap profile state, messages, handlers, and UI widgets (223 lines)
+- `aethermap/aethermap-gui/src/ipc.rs` - Added 4 IPC client methods (113 lines)
+- `aethermap/aethermap-gui/src/gui.rs` - Added remap profile state, messages, handlers, and UI widgets (223 lines)
 
 ## Decisions Made
 
@@ -112,13 +112,13 @@ None - no external service configuration required.
 - [x] `.planning/phases/02-device-profiles-ipc/02-06-SUMMARY.md` - Created
 - [x] `.planning/STATE.md` - Updated (Phase 2 now 100% complete)
 
-### Code Changes (razermapper sub-repo)
-- [x] `razermapper/razermapper-gui/src/ipc.rs` - Added 4 IPC client methods (get_active_remaps, list_remap_profiles, activate_remap_profile, deactivate_remap_profile)
-- [x] `razermapper/razermapper-gui/src/gui.rs` - Added remap profile state, messages, handlers, and UI widgets (view_remap_profile_switcher, view_active_remaps_display)
+### Code Changes (aethermap sub-repo)
+- [x] `aethermap/aethermap-gui/src/ipc.rs` - Added 4 IPC client methods (get_active_remaps, list_remap_profiles, activate_remap_profile, deactivate_remap_profile)
+- [x] `aethermap/aethermap-gui/src/gui.rs` - Added remap profile state, messages, handlers, and UI widgets (view_remap_profile_switcher, view_active_remaps_display)
 
 ### Commits
-- [x] Task 1 commit (feat): `f477dd3` (in razermapper sub-repo)
-- [x] Task 2 commit (feat): `7ad209f` (in razermapper sub-repo)
+- [x] Task 1 commit (feat): `f477dd3` (in aethermap sub-repo)
+- [x] Task 2 commit (feat): `7ad209f` (in aethermap sub-repo)
 - [x] Final metadata commit: `b42acad` (docs: complete plan)
 
 ### Success Criteria
@@ -129,4 +129,4 @@ None - no external service configuration required.
 - [x] STATE.md updated (position, decisions, session)
 - [x] Final metadata commit made
 
-**Note:** The task commits (f477dd3, 7ad209f) were made in the razermapper sub-repository, which has its own git configuration. The code changes are verified to exist in the files.
+**Note:** The task commits (f477dd3, 7ad209f) were made in the aethermap sub-repository, which has its own git configuration. The code changes are verified to exist in the files.

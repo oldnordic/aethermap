@@ -27,7 +27,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/analog_processor.rs
+    - aethermap/aethermapd/src/analog_processor.rs
 
 key-decisions:
   - "Used 22.5-degree sectors for 8-way direction detection, centered on cardinal directions"
@@ -69,11 +69,11 @@ completed: 2026-02-19
 
 ## Task Commits
 
-Since razermapper/ is external/untracked code, changes were verified via tests but not committed to this repository. The implementation exists in `razermapper/razermapperd/src/analog_processor.rs` with all 52 tests passing.
+Since aethermap/ is external/untracked code, changes were verified via tests but not committed to this repository. The implementation exists in `aethermap/aethermapd/src/analog_processor.rs` with all 52 tests passing.
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs` - Added D-pad mode implementation
+- `aethermap/aethermapd/src/analog_processor.rs` - Added D-pad mode implementation
   - `DpadDirection` enum - 8 directions + None
   - `dpad_direction_to_keys()` - Convert direction to Vec<Key>
   - `detect_dpad_direction()` - Angle-based 8-way direction detection
@@ -88,7 +88,7 @@ Since razermapper/ is external/untracked code, changes were verified via tests b
 - **Found during:** Task 3 (test execution)
 - **Issue:** Initial angle calculation didn't account for Y-axis negation in center() function, causing up/down directions to be reversed
 - **Fix:** Corrected angle calculation to use atan2(y, x) without negation, since center() already handles Y negation (cy=positive means visual up)
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs (detect_dpad_direction method)
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs (detect_dpad_direction method)
 - **Verification:** All cardinal and diagonal direction tests pass
 - **Impact:** Critical fix - without this, up/down directions would be inverted
 
@@ -96,7 +96,7 @@ Since razermapper/ is external/untracked code, changes were verified via tests b
 - **Found during:** Task 3 (test_dpad_inversion failure)
 - **Issue:** process_as_dpad() didn't apply calibration inversion before detecting direction, so invert_x/invert_y had no effect
 - **Fix:** Added explicit inversion step after deadzone filtering: negated dx if invert_x, negated dy if invert_y
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs (process_as_dpad method)
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs (process_as_dpad method)
 - **Verification:** test_dpad_inversion passes
 - **Impact:** Important for accessibility - allows left-handed users to flip axes
 
@@ -130,7 +130,7 @@ All dependencies satisfied. Ready for next phase.
 ## Self-Check: PASSED
 
 - **Verified files:**
-  - `razermapper/razermapperd/src/analog_processor.rs` - EXISTS, contains new D-pad implementation
+  - `aethermap/aethermapd/src/analog_processor.rs` - EXISTS, contains new D-pad implementation
   - `.planning/phases/11-analog-processing-and-calibration/11-03-SUMMARY.md` - EXISTS
 - **Tests:** All 52 analog_processor tests pass, including 20 new D-pad tests
 - **Functionality:**

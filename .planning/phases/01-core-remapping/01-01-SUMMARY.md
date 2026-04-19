@@ -24,13 +24,13 @@ tech-stack:
 
 key-files:
   created:
-    - razermapper/razermapperd/src/key_parser.rs
-    - razermapper/razermapperd/src/remap_engine.rs
+    - aethermap/aethermapd/src/key_parser.rs
+    - aethermap/aethermapd/src/remap_engine.rs
   modified:
-    - razermapper/razermapperd/src/lib.rs
-    - razermapper/razermapperd/src/macro_engine.rs
-    - razermapper/razermapperd/src/ipc.rs
-    - razermapper/razermapperd/src/security.rs
+    - aethermap/aethermapd/src/lib.rs
+    - aethermap/aethermapd/src/macro_engine.rs
+    - aethermap/aethermapd/src/ipc.rs
+    - aethermap/aethermapd/src/security.rs
 
 key-decisions:
   - "Use evdev::Key enum for all key storage (not u16 codes)"
@@ -79,23 +79,23 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
-- `razermapper/razermapperd/src/key_parser.rs` (539 lines)
+- `aethermap/aethermapd/src/key_parser.rs` (539 lines)
   - KeyParser struct with HashMap<String, evdev::Key> lookup
   - Case-insensitive parsing (KEY_A, key_a, Key_A all work)
   - Friendly abbreviation expansion (a -> KEY_A, capslock -> KEY_CAPSLOCK)
   - 14 unit tests covering all key categories
 
-- `razermapper/razermapperd/src/remap_engine.rs` (479 lines)
+- `aethermap/aethermapd/src/remap_engine.rs` (479 lines)
   - RemapEngine struct with Arc<RwLock<HashMap<evdev::Key, evdev::Key>>>
   - Eager validation in load_config (all keys validated before any stored)
   - O(1) remap() lookup performance
   - 14 unit tests for config loading, validation, and remapping
 
 ### Modified
-- `razermapper/razermapperd/src/lib.rs` - Added `pub mod key_parser;` and `pub mod remap_engine;` exports
-- `razermapper/razermapperd/src/macro_engine.rs` - Fixed MockInjector trait impl with Send+Sync error types
-- `razermapper/razermapperd/src/ipc.rs` - Fixed create_test_injector return type for trait object compatibility
-- `razermapper/razermapperd/src/security.rs` - Removed unused UNIX_EPOCH import
+- `aethermap/aethermapd/src/lib.rs` - Added `pub mod key_parser;` and `pub mod remap_engine;` exports
+- `aethermap/aethermapd/src/macro_engine.rs` - Fixed MockInjector trait impl with Send+Sync error types
+- `aethermap/aethermapd/src/ipc.rs` - Fixed create_test_injector return type for trait object compatibility
+- `aethermap/aethermapd/src/security.rs` - Removed unused UNIX_EPOCH import
 
 ## Key Codes Supported
 
@@ -198,8 +198,8 @@ test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out
 - Eager validation pattern established for config loading
 
 **Key files for next phase:**
-- `razermapper/razermapperd/src/key_parser.rs` - Use for device config parsing
-- `razermapper/razermapperd/src/remap_engine.rs` - Integrate with event loop
+- `aethermap/aethermapd/src/key_parser.rs` - Use for device config parsing
+- `aethermap/aethermapd/src/remap_engine.rs` - Integrate with event loop
 
 ---
 *Phase: 01-core-remapping*

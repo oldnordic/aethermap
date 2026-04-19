@@ -29,9 +29,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-gui/src/gui.rs
-    - razermapper/razermapperd/src/ipc.rs (verification only)
-    - razermapper/razermapperd/src/config.rs (verification only)
+    - aethermap/aethermap-gui/src/gui.rs
+    - aethermap/aethermapd/src/ipc.rs (verification only)
+    - aethermap/aethermapd/src/config.rs (verification only)
 
 key-decisions:
   - "CurveGraph widget already integrated - verified existing implementation"
@@ -80,14 +80,14 @@ No new commits - verification confirmed existing implementation meets plan requi
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/gui.rs` - CurveGraph integration (line 12 import, line 4737 Canvas widget)
+- `aethermap/aethermap-gui/src/gui.rs` - CurveGraph integration (line 12 import, line 4737 Canvas widget)
   - Import: `use crate::widgets::{AnalogVisualizer, CurveGraph, ...}`
   - Widget: `Canvas::new(CurveGraph { curve: self.sensitivity_curve_selected, multiplier: ... })`
   - Handler: `Message::ApplyAnalogCalibration` (line 1450) calls `set_analog_calibration` immediately
-- `razermapper/razermapperd/src/ipc.rs` - SetAnalogCalibration handler (line 1436)
+- `aethermap/aethermapd/src/ipc.rs` - SetAnalogCalibration handler (line 1436)
   - Updates analog processor calibration in-memory
   - Calls `config_manager.save_analog_calibration()` for YAML persistence
-- `razermapper/razermapperd/src/config.rs` - save_analog_calibration function (line 1255)
+- `aethermap/aethermapd/src/config.rs` - save_analog_calibration function (line 1255)
   - Reads existing device_profiles.yaml
   - Updates calibration for device/layer
   - Writes back to YAML file

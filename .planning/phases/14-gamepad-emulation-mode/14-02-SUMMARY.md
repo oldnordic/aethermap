@@ -23,7 +23,7 @@ patterns:
 # Key Files
 created: []
 modified:
-  - path: "razermapper/razermapperd/src/analog_processor.rs"
+  - path: "aethermap/aethermapd/src/analog_processor.rs"
     changes:
       - "Added AnalogMode enum with 6 variants"
       - "Added mode field to DeviceAnalogConfig struct"

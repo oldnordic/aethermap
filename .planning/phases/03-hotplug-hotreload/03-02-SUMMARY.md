@@ -69,9 +69,9 @@ Each task was verified (no code changes required):
 
 ## Files Verified
 
-- `razermapper/razermapperd/src/main.rs` - SIGHUP signal handler with nested tokio::select! for continued operation
-- `razermapper/razermapperd/src/config.rs` - reload_device_profiles() and reload_remaps() with validate-then-swap
-- `razermapper/razermapperd/src/remap_engine.rs` - load_config() with eager validation and atomic swap
+- `aethermap/aethermapd/src/main.rs` - SIGHUP signal handler with nested tokio::select! for continued operation
+- `aethermap/aethermapd/src/config.rs` - reload_device_profiles() and reload_remaps() with validate-then-swap
+- `aethermap/aethermapd/src/remap_engine.rs` - load_config() with eager validation and atomic swap
 
 ## Verification Findings
 

@@ -64,7 +64,7 @@ src/
 
 **Example (from existing code):**
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/hotplug.rs:114-122
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/hotplug.rs:114-122
 fn run_udev_monitor(tx: mpsc::Sender<DeviceEvent>) -> Result<(), Box<dyn std::error::Error>> {
     use udev::{MonitorBuilder, EventType};
 
@@ -86,7 +86,7 @@ fn run_udev_monitor(tx: mpsc::Sender<DeviceEvent>) -> Result<(), Box<dyn std::er
 
 **Example (from existing code):**
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/hotplug.rs:68-73
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/hotplug.rs:68-73
 tokio::task::spawn_blocking(move || {
     if let Err(e) = run_udev_monitor(tx) {
         error!("Udev monitor task exited with error: {}", e);
@@ -101,7 +101,7 @@ tokio::task::spawn_blocking(move || {
 
 **Example (from existing code):**
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/config.rs:717-755
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/config.rs:717-755
 pub async fn reload_device_profiles(&self) -> Result<(), RemapConfigError> {
     // 1. Read and parse
     let content = fs::read_to_string(&self.device_profiles_path).await?;
@@ -127,7 +127,7 @@ pub async fn reload_device_profiles(&self) -> Result<(), RemapConfigError> {
 
 **Example (from existing code):**
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/main.rs:233-296
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/main.rs:233-296
 tokio::select! {
     _ = sig_hup.recv() => {
         info!("Received SIGHUP, reloading configuration");
@@ -156,7 +156,7 @@ tokio::select! {
 
 **Example (from existing code):**
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/device.rs:244-258
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/device.rs:244-258
 pub async fn handle_device_removal(&mut self, device_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     info!("Handling device removal: {}", device_path);
 
@@ -246,7 +246,7 @@ Verified patterns from existing codebase:
 
 ### Device Hotplug Event Processing
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/hotplug.rs:130-161
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/hotplug.rs:130-161
 for event in socket.iter() {
     let devnode = match event.devnode() {
         Some(path) => path.to_string_lossy().to_string(),
@@ -272,7 +272,7 @@ for event in socket.iter() {
 
 ### Graceful Shutdown with Cleanup
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/main.rs:341-353
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/main.rs:341-353
 // Cleanup
 info!("Starting cleanup...");
 
@@ -288,12 +288,12 @@ info!("Starting cleanup...");
 }
 
 ipc_server.shutdown().await?;
-info!("Razermapper Daemon shutdown complete");
+info!("Aethermap Daemon shutdown complete");
 ```
 
 ### SIGHUP Configuration Reload
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/main.rs:233-250
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/main.rs:233-250
 _ = sig_hup.recv() => {
     info!("Received SIGHUP, reloading configuration");
 
@@ -318,7 +318,7 @@ _ = sig_hup.recv() => {
 
 ### Drop Trait for Device Cleanup
 ```rust
-// Source: /home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/device.rs:30-38
+// Source: /home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/device.rs:30-38
 impl Drop for GrabbedDevice {
     fn drop(&mut self) {
         if self.grabbed {
@@ -360,7 +360,7 @@ impl Drop for GrabbedDevice {
 ## Sources
 
 ### Primary (HIGH confidence)
-- **Existing codebase** - `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/`
+- **Existing codebase** - `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/`
   - `hotplug.rs` - udev-based DeviceMonitor implementation (lines 1-262)
   - `device.rs` - handle_device_add/handle_device_removal methods (lines 244-340)
   - `config.rs` - reload_device_profiles, reload_remaps methods (lines 717-860)
@@ -422,11 +422,11 @@ All Phase 3 features were **already implemented** in the codebase:
 
 | Feature | Status | Location |
 |---------|--------|----------|
-| udev-based hotplug monitoring | ✓ Complete | `razermapperd/src/hotplug.rs` |
-| Device add handler with profile application | ✓ Complete | `razermapperd/src/device.rs::handle_device_add` |
-| Device removal handler with best-effort cleanup | ✓ Complete | `razermapperd/src/device.rs::handle_device_removal` |
-| SIGHUP configuration hot-reload | ✓ Complete | `razermapperd/src/main.rs` (tokio::select!) |
-| Validate-then-swap pattern | ✓ Complete | `razermapperd/src/config.rs::reload_*` |
+| udev-based hotplug monitoring | ✓ Complete | `aethermapd/src/hotplug.rs` |
+| Device add handler with profile application | ✓ Complete | `aethermapd/src/device.rs::handle_device_add` |
+| Device removal handler with best-effort cleanup | ✓ Complete | `aethermapd/src/device.rs::handle_device_removal` |
+| SIGHUP configuration hot-reload | ✓ Complete | `aethermapd/src/main.rs` (tokio::select!) |
+| Validate-then-swap pattern | ✓ Complete | `aethermapd/src/config.rs::reload_*` |
 
 ### Terminology Correction
 

@@ -28,8 +28,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-  - razermapper/razermapper-gui/src/gui.rs (AnalogCalibrationView, UI, message handlers)
-  - razermapper/razermapper-gui/src/ipc.rs (get/set_analog_calibration methods)
+  - aethermap/aethermap-gui/src/gui.rs (AnalogCalibrationView, UI, message handlers)
+  - aethermap/aethermap-gui/src/ipc.rs (get/set_analog_calibration methods)
 
 key-decisions:
   - "DeadzoneShape and SensitivityCurve enums as Display types for pick_list"
@@ -83,8 +83,8 @@ completed: 2026-02-19
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/gui.rs` - Added AnalogCalibrationView, enums, Message variants, UI layout, modal integration
-- `razermapper/razermapper-gui/src/ipc.rs` - Added get_analog_calibration/set_analog_calibration methods
+- `aethermap/aethermap-gui/src/gui.rs` - Added AnalogCalibrationView, enums, Message variants, UI layout, modal integration
+- `aethermap/aethermap-gui/src/ipc.rs` - Added get_analog_calibration/set_analog_calibration methods
 
 ## Decisions Made
 

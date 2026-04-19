@@ -20,13 +20,13 @@ tech-stack:
 
 key-files:
   created:
-    - razermapper/razermapper-gui/src/widgets/curve_graph.rs
+    - aethermap/aethermap-gui/src/widgets/curve_graph.rs
   modified:
-    - razermapper/razermapper-gui/src/widgets/mod.rs
-    - razermapper/razermapper-gui/Cargo.toml
+    - aethermap/aethermap-gui/src/widgets/mod.rs
+    - aethermap/aethermap-gui/Cargo.toml
 
 key-decisions:
-  - "Use GUI's local SensitivityCurve enum instead of razermapper_common (type doesn't exist in common crate)"
+  - "Use GUI's local SensitivityCurve enum instead of aethermap_common (type doesn't exist in common crate)"
   - "Default Exponential curve exponent to 2.0 (GUI enum has no field, daemon uses 2.0 as default)"
   - "Plot normalized 0-1 curve only, show multiplier separately (keeps graph simple and predictable)"
 
@@ -79,9 +79,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/widgets/curve_graph.rs` - Canvas widget plotting sensitivity curves
-- `razermapper/razermapper-gui/src/widgets/mod.rs` - Added curve_graph module declaration and export
-- `razermapper/razermapper-gui/Cargo.toml` - Added "canvas" feature to iced dependency
+- `aethermap/aethermap-gui/src/widgets/curve_graph.rs` - Canvas widget plotting sensitivity curves
+- `aethermap/aethermap-gui/src/widgets/mod.rs` - Added curve_graph module declaration and export
+- `aethermap/aethermap-gui/Cargo.toml` - Added "canvas" feature to iced dependency
 
 ## Deviations from Plan
 
@@ -91,7 +91,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (Initial compilation attempt)
 - **Issue:** canvas module not found - iced feature "canvas" was not enabled in Cargo.toml
 - **Fix:** Added "canvas" to iced features: `iced = { version = "0.12", features = ["tokio", "svg", "canvas"] }`
-- **Files modified:** razermapper/razermapper-gui/Cargo.toml
+- **Files modified:** aethermap/aethermap-gui/Cargo.toml
 - **Verification:** `cargo check` passes successfully
 - **Committed in:** Part of Task 2
 
@@ -105,16 +105,16 @@ Each task was committed atomically:
   - Import correct modules: `use iced::widget::canvas::{event, Frame, Geometry, Path, Program, Stroke}`
   - Import `use iced::mouse` for Cursor type
   - Use Stroke builder pattern for all stroke calls
-- **Files modified:** razermapper/razermapper-gui/src/widgets/curve_graph.rs, razermapper/razermapper-gui/src/widgets/analog_visualizer.rs
-- **Verification:** `cargo check --manifest-path razermapper/razermapper-gui/Cargo.toml` passes with only unused import warning
+- **Files modified:** aethermap/aethermap-gui/src/widgets/curve_graph.rs, aethermap/aethermap-gui/src/widgets/analog_visualizer.rs
+- **Verification:** `cargo check --manifest-path aethermap/aethermap-gui/Cargo.toml` passes with only unused import warning
 - **Committed in:** Part of Task 2
 
 **3. [Plan Adjustment] Used GUI's local SensitivityCurve enum**
 - **Found during:** Task 2 (Type resolution)
-- **Issue:** Plan specified `use razermapper_common::SensitivityCurve` but this type doesn't exist in razermapper-common crate
+- **Issue:** Plan specified `use aethermap_common::SensitivityCurve` but this type doesn't exist in aethermap-common crate
 - **Fix:** Used `use crate::gui::SensitivityCurve` instead - GUI has local enum defined in gui.rs
 - **Note:** GUI's SensitivityCurve::Exponential has no exponent field (unlike daemon's version), defaulted to 2.0
-- **Files modified:** razermapper/razermapper-gui/src/widgets/curve_graph.rs
+- **Files modified:** aethermap/aethermap-gui/src/widgets/curve_graph.rs
 - **Verification:** Compilation passes, curve plotting works with all three types
 - **Committed in:** Part of Task 2
 
@@ -125,7 +125,7 @@ Each task was committed atomically:
 
 ## Issues Encountered
 
-- **Source files not tracked in git:** The razermapper source code is in a separate repository or not tracked in this planning repo. Files created on filesystem but git commits not applicable for this session.
+- **Source files not tracked in git:** The aethermap source code is in a separate repository or not tracked in this planning repo. Files created on filesystem but git commits not applicable for this session.
 
 ## User Setup Required
 

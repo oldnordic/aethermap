@@ -22,8 +22,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/config.rs
-    - razermapper/razermapperd/src/global_hotkey_manager.rs
+    - aethermap/aethermapd/src/config.rs
+    - aethermap/aethermapd/src/global_hotkey_manager.rs
 
 key-decisions:
   - "Filter out invalid modifiers via normalize_modifier_name() returning Option (graceful handling of typos)"
@@ -65,8 +65,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/config.rs` - Added get_all_hotkey_bindings() method to ConfigManager impl block
-- `razermapper/razermapperd/src/global_hotkey_manager.rs` - Implemented load_bindings() to read from ConfigManager and normalize modifiers
+- `aethermap/aethermapd/src/config.rs` - Added get_all_hotkey_bindings() method to ConfigManager impl block
+- `aethermap/aethermapd/src/global_hotkey_manager.rs` - Implemented load_bindings() to read from ConfigManager and normalize modifiers
 
 ## Decisions Made
 

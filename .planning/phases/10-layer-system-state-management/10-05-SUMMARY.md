@@ -25,7 +25,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/remap_engine.rs
+    - aethermap/aethermapd/src/remap_engine.rs
 
 key-decisions:
   - layer_remaps indexed by layer_id with Vec for O(1) access
@@ -72,7 +72,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/remap_engine.rs` - Added layer_manager, layer_remaps, remap_layer_aware(), process_event_layer_aware(), load_layer_remap(), and 11 unit tests
+- `aethermap/aethermapd/src/remap_engine.rs` - Added layer_manager, layer_remaps, remap_layer_aware(), process_event_layer_aware(), load_layer_remap(), and 11 unit tests
 
 ## Decisions Made
 
@@ -89,7 +89,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (test execution)
 - **Issue:** Initial implementation used `tokio::task::block_in_place()` which fails in single-threaded runtime
 - **Fix:** Changed method to fully async, using direct `.await` instead of blocking
-- **Files modified:** razermapper/razermapperd/src/remap_engine.rs
+- **Files modified:** aethermap/aethermapd/src/remap_engine.rs
 - **Verification:** All 28 tests pass including 11 new layer tests
 - **Committed in:** 811c198 (Task 3 commit)
 
@@ -97,7 +97,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (test execution)
 - **Issue:** Test used `activate_layer()` which doesn't properly test hold layer cascade behavior
 - **Fix:** Updated tests to use `activate_hold_layer()` for proper layer activation semantics
-- **Files modified:** razermapper/razermapperd/src/remap_engine.rs
+- **Files modified:** aethermap/aethermapd/src/remap_engine.rs
 - **Verification:** test_remap_layer_aware_priority and related tests pass
 - **Committed in:** 811c198 (Task 3 commit)
 
@@ -128,7 +128,7 @@ None - no external service configuration required.
 
 ## Self-Check: PASSED
 
-- FOUND: razermapper/razermapperd/src/remap_engine.rs (modified)
+- FOUND: aethermap/aethermapd/src/remap_engine.rs (modified)
 - FOUND: commit 88c3567 (Task 1: Add layer manager and per-layer remappings)
 - FOUND: commit b547800 (Task 2: Implement layer-aware remap lookup)
 - FOUND: commit 811c198 (Task 3: Add layer-aware remap unit tests)

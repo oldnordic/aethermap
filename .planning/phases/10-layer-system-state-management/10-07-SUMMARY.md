@@ -21,16 +21,16 @@ affects: [gui, layer activation integration, profile persistence]
 tech-stack:
   added: []
   patterns:
-    - "IPC type conversion: razermapper-common types to internal layer_manager types"
+    - "IPC type conversion: aethermap-common types to internal layer_manager types"
     - "Arc<RwLock<LayerManager>> pattern for shared daemon state"
 
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-common/src/lib.rs
-    - razermapper/razermapperd/src/lib.rs
-    - razermapper/razermapperd/src/ipc.rs
-    - razermapper/razermapperd/src/layer_manager.rs
+    - aethermap/aethermap-common/src/lib.rs
+    - aethermap/aethermapd/src/lib.rs
+    - aethermap/aethermapd/src/ipc.rs
+    - aethermap/aethermapd/src/layer_manager.rs
 
 key-decisions:
   - "Use type alias (CommonLayerMode vs LayerMode) to disambiguate IPC and internal layer modes"
@@ -60,7 +60,7 @@ completed: 2026-02-17
 
 ## Accomplishments
 
-- Extended razermapper-common IPC protocol with layer management types (LayerMode, LayerConfigInfo)
+- Extended aethermap-common IPC protocol with layer management types (LayerMode, LayerConfigInfo)
 - Added Request variants: GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers
 - Added Response variants: ActiveLayer, LayerConfigured, LayerList
 - Exposed LayerManager via DaemonState for IPC handler access
@@ -72,7 +72,7 @@ completed: 2026-02-17
 
 Each task was committed atomically:
 
-1. **Task 1: Add layer management types to razermapper-common** - `799d04c` (feat)
+1. **Task 1: Add layer management types to aethermap-common** - `799d04c` (feat)
 2. **Task 2: Add layer_manager to DaemonState** - `2ddb4c8` (feat)
 3. **Task 3: Add IPC handlers for layer management** - `2b49616` (feat)
 4. **Task 4: Add IPC protocol tests for layer management** - `e7b5abb` (test)
@@ -81,14 +81,14 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added LayerMode, LayerConfigInfo, and IPC Request/Response variants
-- `razermapper/razermapperd/src/lib.rs` - Added layer_manager field to DaemonState
-- `razermapper/razermapperd/src/ipc.rs` - Added IPC handlers for GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers
-- `razermapper/razermapperd/src/layer_manager.rs` - Added set_layer_config() method
+- `aethermap/aethermap-common/src/lib.rs` - Added LayerMode, LayerConfigInfo, and IPC Request/Response variants
+- `aethermap/aethermapd/src/lib.rs` - Added layer_manager field to DaemonState
+- `aethermap/aethermapd/src/ipc.rs` - Added IPC handlers for GetActiveLayer, SetLayerConfig, ActivateLayer, ListLayers
+- `aethermap/aethermapd/src/layer_manager.rs` - Added set_layer_config() method
 
 ## Decisions Made
 
-- **Type alias strategy:** Used `LayerMode as CommonLayerMode` import alias to disambiguate between razermapper-common::LayerMode and layer_manager::LayerMode
+- **Type alias strategy:** Used `LayerMode as CommonLayerMode` import alias to disambiguate between aethermap-common::LayerMode and layer_manager::LayerMode
 - **Separate IPC types:** Created LayerConfigInfo for IPC (serializable) separate from internal LayerConfig (has non-serializable HashMap<Key, Key>)
 - **Remap handling:** set_layer_config() only updates name and mode; remaps are managed separately via RemapEngine to avoid duplication
 
@@ -98,7 +98,7 @@ None - plan executed exactly as written.
 
 ## Issues Encountered
 
-- **Type mismatch:** razermapper-common::LayerMode and layer_manager::LayerMode were separate enums
+- **Type mismatch:** aethermap-common::LayerMode and layer_manager::LayerMode were separate enums
   - **Resolution:** Used import alias `LayerMode as CommonLayerMode` and explicit conversion in IPC handlers
 - **Lifetime issue in GetActiveLayer:** Original closure borrowed from temporary DeviceLayerState
   - **Resolution:** Restructured to use if-let pattern with owned DeviceLayerState

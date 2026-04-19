@@ -16,16 +16,16 @@ affects: [gui]
 
 # Tech tracking
 tech-stack:
-  added: [IpcClient from razermapper_common, ShowNotification message]
+  added: [IpcClient from aethermap_common, ShowNotification message]
   patterns: [Command::perform with async IPC, type conversion between GUI and common types]
 
 key-files:
   created: []
-  modified: [razermapper/razermapper-gui/src/gui.rs]
+  modified: [aethermap/aethermap-gui/src/gui.rs]
 
 key-decisions:
   - "Added ShowNotification(String, bool) message for user feedback notifications"
-  - "Used razermapper_common::ipc_client::IpcClient directly instead of wrapped GuiIpcClient"
+  - "Used aethermap_common::ipc_client::IpcClient directly instead of wrapped GuiIpcClient"
 
 patterns-established:
   - "GUI → type conversion → IPC request → response handling → notification"
@@ -64,7 +64,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/gui.rs`
+- `aethermap/aethermap-gui/src/gui.rs`
   - Added imports: Request, Response, CommonAutoSwitchRule, IpcClient, CommonHotkeyBinding
   - Added ShowNotification(String, bool) to Message enum
   - Implemented SaveAutoSwitchRule with IPC call to SetAutoSwitchRules
@@ -78,8 +78,8 @@ Each task was committed atomically:
 **1. [Rule 1 - Bug] Fixed LoadHotkeyBindings handler compilation error**
 - **Found during:** Task 1 (after adding imports)
 - **Issue:** LoadHotkeyBindings was using crate::ipc::IpcClient (GuiIpcClient) which doesn't have send() method, and had type mismatch for HotkeyBindingsLoaded
-- **Fix:** Changed to use razermapper_common::ipc_client::IpcClient and added type conversion from common::HotkeyBinding to gui::HotkeyBinding
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Fix:** Changed to use aethermap_common::ipc_client::IpcClient and added type conversion from common::HotkeyBinding to gui::HotkeyBinding
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Verification:** cargo check passes, LoadHotkeyBindings compiles correctly
 - **Committed in:** 14adee4 (Task 1 commit)
 
@@ -87,7 +87,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (after fixing LoadHotkeyBindings)
 - **Issue:** add_notification was called with String but expects &str
 - **Fix:** Changed format!() call to use reference (&format!(...))
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Verification:** cargo check passes
 - **Committed in:** 14adee4 (Task 1 commit)
 
@@ -95,7 +95,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (implementing notification feedback)
 - **Issue:** Plan specified using Message::AddNotification which doesn't exist
 - **Fix:** Added ShowNotification(String, bool) to Message enum with handler that calls self.add_notification()
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Verification:** Notifications display correctly on success/error
 - **Committed in:** 14adee4 (Task 1 commit)
 
@@ -103,7 +103,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (implementation)
 - **Issue:** Plan showed IpcClient::new(socket_path) but IpcClient::new() takes no arguments
 - **Fix:** Changed to IpcClient::with_socket_path(socket_path)
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Verification:** cargo check passes, IPC calls work correctly
 - **Committed in:** 14adee4 (Task 1 commit)
 
@@ -115,7 +115,7 @@ Each task was committed atomically:
 ## Issues Encountered
 
 **Name shadowing with HotkeyBinding imports**
-- The GUI has a local HotkeyBinding struct and razermapper_common also has HotkeyBinding
+- The GUI has a local HotkeyBinding struct and aethermap_common also has HotkeyBinding
 - Initially imported both with same name causing confusion
 - Fixed by importing common::HotkeyBinding as CommonHotkeyBinding in separate import statement
 

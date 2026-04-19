@@ -20,19 +20,19 @@ Created Iced Canvas-based `AnalogVisualizer` widget that renders analog stick po
 
 | Task | Name | Commit | Files |
 | ---- | ----- | ------ | ----- |
-| 1 | Create widgets module with AnalogVisualizer struct | `5a1a85b` | `razermapper-gui/src/widgets/mod.rs` |
-| 2 | Implement AnalogVisualizer with canvas::Program trait | `7287a1d` | `razermapper-gui/src/widgets/analog_visualizer.rs` |
+| 1 | Create widgets module with AnalogVisualizer struct | `5a1a85b` | `aethermap-gui/src/widgets/mod.rs` |
+| 2 | Implement AnalogVisualizer with canvas::Program trait | `7287a1d` | `aethermap-gui/src/widgets/analog_visualizer.rs` |
 
 ## Files Created/Modified
 
 ### Created Files
 
-1. **razermapper-gui/src/widgets/mod.rs**
+1. **aethermap-gui/src/widgets/mod.rs**
    - Module declaration for custom widgets
    - Re-exports `AnalogVisualizer` for convenient use
    - 9 lines
 
-2. **razermapper-gui/src/widgets/analog_visualizer.rs**
+2. **aethermap-gui/src/widgets/analog_visualizer.rs**
    - Canvas-based stick position visualization widget
    - Implements `iced::widget::canvas::Program` trait
    - 168 lines (exceeds 80 line minimum)
@@ -127,12 +127,12 @@ Plan 16-02 will integrate this widget into the GUI and add the curve graph widge
 
 ## Dependencies Added
 
-None - using existing Iced canvas widget from `razermapper-gui` dependencies.
+None - using existing Iced canvas widget from `aethermap-gui` dependencies.
 
 ## Self-Check: PASSED
 
-- [x] `razermapper-gui/src/widgets/mod.rs` exists
-- [x] `razermapper-gui/src/widgets/analog_visualizer.rs` exists
+- [x] `aethermap-gui/src/widgets/mod.rs` exists
+- [x] `aethermap-gui/src/widgets/analog_visualizer.rs` exists
 - [x] `.planning/phases/16-calibration-gui/16-01-SUMMARY.md` exists
 - [x] Commits `5a1a85b` and `7287a1d` exist in git log
 - [x] All unit tests passing

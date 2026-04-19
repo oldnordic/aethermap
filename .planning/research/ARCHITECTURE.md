@@ -73,11 +73,11 @@ Linux input remapping systems follow a layered event interception architecture:
 ## Recommended Project Structure
 
 ```
-razermapper/
-├── razermapper-common/          # Shared types and IPC protocol
+aethermap/
+├── aethermap-common/          # Shared types and IPC protocol
 │   └── src/
 │       └── lib.rs               # DeviceInfo, KeyCombo, Action, MacroEntry, RemapEntry
-├── razermapperd/                # Privileged daemon
+├── aethermapd/                # Privileged daemon
 │   └── src/
 │       ├── main.rs              # Entry point, component initialization
 │       ├── device.rs            # DeviceManager, EVIOCGRAB logic
@@ -87,21 +87,21 @@ razermapper/
 │       ├── config.rs            # ConfigManager, profile persistence
 │       ├── ipc.rs               # IPC server, request routing
 │       └── security.rs          # SecurityManager, privilege dropping
-├── razermapper-gui/             # User interface (GTK/Tauri)
+├── aethermap-gui/             # User interface (GTK/Tauri)
 │   └── src/
 │       ├── main.rs              # GUI entry
 │       ├── daemon_client.rs     # IPC client wrapper
 │       └── ui/                  # UI components
-└── razermapper-cli/             # Command-line tool
+└── aethermap-cli/             # Command-line tool
     └── src/
         └── main.rs              # CLI interface
 ```
 
 ### Structure Rationale
 
-- **razermapper-common/**: Shared types ensure daemon and GUI speak the same protocol. IPC messages defined once.
-- **razermapperd/src/remap.rs** (NEW): Dedicated remap engine separates concerns from macros. Remaps are simple 1:1 translations; macros are complex sequences.
-- **razermapperd/src/macro_engine.rs**: Existing macro engine handles sequences. Can receive events from RemapEngine.
+- **aethermap-common/**: Shared types ensure daemon and GUI speak the same protocol. IPC messages defined once.
+- **aethermapd/src/remap.rs** (NEW): Dedicated remap engine separates concerns from macros. Remaps are simple 1:1 translations; macros are complex sequences.
+- **aethermapd/src/macro_engine.rs**: Existing macro engine handles sequences. Can receive events from RemapEngine.
 - **device.rs**: Device discovery and grabbing already implemented. Event channel feeds into remap layer first.
 - **security.rs**: Privilege dropping after initialization minimizes attack surface.
 
@@ -318,8 +318,8 @@ std::mem::swap(&mut self.remaps, &mut new_remaps);
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| systemd | Service unit with socket activation | RuntimeDirectory=/run/razermapper for socket |
-| D-Bus (optional) | org.razermapper.Daemon interface | For desktop integration (status icon, notifications) |
+| systemd | Service unit with socket activation | RuntimeDirectory=/run/aethermap for socket |
+| D-Bus (optional) | org.aethermap.Daemon interface | For desktop integration (status icon, notifications) |
 | X11/Wayland | No direct integration needed | uinput events go through normal input path |
 
 ### Internal Boundaries
@@ -346,11 +346,11 @@ std::mem::swap(&mut self.remaps, &mut new_remaps);
 - ArchWiki interception-tools page (access denied during research - verify independently)
 - Specific performance benchmarks for remap engines (no current benchmarks found)
 
-## Key Findings for Razermapper
+## Key Findings for Aethermap
 
 ### Current Architecture Alignment
 
-The existing Razermapper architecture is well-aligned with standard patterns:
+The existing Aethermap architecture is well-aligned with standard patterns:
 
 1. **DeviceManager**: Already implements device discovery and EVIOCGRAB grabbing
 2. **MacroEngine**: Handles sequences and triggers correctly
@@ -359,7 +359,7 @@ The existing Razermapper architecture is well-aligned with standard patterns:
 
 ### Missing Component: RemapEngine
 
-**Recommendation:** Create new `razermapperd/src/remap.rs` with `RemapEngine` struct.
+**Recommendation:** Create new `aethermapd/src/remap.rs` with `RemapEngine` struct.
 
 **Responsibilities:**
 - Store remap tables: `HashMap<(device_path, key_code), remapped_code>`
@@ -402,7 +402,7 @@ tokio::spawn(async move {
 ### Build Order Implications
 
 1. **Phase 1:** Create RemapEngine with HashMap storage, no device filtering
-2. **Phase 2:** Add RemapEntry to razermapper-common, extend IPC protocol
+2. **Phase 2:** Add RemapEntry to aethermap-common, extend IPC protocol
 3. **Phase 3:** Integrate RemapEngine into main event loop (modify main.rs)
 4. **Phase 4:** Add config persistence (extend ConfigManager)
 5. **Phase 5:** Implement hot-reload (inotify + atomic swap)

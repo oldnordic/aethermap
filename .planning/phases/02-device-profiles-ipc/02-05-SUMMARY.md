@@ -22,9 +22,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/device.rs
-    - razermapper/razermapperd/src/ipc.rs
-    - razermapper/razermapperd/src/main.rs
+    - aethermap/aethermapd/src/device.rs
+    - aethermap/aethermapd/src/ipc.rs
+    - aethermap/aethermapd/src/main.rs
 
 key-decisions:
   - Changed error types from Box<dyn std::error::Error> to Box<dyn std::error::Error + Send + Sync> for async/await compatibility across tokio::spawn boundaries
@@ -76,9 +76,9 @@ _Note: All tasks committed together as they build on each other._
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/device.rs` - Added get_active_remaps(), activate_profile_by_name(), get_device_info_from_path() methods; updated error types to Send + Sync
-- `razermapper/razermapperd/src/ipc.rs` - Implemented GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile handlers; added imports for RemapProfileInfo and RemapEntry
-- `razermapper/razermapperd/src/main.rs` - Added device profile loading after device discovery, before device_manager wrapping
+- `aethermap/aethermapd/src/device.rs` - Added get_active_remaps(), activate_profile_by_name(), get_device_info_from_path() methods; updated error types to Send + Sync
+- `aethermap/aethermapd/src/ipc.rs` - Implemented GetActiveRemaps, ListRemapProfiles, ActivateRemapProfile, DeactivateRemapProfile handlers; added imports for RemapProfileInfo and RemapEntry
+- `aethermap/aethermapd/src/main.rs` - Added device profile loading after device discovery, before device_manager wrapping
 
 ## Decisions Made
 
@@ -94,7 +94,7 @@ _Note: All tasks committed together as they build on each other._
 - **Found during:** Task 2 (IPC handler implementation)
 - **Issue:** Box<dyn std::error::Error> is not Send, causing compilation error in tokio::spawn context
 - **Fix:** Changed all error types to Box<dyn std::error::Error + Send + Sync>
-- **Files modified:** razermapper/razermapperd/src/device.rs (activate_profile, deactivate_profile, get_active_remaps, activate_profile_by_name)
+- **Files modified:** aethermap/aethermapd/src/device.rs (activate_profile, deactivate_profile, get_active_remaps, activate_profile_by_name)
 - **Verification:** cargo check passes, tokio::spawn compatibility verified
 - **Committed in:** 21e2682
 
@@ -102,7 +102,7 @@ _Note: All tasks committed together as they build on each other._
 - **Found during:** Task 2 (IPC handler implementation)
 - **Issue:** Cannot use `?` operator in function returning Response (not Result)
 - **Fix:** Changed from `ok_or_else()?.` to match pattern with explicit Response::Error return
-- **Files modified:** razermapper/razermapperd/src/ipc.rs (all 4 handlers)
+- **Files modified:** aethermap/aethermapd/src/ipc.rs (all 4 handlers)
 - **Verification:** cargo check passes, handlers return Response correctly
 - **Committed in:** 21e2682
 

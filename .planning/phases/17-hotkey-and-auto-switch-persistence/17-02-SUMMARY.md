@@ -21,7 +21,7 @@ tech-stack:
 
 key-files:
   created: []
-  modified: [razermapper/razermapperd/src/config.rs]
+  modified: [aethermap/aethermapd/src/config.rs]
 
 key-decisions:
   - "Wrapped DaemonConfig in Arc<RwLock<>> for runtime mutability (required for auto-switch rule updates)"
@@ -64,7 +64,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/config.rs` - Added set_auto_switch_rules(), get_auto_switch_rules(), wrapped config in Arc<RwLock<>>
+- `aethermap/aethermapd/src/config.rs` - Added set_auto_switch_rules(), get_auto_switch_rules(), wrapped config in Arc<RwLock<>>
 
 ## Decisions Made
 
@@ -82,7 +82,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (set_auto_switch_rules implementation)
 - **Issue:** Plan specified acquiring write lock on self.config, but config was not wrapped in RwLock
 - **Fix:** Changed `config: DaemonConfig` to `config: Arc<RwLock<DaemonConfig>>` and updated all access patterns
-- **Files modified:** razermapper/razermapperd/src/config.rs
+- **Files modified:** aethermap/aethermapd/src/config.rs
 - **Verification:** cargo check passes, methods can now acquire write lock for updates
 - **Committed in:** d4125a0 (Task 1 commit)
 

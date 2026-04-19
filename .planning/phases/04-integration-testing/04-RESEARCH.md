@@ -34,7 +34,7 @@ No CONTEXT.md exists for Phase 4. Research is unconstrained by prior user decisi
 
 ### Already Installed
 ```toml
-# From razermapperd/Cargo.toml
+# From aethermapd/Cargo.toml
 [dev-dependencies]
 tempfile = "3"
 tokio = { version = "1", features = ["full"] }
@@ -51,13 +51,13 @@ async-trait = "0.1"
 
 ### Test Project Structure
 ```
-razermapper/razermapperd/tests/
+aethermap/aethermapd/tests/
 ├── hotplug_test.rs           # Device event handling tests
 ├── config_reload_test.rs     # Configuration hot-reload tests
 ├── remap_integration_test.rs # (NEW) End-to-end remapping with virtual devices
 └── device_manager_test.rs    # (NEW) Device grab/release integration tests
 
-razermapper/razermapperd/src/
+aethermap/aethermapd/src/
 ├── remap_engine.rs           # Unit tests at lines 439-689
 ├── key_parser.rs             # Unit tests at lines 308-542
 └── [... other modules with inline tests]
@@ -68,7 +68,7 @@ razermapper/razermapperd/src/
 **When to use:** Testing RemapEngine, ConfigManager, DeviceManager async methods
 **Example:**
 ```rust
-// Source: razermapperd/src/remap_engine.rs:468-476
+// Source: aethermapd/src/remap_engine.rs:468-476
 #[tokio::test]
 async fn test_remap_returns_correct_key() {
     let engine = RemapEngine::new();
@@ -86,7 +86,7 @@ async fn test_remap_returns_correct_key() {
 **When to use:** Testing configuration loading, file-based operations
 **Example:**
 ```rust
-// Source: razermapperd/tests/config_reload_test.rs:37-51
+// Source: aethermapd/tests/config_reload_test.rs:37-51
 fn create_test_config_manager(temp_dir: &TempDir) -> ConfigManager {
     ConfigManager {
         config_path: temp_dir.path().join("config.yaml"),
@@ -95,7 +95,7 @@ fn create_test_config_manager(temp_dir: &TempDir) -> ConfigManager {
         profiles_dir: temp_dir.path().join("profiles"),
         remaps_path: temp_dir.path().join("remaps.yaml"),
         device_profiles_path: temp_dir.path().join("device_profiles.yaml"),
-        config: razermapperd::config::DaemonConfig::default(),
+        config: aethermapd::config::DaemonConfig::default(),
         macros: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
         profiles: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
         remaps: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
@@ -109,7 +109,7 @@ fn create_test_config_manager(temp_dir: &TempDir) -> ConfigManager {
 **When to use:** Tests need shared mutable state across async tasks
 **Example:**
 ```rust
-// Source: razermapperd/tests/config_reload_test.rs:471-494
+// Source: aethermapd/tests/config_reload_test.rs:471-494
 let manager = Arc::new(create_test_config_manager(&temp_dir));
 
 let manager1 = manager.clone();
@@ -242,7 +242,7 @@ fn test_with_virtual_device() {
 
 ### Test RemapEngine with Key Validation
 ```rust
-// Source: razermapperd/src/remap_engine.rs:531-544
+// Source: aethermapd/src/remap_engine.rs:531-544
 #[tokio::test]
 async fn test_load_config_with_invalid_key_rejected() {
     let engine = RemapEngine::new();
@@ -261,7 +261,7 @@ async fn test_load_config_with_invalid_key_rejected() {
 
 ### Test Configuration Atomic Swap
 ```rust
-// Source: razermapperd/tests/config_reload_test.rs:114-157
+// Source: aethermapd/tests/config_reload_test.rs:114-157
 #[test]
 fn test_invalid_remap_rejection() {
     let rt = Runtime::new().unwrap();
@@ -379,11 +379,11 @@ async fn test_end_to_end_remapping() {
 ## Sources
 
 ### Primary (HIGH confidence)
-- `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/remap_engine.rs` (lines 439-689) - RemapEngine unit tests
-- `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/key_parser.rs` (lines 308-542) - KeyParser unit tests
-- `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/config_reload_test.rs` (513 lines) - Configuration reload integration tests
-- `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/tests/hotplug_test.rs` (188 lines) - Hotplug event handling tests
-- `/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/bin/test_grab.rs` - Device grab manual testing patterns
+- `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/remap_engine.rs` (lines 439-689) - RemapEngine unit tests
+- `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/key_parser.rs` (lines 308-542) - KeyParser unit tests
+- `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/config_reload_test.rs` (513 lines) - Configuration reload integration tests
+- `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/tests/hotplug_test.rs` (188 lines) - Hotplug event handling tests
+- `/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/bin/test_grab.rs` - Device grab manual testing patterns
 - https://docs.rs/evdev/latest/evdev/uinput/index.html - evdev uinput module documentation (verified via webReader)
 
 ### Secondary (MEDIUM confidence)

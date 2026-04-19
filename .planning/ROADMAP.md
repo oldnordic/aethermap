@@ -1,4 +1,4 @@
-# Roadmap: Razermapper
+# Roadmap: Aethermap
 
 ## Milestones
 
@@ -98,13 +98,13 @@
 
 **Phase 12: LED Control**
 
-> **Status:** Complete (8/8 plans) — Already implemented in razermapper
+> **Status:** Complete (8/8 plans) — Already implemented in aethermap
 >
 > **Hardware Limitation:** Azeron Cyborg 2 only supports brightness control (0-100%). RGB control not available due to closed protocol.
 
 The GUI already has a "Configure LEDs" button with brightness slider matching the official Azeron software.
 
-See: `razermapper/.planning/phases/12-led-control/` for completed plans.
+See: `aethermap/.planning/phases/12-led-control/` for completed plans.
 
 </details>
 

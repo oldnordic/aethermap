@@ -28,7 +28,7 @@ tech-stack:
 
 key-files:
   created: []
-  modified: [razermapper/razermapperd/src/config.rs, razermapper/razermapperd/tests/config_reload_test.rs, razermapper/razermapperd/src/auto_profile_switcher.rs, razermapper/razermapperd/src/ipc.rs]
+  modified: [aethermap/aethermapd/src/config.rs, aethermap/aethermapd/tests/config_reload_test.rs, aethermap/aethermapd/src/auto_profile_switcher.rs, aethermap/aethermapd/src/ipc.rs]
 
 key-decisions:
   - "Fixed DaemonConfig::default() calls to use Arc<RwLock<>> wrapper for consistency with 17-02 changes"
@@ -81,10 +81,10 @@ _Note: Tasks 2 (GREEN) was combined with Task 1 since implementation from 17-01 
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/config.rs` - Added 6 unit tests to #[cfg(test)] mod tests block
-- `razermapper/razermapperd/tests/config_reload_test.rs` - Fixed DaemonConfig type mismatch
-- `razermapper/razermapperd/src/auto_profile_switcher.rs` - Fixed DaemonConfig::default() calls
-- `razermapper/razermapperd/src/ipc.rs` - Fixed DaemonConfig::default() calls
+- `aethermap/aethermapd/src/config.rs` - Added 6 unit tests to #[cfg(test)] mod tests block
+- `aethermap/aethermapd/tests/config_reload_test.rs` - Fixed DaemonConfig type mismatch
+- `aethermap/aethermapd/src/auto_profile_switcher.rs` - Fixed DaemonConfig::default() calls
+- `aethermap/aethermapd/src/ipc.rs` - Fixed DaemonConfig::default() calls
 
 ## Decisions Made
 
@@ -105,7 +105,7 @@ _Note: Tasks 2 (GREEN) was combined with Task 1 since implementation from 17-01 
 - **Found during:** Task 1 (first test compilation)
 - **Issue:** Tests using `DaemonConfig::default()` but struct field now requires `Arc<RwLock<DaemonConfig>>`
 - **Fix:** Updated all 18 test sites to use `Arc::new(RwLock::new(DaemonConfig::default()))`
-- **Files modified:** razermapperd/src/config.rs, razermapperd/src/auto_profile_switcher.rs, razermapperd/src/ipc.rs, razermapperd/tests/config_reload_test.rs
+- **Files modified:** aethermapd/src/config.rs, aethermapd/src/auto_profile_switcher.rs, aethermapd/src/ipc.rs, aethermapd/tests/config_reload_test.rs
 - **Verification:** cargo test passes, all tests compile and run successfully
 - **Committed in:** d710b3b (Task 1 commit)
 

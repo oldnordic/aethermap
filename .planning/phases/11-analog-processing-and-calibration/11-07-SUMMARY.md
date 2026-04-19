@@ -27,11 +27,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-  - razermapper/razermapper-common/src/lib.rs (AnalogCalibrationConfig, Request/Response)
-  - razermapper/razermapper-common/src/ipc_client.rs (get/set_analog_calibration)
-  - razermapper/razermapperd/src/ipc.rs (handlers, conversion, tests)
-  - razermapper/razermapperd/src/config.rs (save_analog_calibration)
-  - razermapper/razermapperd/src/analog_processor.rs (set_calibration)
+  - aethermap/aethermap-common/src/lib.rs (AnalogCalibrationConfig, Request/Response)
+  - aethermap/aethermap-common/src/ipc_client.rs (get/set_analog_calibration)
+  - aethermap/aethermapd/src/ipc.rs (handlers, conversion, tests)
+  - aethermap/aethermapd/src/config.rs (save_analog_calibration)
+  - aethermap/aethermapd/src/analog_processor.rs (set_calibration)
 
 key-decisions:
   - "String-based enum serialization for deadzone_shape and sensitivity to avoid circular dependency"
@@ -72,7 +72,7 @@ completed: 2026-02-19
 
 ## Task Commits
 
-1. **Task 1: Add IPC Request/Response variants to razermapper-common** - `d986cb4` (feat)
+1. **Task 1: Add IPC Request/Response variants to aethermap-common** - `d986cb4` (feat)
 2. **Task 2: Add IPC handlers in daemon for analog calibration** - `432278a` (feat)
 3. **Task 3: Add GUI client methods for analog calibration IPC** - `3a00e8c` (feat)
 4. **Task 4: Add unit tests for IPC protocol** - `ccb7d90` (test)
@@ -81,15 +81,15 @@ completed: 2026-02-19
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added AnalogCalibrationConfig struct and Request/Response variants
-- `razermapper/razermapper-common/src/ipc_client.rs` - Added get_analog_calibration() and set_analog_calibration() functions
-- `razermapper/razermapperd/src/ipc.rs` - Added conversion functions and IPC request handlers
-- `razermapper/razermapperd/src/config.rs` - Added save_analog_calibration() method
-- `razermapper/razermapperd/src/analog_processor.rs` - Added set_calibration() method
+- `aethermap/aethermap-common/src/lib.rs` - Added AnalogCalibrationConfig struct and Request/Response variants
+- `aethermap/aethermap-common/src/ipc_client.rs` - Added get_analog_calibration() and set_analog_calibration() functions
+- `aethermap/aethermapd/src/ipc.rs` - Added conversion functions and IPC request handlers
+- `aethermap/aethermapd/src/config.rs` - Added save_analog_calibration() method
+- `aethermap/aethermapd/src/analog_processor.rs` - Added set_calibration() method
 
 ## Decisions Made
 
-- Used string-based enum serialization (deadzone_shape, sensitivity) to avoid circular dependency between razermapper-common and razermapperd
+- Used string-based enum serialization (deadzone_shape, sensitivity) to avoid circular dependency between aethermap-common and aethermapd
 - Created separate AnalogCalibrationConfig struct for IPC that mirrors AnalogCalibration with string variants
 - Calibration validation performed on daemon side before applying to ensure data integrity
 - Default calibration (AnalogCalibration::default()) returned when device has no custom configuration

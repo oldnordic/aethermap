@@ -93,13 +93,13 @@ None - this is foundational work with clear requirements.
 ## File Context
 
 **New Files:**
-- `razermapper/razermapperd/src/analog_processor.rs` - Core analog processing
-- `razermapper/razermapperd/src/analog_calibration.rs` - Calibration types
+- `aethermap/aethermapd/src/analog_processor.rs` - Core analog processing
+- `aethermap/aethermapd/src/analog_calibration.rs` - Calibration types
 
 **Modified Files:**
-- `razermapper/razermapperd/src/config.rs` - Add calibration to YAML
-- `razermapper/razermapperd/src/device.rs` - Integrate with event loop
-- `razermapper/razermapperd/src/lib.rs` - Export new modules
+- `aethermap/aethermapd/src/config.rs` - Add calibration to YAML
+- `aethermap/aethermapd/src/device.rs` - Integrate with event loop
+- `aethermap/aethermapd/src/lib.rs` - Export new modules
 
 ---
 *Context created: 2026-02-19*

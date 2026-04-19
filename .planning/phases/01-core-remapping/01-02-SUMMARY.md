@@ -24,10 +24,10 @@ tech_stack:
 
 key_files:
   created:
-    - "razermapper/razermapperd/src/config.rs: RemapEntry, RemapConfigError, load_remaps()"
+    - "aethermap/aethermapd/src/config.rs: RemapEntry, RemapConfigError, load_remaps()"
   modified:
-    - "razermapper/razermapperd/src/config.rs: added remaps_path, remaps fields to ConfigManager"
-    - "razermapper/razermapperd/src/lib.rs: re-exported RemapEntry, RemapConfigError"
+    - "aethermap/aethermapd/src/config.rs: added remaps_path, remaps fields to ConfigManager"
+    - "aethermap/aethermapd/src/lib.rs: re-exported RemapEntry, RemapConfigError"
 
 decisions:
   - "2026-02-17: Use flat YAML structure (KEY_A: KEY_B) without section wrapper for simplicity"
@@ -53,7 +53,7 @@ Extended ConfigManager to load key remap configuration from YAML files with comp
 
 ### Type Definitions
 
-**RemapEntry** (`razermapper/razermapperd/src/config.rs:12-17`):
+**RemapEntry** (`aethermap/aethermapd/src/config.rs:12-17`):
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RemapEntry {
@@ -62,7 +62,7 @@ pub struct RemapEntry {
 }
 ```
 
-**RemapConfigError** (`razermapper/razermapperd/src/config.rs:20-78`):
+**RemapConfigError** (`aethermap/aethermapd/src/config.rs:20-78`):
 - `ReadError`: File I/O errors with path
 - `ParseError`: YAML parsing errors with path
 - `InvalidKey`: Key name validation errors with path, key name, and expected format
@@ -70,18 +70,18 @@ pub struct RemapEntry {
 
 ### ConfigManager Extensions
 
-**New Fields** (`razermapper/razermapperd/src/config.rs:25-26, 29`):
-- `remaps_path: PathBuf` - Path to remaps.yaml (default: `/etc/razermapperd/remaps.yaml`)
+**New Fields** (`aethermap/aethermapd/src/config.rs:25-26, 29`):
+- `remaps_path: PathBuf` - Path to remaps.yaml (default: `/etc/aethermapd/remaps.yaml`)
 - `remaps: Arc<RwLock<HashMap<String, String>>>` - Parsed remap storage
 
-**New Method** (`razermapper/razermapperd/src/config.rs:533-615`):
+**New Method** (`aethermap/aethermapd/src/config.rs:533-615`):
 - `load_remaps(&self) -> Result<Vec<RemapEntry>, RemapConfigError>`
 
 ### YAML Format
 
 Flat key:value pairs (no section wrapper):
 ```yaml
-# /etc/razermapperd/remaps.yaml
+# /etc/aethermapd/remaps.yaml
 KEY_A: KEY_B
 a: b
 capslock: leftctrl
@@ -103,7 +103,7 @@ esc: grave
 
 Build verification passed:
 ```bash
-cargo check -p razermapperd
+cargo check -p aethermapd
 # Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.37s
 ```
 

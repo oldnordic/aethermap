@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/analog_processor.rs - Added 24 unit tests for WASD/Mouse/Camera modes
-    - razermapper/razermapperd/src/device.rs - Added 7 integration tests for per-layer configuration
+    - aethermap/aethermapd/src/analog_processor.rs - Added 24 unit tests for WASD/Mouse/Camera modes
+    - aethermap/aethermapd/src/device.rs - Added 7 integration tests for per-layer configuration
 
 key-decisions:
   - "Tests verify Y-axis centering behavior (cy = 0.5 - ny) which means raw Y=0 becomes positive output"
@@ -72,8 +72,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs` - Added 24 unit tests for WASD/Mouse/Camera modes
-- `razermapper/razermapperd/src/device.rs` - Added 7 integration tests for per-layer analog mode configuration
+- `aethermap/aethermapd/src/analog_processor.rs` - Added 24 unit tests for WASD/Mouse/Camera modes
+- `aethermap/aethermapd/src/device.rs` - Added 7 integration tests for per-layer analog mode configuration
 
 ## Decisions Made
 

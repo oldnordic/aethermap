@@ -25,8 +25,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/lib.rs
-    - razermapper/razermapperd/src/main.rs
+    - aethermap/aethermapd/src/lib.rs
+    - aethermap/aethermapd/src/main.rs
 
 key-decisions:
   - "GlobalHotkeyManager initialization placed after macro_engine, before device_manager creation"
@@ -72,8 +72,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/lib.rs` - Added hotkey_manager field to DaemonState
-- `razermapper/razermapperd/src/main.rs` - Added GlobalHotkeyManager initialization and DeviceManager wiring
+- `aethermap/aethermapd/src/lib.rs` - Added hotkey_manager field to DaemonState
+- `aethermap/aethermapd/src/main.rs` - Added GlobalHotkeyManager initialization and DeviceManager wiring
 
 ## Decisions Made
 

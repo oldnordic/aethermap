@@ -29,7 +29,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/layer_manager.rs
+    - aethermap/aethermapd/src/layer_manager.rs
 
 key-decisions:
   - "get_effective_layer uses .chain() instead of .union().collect() to avoid intermediate HashSet allocation"
@@ -75,7 +75,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/layer_manager.rs` - Optimized get_effective_layer, added get_active_layers, added 8 tests
+- `aethermap/aethermapd/src/layer_manager.rs` - Optimized get_effective_layer, added get_active_layers, added 8 tests
 
 ## Decisions Made
 
@@ -98,7 +98,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (cargo check after get_effective_layer change)
 - **Issue:** RemapEngine struct has layer_manager and layer_remaps fields but new() and with_key_parser() constructors didn't initialize them
 - **Fix:** Updated both constructors to initialize layer_remaps with 3 empty HashMaps and layer_manager with new LayerManager
-- **Files modified:** razermapper/razermapperd/src/remap_engine.rs (fixed by existing code/formatter, not part of this plan's commits)
+- **Files modified:** aethermap/aethermapd/src/remap_engine.rs (fixed by existing code/formatter, not part of this plan's commits)
 - **Verification:** cargo check passes
 - **Note:** This fix was already present in the working directory when plan execution began
 
@@ -108,7 +108,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (test execution)
 - **Issue:** Test tried to activate layer 3, but default device state only has 3 layers (0, 1, 2), so layer 3 is out of bounds
 - **Fix:** Changed test to use valid layer IDs (1, 2) instead of (1, 2, 3)
-- **Files modified:** razermapperd/src/layer_manager.rs
+- **Files modified:** aethermapd/src/layer_manager.rs
 - **Verification:** All 39 layer_manager tests pass
 - **Committed in:** 76027f4 (Task 3 commit)
 
@@ -139,7 +139,7 @@ None - no external service configuration required.
 
 ## Self-Check: PASSED
 
-- FOUND: razermapper/razermapperd/src/layer_manager.rs (43,969 bytes)
+- FOUND: aethermap/aethermapd/src/layer_manager.rs (43,969 bytes)
 - FOUND: 10-04-SUMMARY.md (6,971 bytes)
 - FOUND: commit 98404c2 (Task 1: implement layer stack composition)
 - FOUND: commit 8aa85df (Task 2: add get_active_layers)

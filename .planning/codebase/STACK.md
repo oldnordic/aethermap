@@ -30,7 +30,7 @@
 **Testing:**
 - Built-in Rust test framework
 - tokio-test 0.4 - Async test utilities
-- Integration tests in `/razermapper/tests/`
+- Integration tests in `/aethermap/tests/`
 
 **Build/Dev:**
 - serde 1.x - Serialization (derive feature)
@@ -40,7 +40,7 @@
 
 ## Key Dependencies
 
-**Daemon (razermapperd):**
+**Daemon (aethermapd):**
 - evdev 0.12 - Input device access, event handling, Key enums
 - uinput-sys 0.1 - Virtual device creation via ioctl
 - hidapi 2.4 - HID device communication (LED control for Azeron Cyborg 2)
@@ -51,11 +51,11 @@
 - tempfile 3 - Temporary file handling
 - async-trait 0.1 - Async trait support
 
-**GUI (razermapper-gui):**
+**GUI (aethermap-gui):**
 - iced 0.12 - GUI framework (Elm-inspired architecture)
 - ashpd 0.8 - Wayland xdg-desktop-portal integration
 
-**Common (razermapper-common):**
+**Common (aethermap-common):**
 - serde - IPC message serialization
 - bincode - Binary IPC protocol
 - tokio - Async primitives
@@ -67,9 +67,9 @@
 - No .env files used (systemd service manages environment)
 
 **Build:**
-- Cargo workspace with 4 members: razermapper-common, razermapperd, razermapper-gui, tests
+- Cargo workspace with 4 members: aethermap-common, aethermapd, aethermap-gui, tests
 - Feature flag: `token-auth` (disabled by default)
-- Debian package metadata in `razermapperd/Cargo.toml`
+- Debian package metadata in `aethermapd/Cargo.toml`
 
 ## Platform Requirements
 

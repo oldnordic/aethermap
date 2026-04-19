@@ -187,7 +187,7 @@ Overall: [===================================================] 93% (102/104 plan
 **v1.3 Implementation Decisions (Phase 13):**
 
 *Plan 13-01 - Ashpd Dependency:*
-- ashpd 0.8 added to razermapper-gui with wayland and tokio features
+- ashpd 0.8 added to aethermap-gui with wayland and tokio features
 - default-features = false to minimize dependency bloat
 - tokio feature required for async portal operations compatibility
 - GUI runs as normal user for portal access (daemon runs as root)
@@ -284,7 +284,7 @@ Overall: [===================================================] 93% (102/104 plan
 - AnalogMove uses axis_code mapping: 61000=ABS_X, 61001=ABS_Y, 61002=ABS_Z, 61003=RX, 61004=RY, 61005=RZ
 
 *Plan 11-07 - IPC Protocol for Analog Calibration:*
-- AnalogCalibrationConfig struct in razermapper-common with String-based enum serialization
+- AnalogCalibrationConfig struct in aethermap-common with String-based enum serialization
 - Request::GetAnalogCalibration and SetAnalogCalibration variants for IPC communication
 - Response::AnalogCalibration returns Option<AnalogCalibrationConfig> for graceful default handling
 - config_to_calibration() and calibration_to_config() conversion functions between IPC and internal types
@@ -347,12 +347,12 @@ Overall: [===================================================] 93% (102/104 plan
 - [Phase 15]: Default mouse velocity multiplier 10.0 pixels per unit deflection
 - [Phase 15]: Fire-and-forget mouse events via EV_REL with velocity-based movement
 - [Phase 17-hotkey-and-auto-switch-persistence]: Added ShowNotification(String, bool) message for GUI user feedback
-- [Phase 17-hotkey-and-auto-switch-persistence]: Used razermapper_common::ipc_client::IpcClient directly instead of wrapped GuiIpcClient for auto-switch rule persistence
+- [Phase 17-hotkey-and-auto-switch-persistence]: Used aethermap_common::ipc_client::IpcClient directly instead of wrapped GuiIpcClient for auto-switch rule persistence
 - [Phase 16-calibration-gui]: Created separate widgets module for reusable Canvas components
 - [Phase 16-calibration-gui]: Used WidgetDeadzoneShape alias to avoid enum name collision
 - [Phase 16-calibration-gui]: Positioned visualizer between info and mode sections for prominence
 - [Phase 16-calibration-gui]: Default stick position (0.0, 0.0) shows center dot before real-time updates
-- [Phase 16-calibration-gui]: Use GUI's local SensitivityCurve enum (razermapper_common doesn't export it)
+- [Phase 16-calibration-gui]: Use GUI's local SensitivityCurve enum (aethermap_common doesn't export it)
 - [Phase 16-calibration-gui]: Default Exponential curve exponent to 2.0 (GUI enum has no field)
 - [Phase 16-calibration-gui]: Plot normalized 0-1 curve only, show multiplier separately for clarity
 - [Phase 16-calibration-gui]: One GUI client only - UnsubscribeAnalogInput removes all subscribers for device
@@ -430,8 +430,8 @@ Resume file: None
 - Default camera_output_mode is Scroll for broader compatibility
 
 *Plan 15-07 - GUI Analog Mode Selector:*
-- AnalogMode enum added to razermapper-common for IPC use (6 variants: Disabled, Dpad, Gamepad, Camera, Mouse, Wasd)
-- CameraOutputMode enum added to razermapper-common for IPC use (2 variants: Scroll, Keys)
+- AnalogMode enum added to aethermap-common for IPC use (6 variants: Disabled, Dpad, Gamepad, Camera, Mouse, Wasd)
+- CameraOutputMode enum added to aethermap-common for IPC use (2 variants: Scroll, Keys)
 - Display trait implementation for user-friendly names in pick_list widgets
 - ALL constant arrays provide ordered options for pick_list
 - AnalogCalibrationView extended with analog_mode_selected and camera_mode_selected fields
@@ -489,7 +489,7 @@ Resume file: None
 - SetAutoSwitchRules handler added to complete IPC match arms
 
 *Plan 17-04 - SetAutoSwitchRules IPC Protocol:*
-- Added AutoSwitchRule struct to razermapper-common for IPC use (was daemon-internal only)
+- Added AutoSwitchRule struct to aethermap-common for IPC use (was daemon-internal only)
 - Added Request::SetAutoSwitchRules variant with rules: Vec<AutoSwitchRule>
 - Added Response::AutoSwitchRulesAck variant for acknowledgment
 - Wrapped AutoProfileSwitcher.rules in Arc<RwLock<>> for runtime mutability

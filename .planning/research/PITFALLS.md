@@ -265,7 +265,7 @@ How roadmap phases should address these pitfalls.
 
 ## Existing Codebase Issues
 
-The current razermapper codebase already exhibits several of these pitfalls:
+The current aethermap codebase already exhibits several of these pitfalls:
 
 1. **81 unwrap() calls** (confirmed via grep) - directly violates CLAUDE.md Rule #6, creates panic risk
 2. **Macro execution never cleaned up** - `macro_engine.rs:352-354` explicitly notes inability to clean up

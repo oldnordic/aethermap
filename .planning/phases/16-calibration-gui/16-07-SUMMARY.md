@@ -29,8 +29,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapper-gui/src/widgets/analog_visualizer.rs
-    - razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermap-gui/src/widgets/analog_visualizer.rs
+    - aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Use Arc<Cache> to share cache across widget instances (Cache doesn't implement Clone)"
@@ -86,8 +86,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/widgets/analog_visualizer.rs` - Added Cache field, updated draw() to use cache.draw(), added clear_cache() method, changed cache to Arc<Cache>
-- `razermapper/razermapper-gui/src/gui.rs` - Added last_visualizer_update and visualizer_cache fields to AnalogCalibrationView, implemented throttling in AnalogInputUpdated handler, cache clearing on deadzone/shape changes, manual Clone/Default impls
+- `aethermap/aethermap-gui/src/widgets/analog_visualizer.rs` - Added Cache field, updated draw() to use cache.draw(), added clear_cache() method, changed cache to Arc<Cache>
+- `aethermap/aethermap-gui/src/gui.rs` - Added last_visualizer_update and visualizer_cache fields to AnalogCalibrationView, implemented throttling in AnalogInputUpdated handler, cache clearing on deadzone/shape changes, manual Clone/Default impls
 
 ## Deviations from Plan
 
@@ -97,21 +97,21 @@ Each task was committed atomically:
 - **Found during:** Task 1 compilation
 - **Issue:** Pre-existing bug where `Container::new()` was used instead of `container()`
 - **Fix:** Changed to lowercase `container()` to match imported function
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 - **Committed in:** `00c3873` (included in Task 1 commit)
 
 **2. [Rule 3 - Blocking] Used Arc<Cache> instead of Cache for persistence**
 - **Found during:** Task 2 implementation
 - **Issue:** Creating new Cache each frame defeats caching purpose; Cache doesn't implement Clone
 - **Fix:** Wrapped Cache in Arc for sharing across widget instances
-- **Files modified:** razermapper/razermapper-gui/src/widgets/analog_visualizer.rs, razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/widgets/analog_visualizer.rs, aethermap/aethermap-gui/src/gui.rs
 - **Impact:** Required manual Clone/Default implementations due to Arc + Instant non-Clone types
 
 **3. [Rule 3 - Blocking] Removed Default derive, implemented manually**
 - **Found during:** Task 2 compilation
 - **Issue:** Instant doesn't implement Default, can't derive Default for struct containing Instant
 - **Fix:** Removed Default derive, implemented Default manually with Instant::now()
-- **Files modified:** razermapper/razermapper-gui/src/gui.rs
+- **Files modified:** aethermap/aethermap-gui/src/gui.rs
 
 ---
 

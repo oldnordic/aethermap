@@ -24,7 +24,7 @@ None - plan executed exactly as written.
 
 ### Hat Switch State Tracking
 
-**File:** `razermapperd/src/device.rs:20-67`
+**File:** `aethermapd/src/device.rs:20-67`
 
 Added `HatSwitchState` struct for tracking 8-way hat position:
 - `x: i32` - Horizontal axis (-1=left, 0=center, 1=right)
@@ -33,7 +33,7 @@ Added `HatSwitchState` struct for tracking 8-way hat position:
 
 ### Direction to Key Code Mapping
 
-**Function:** `map_hat_switch_to_keys()` at `razermapperd/src/device.rs:44-67`
+**Function:** `map_hat_switch_to_keys()` at `aethermapd/src/device.rs:44-67`
 
 Maps 8-way hat position to keyboard key codes:
 - Cardinal directions (N, E, S, W) map to single arrow keys (KEY_UP=103, KEY_DOWN=108, KEY_LEFT=105, KEY_RIGHT=106)
@@ -57,7 +57,7 @@ Center      (0, 0)     []         (none)
 
 ### Event Reader Integration
 
-**File:** `razermapperd/src/device.rs:495-527`
+**File:** `aethermapd/src/device.rs:495-527`
 
 Modified the `start_event_reader()` function to process hat switch events:
 
@@ -90,7 +90,7 @@ Unlike the simplified plan suggestion, this implementation properly handles key 
 
 ## Verification
 
-1. **cargo check -p razermapperd:** PASS (only unused constant warnings for reserved diagonal key codes)
+1. **cargo check -p aethermapd:** PASS (only unused constant warnings for reserved diagonal key codes)
 2. **Hat switch state tracking:** Works across X/Y events with `hat_state` persistence
 3. **All 8 directions:** Supported via match statement in `map_hat_switch_to_keys()`
 4. **Keyboard event generation:** Hat switch input generates standard key events through mpsc channel
@@ -98,7 +98,7 @@ Unlike the simplified plan suggestion, this implementation properly handles key 
 
 ## Key Files Modified
 
-- `razermapperd/src/device.rs` (+101 lines)
+- `aethermapd/src/device.rs` (+101 lines)
   - Added constants: HAT_UP, HAT_DOWN, HAT_LEFT, HAT_RIGHT, HAT_UP_LEFT, HAT_UP_RIGHT, HAT_DOWN_LEFT, HAT_DOWN_RIGHT
   - Added struct: HatSwitchState
   - Added function: map_hat_switch_to_keys()

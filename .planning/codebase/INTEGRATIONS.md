@@ -6,39 +6,39 @@
 
 **Linux evdev:**
 - Input device event reading from `/dev/input/event*`
-- Key location: `razermapperd/src/device.rs`
+- Key location: `aethermapd/src/device.rs`
 - Purpose: Device discovery, grabbing, event reading
 - Constants: `evdev::Key`, `InputEventKind`, `AbsoluteAxisType`, `RelativeAxisType`
 
 **uinput:**
 - Virtual input device creation
-- Key location: `razermapperd/src/injector.rs`, `razermapperd/src/gamepad_device.rs`
+- Key location: `aethermapd/src/injector.rs`, `aethermapd/src/gamepad_device.rs`
 - Purpose: Create virtual keyboard, mouse, gamepad devices
 - ioctl calls: `UI_DEV_CREATE`, `UI_SET_EVBIT`, `UI_SET_KEYBIT`, `UI_SET_ABSBIT`
 
 **HIDAPI:**
 - HID device communication for LED control
-- Key location: `razermapperd/src/led_controller.rs`
+- Key location: `aethermapd/src/led_controller.rs`
 - Purpose: Azeron Cyborg 2 LED brightness control
 - Vendor ID: 0x16d0 (Azeron), Product ID: 0x12f7 (Cyborg 2)
 - Interface: Interface 4 (usage_page 0xff01), not keyboard interface
 
 **udev:**
 - Device hotplug monitoring
-- Key location: `razermapperd/src/hotplug.rs`
+- Key location: `aethermapd/src/hotplug.rs`
 - Purpose: Detect device add/remove events via MonitorBuilder
 - Subsystem: input devices only
 
 **nix/libc:**
 - System calls and ioctl
-- Key locations: `razermapperd/src/security.rs`, `razermapperd/src/gamepad_device.rs`
+- Key locations: `aethermapd/src/security.rs`, `aethermapd/src/gamepad_device.rs`
 - Purpose: Privilege dropping, ioctl calls, file descriptor operations
 
 ## Wayland Integration
 
 **xdg-desktop-portal (ashpd):**
 - Window focus tracking for auto-profile switching
-- Key location: `razermapper-gui/src/focus_tracker.rs`
+- Key location: `aethermap-gui/src/focus_tracker.rs`
 - Purpose: Detect focused application for profile switching
 - Graceful degradation when portal unavailable
 - Environment check: `WAYLAND_DISPLAY`
@@ -46,9 +46,9 @@
 ## IPC & Communication
 
 **Unix Socket Protocol:**
-- Location: `/run/razermapper/razermapper.sock`
-- Server: `razermapperd/src/ipc.rs`
-- Client: `razermapper-common/src/ipc_client.rs`
+- Location: `/run/aethermap/aethermap.sock`
+- Server: `aethermapd/src/ipc.rs`
+- Client: `aethermap-common/src/ipc_client.rs`
 - Transport: AF_UNIX stream socket
 - Serialization: bincode (binary)
 - Message format: 4-byte little-endian length prefix + payload
@@ -77,7 +77,7 @@
 
 **Virtual Device Emulation:**
 - Virtual gamepad (Xbox 360 controller compatible)
-- Location: `razermapperd/src/gamepad_device.rs`
+- Location: `aethermapd/src/gamepad_device.rs`
 - Vendor ID: 0x045e (Microsoft), Product ID: 0x028e (Xbox 360 Controller)
 - Axes: ABS_X, ABS_Y, ABS_Z, ABS_RX, ABS_RY, ABS_RZ
 - Buttons: Standard gamepad button layout
@@ -85,9 +85,9 @@
 ## Config & State
 
 **Configuration Files:**
-- `/etc/razermapperd/remaps.yaml` - Global key remappings
-- `/etc/razermapperd/device-profiles.yaml` - Per-device remap profiles
-- `/etc/razermapperd/config.yaml` - Main configuration
+- `/etc/aethermapd/remaps.yaml` - Global key remappings
+- `/etc/aethermapd/device-profiles.yaml` - Per-device remap profiles
+- `/etc/aethermapd/config.yaml` - Main configuration
 - Format: YAML (serde_yaml)
 
 **State Persistence:**
@@ -102,13 +102,13 @@
 ## System Integration
 
 **systemd:**
-- Service file: `razermapperd.service`
-- RuntimeDirectory: `/run/razermapper/`
+- Service file: `aethermapd.service`
+- RuntimeDirectory: `/run/aethermap/`
 - Signal handling: SIGTERM, SIGINT, SIGHUP
 - Security: CapabilityBoundingSet, NoNewPrivileges, ProtectSystem
 
 **udev Rules:**
-- File: `99-razermapper.rules`
+- File: `99-aethermap.rules`
 - Sets MODE="0660", GROUP="input" for devices
 - TAG+="uaccess" for ACLs
 
@@ -116,7 +116,7 @@
 
 **Token-based (optional):**
 - Feature flag: `token-auth`
-- Implementation: `razermapperd/src/security.rs`
+- Implementation: `aethermapd/src/security.rs`
 - Token generation: Hash-based (timestamp + PID + memory address)
 - Expiration: 24 hours
 - In-memory storage only (HashMap)

@@ -24,8 +24,8 @@ tech-stack:
   patterns: [first-match-wins-rules, graceful-fallback, manual-override-clearing]
 
 key-files:
-  created: [razermapper/razermapperd/src/auto_profile_switcher.rs]
-  modified: [razermapper/razermapperd/src/config.rs, razermapper/razermapperd/src/lib.rs, razermapper/razermapperd/src/ipc.rs]
+  created: [aethermap/aethermapd/src/auto_profile_switcher.rs]
+  modified: [aethermap/aethermapd/src/config.rs, aethermap/aethermapd/src/lib.rs, aethermap/aethermapd/src/ipc.rs]
 
 key-decisions:
   - "Wildcard '*' app_id matches any application for default profile"
@@ -76,10 +76,10 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/auto_profile_switcher.rs` - AutoProfileSwitcher with focus-based profile switching logic
-- `razermapper/razermapperd/src/config.rs` - Added AutoSwitchRule struct and auto_switch_rules field
-- `razermapper/razermapperd/src/lib.rs` - Added pub mod auto_profile_switcher and re-exports
-- `razermapper/razermapperd/src/ipc.rs` - Integrated switcher with FocusChanged handler and manual override on ActivateProfile
+- `aethermap/aethermapd/src/auto_profile_switcher.rs` - AutoProfileSwitcher with focus-based profile switching logic
+- `aethermap/aethermapd/src/config.rs` - Added AutoSwitchRule struct and auto_switch_rules field
+- `aethermap/aethermapd/src/lib.rs` - Added pub mod auto_profile_switcher and re-exports
+- `aethermap/aethermapd/src/ipc.rs` - Integrated switcher with FocusChanged handler and manual override on ActivateProfile
 
 ## Decisions Made
 

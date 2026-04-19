@@ -20,7 +20,7 @@ tech-stack:
 
 key-files:
   created: []
-  modified: [razermapper/razermapperd/src/config.rs]
+  modified: [aethermap/aethermapd/src/config.rs]
 
 key-decisions:
   - "Extended structures added alongside existing DeviceProfilesConfig to maintain backward compatibility"
@@ -65,7 +65,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/config.rs` - Added extended YAML structures and loading method
+- `aethermap/aethermapd/src/config.rs` - Added extended YAML structures and loading method
 
 ## YAML Structure Example
 

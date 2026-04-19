@@ -20,7 +20,7 @@ tech-stack:
 
 key-files:
   created: []
-  modified: [razermapper/razermapperd/src/remap_engine.rs, razermapper/razermapperd/src/lib.rs]
+  modified: [aethermap/aethermapd/src/remap_engine.rs, aethermap/aethermapd/src/lib.rs]
 
 key-decisions:
   - "Kept existing RemapProfile structure with Arc<RwLock<HashMap>> for async compatibility"
@@ -63,8 +63,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/remap_engine.rs` - Added RemapTable type alias with documentation
-- `razermapper/razermapperd/src/lib.rs` - Exported RemapTable alongside RemapProfile
+- `aethermap/aethermapd/src/remap_engine.rs` - Added RemapTable type alias with documentation
+- `aethermap/aethermapd/src/lib.rs` - Exported RemapTable alongside RemapProfile
 
 ## Decisions Made
 

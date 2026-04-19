@@ -22,8 +22,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/ipc.rs
-    - razermapper/razermapperd/src/device.rs
+    - aethermap/aethermapd/src/ipc.rs
+    - aethermap/aethermapd/src/device.rs
 
 key-decisions:
   - "Added hotkey_manager() getter to DeviceManager to expose hotkey manager to IPC handlers"
@@ -75,13 +75,13 @@ All tasks were committed atomically in a single commit:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/ipc.rs` (lines 1812-1945)
+- `aethermap/aethermapd/src/ipc.rs` (lines 1812-1945)
   - RegisterHotkey handler (1812-1865): validates profile, adds binding via ConfigManager, reloads GlobalHotkeyManager
   - ListHotkeys handler (1867-1898): returns device's bindings or empty Vec
   - RemoveHotkey handler (1900-1931): removes binding via ConfigManager, reloads GlobalHotkeyManager
   - SetAutoSwitchRules handler (1933-1962): persists auto-switch rules via ConfigManager
 
-- `razermapper/razermapperd/src/device.rs` (lines 211-218)
+- `aethermap/aethermapd/src/device.rs` (lines 211-218)
   - Added hotkey_manager() getter method to expose private field to IPC handlers
 
 ## Decisions Made
@@ -100,21 +100,21 @@ All tasks were committed atomically in a single commit:
 - **Found during:** Task 1 (RegisterHotkey implementation)
 - **Issue:** Plan references `global_hotkey_manager` variable but no such parameter exists in handle_request(). The hotkey_manager is private field in DeviceManager.
 - **Fix:** Added public hotkey_manager() getter to DeviceManager returning Option<&Arc<Mutex<GlobalHotkeyManager>>>
-- **Files modified:** razermapper/razermapperd/src/device.rs
+- **Files modified:** aethermap/aethermapd/src/device.rs
 - **Committed in:** 1651e3f (part of main task commit)
 
 **2. [Rule 3 - Blocking] Missing SetAutoSwitchRules match arm**
 - **Found during:** Initial compilation check
 - **Issue:** Request::SetAutoSwitchRules enum variant exists but no handler in match expression, causing compilation failure
 - **Fix:** Implemented SetAutoSwitchRules handler with type conversion from common::AutoSwitchRule to config::AutoSwitchRule
-- **Files modified:** razermapper/razermapperd/src/ipc.rs
+- **Files modified:** aethermap/aethermapd/src/ipc.rs
 - **Committed in:** 1651e3f (part of main task commit)
 
 **3. [Rule 1 - Bug] Type mismatch between HotkeyBinding types**
 - **Found during:** Task 1 compilation
 - **Issue:** common::HotkeyBinding and config::HotkeyBinding are distinct types despite having identical fields
 - **Fix:** Added field-by-field conversion in both directions (common->internal for add, internal->common for list)
-- **Files modified:** razermapper/razermapperd/src/ipc.rs
+- **Files modified:** aethermap/aethermapd/src/ipc.rs
 - **Committed in:** 1651e3f (part of main task commit)
 
 ---

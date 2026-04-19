@@ -68,7 +68,7 @@ No code changes required - verification only task.
 
 ### Hotplug Tests (6 tests, 188 lines)
 
-All tests in `razermapper/razermapperd/tests/hotplug_test.rs`:
+All tests in `aethermap/aethermapd/tests/hotplug_test.rs`:
 
 | Test | Covers |
 |------|--------|
@@ -81,7 +81,7 @@ All tests in `razermapper/razermapperd/tests/hotplug_test.rs`:
 
 ### Config Reload Tests (9 tests, 513 lines)
 
-All tests in `razermapper/razermapperd/tests/config_reload_test.rs`:
+All tests in `aethermap/aethermapd/tests/config_reload_test.rs`:
 
 | Test | Covers |
 |------|--------|

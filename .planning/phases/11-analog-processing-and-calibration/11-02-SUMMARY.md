@@ -24,7 +24,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/analog_processor.rs
+    - aethermap/aethermapd/src/analog_processor.rs
 
 key-decisions:
   - "Used MAX_MAGNITUDE=0.707 (sqrt(0.5)) for circular deadzone scaling to account for centered coordinate system bounds"
@@ -63,13 +63,13 @@ completed: 2026-02-19
 
 ## Task Commits
 
-Since razermapper/ is external/untracked code, changes were verified via tests but not committed to this repository. The implementation exists in `razermapper/razermapperd/src/analog_processor.rs` with all tests passing.
+Since aethermap/ is external/untracked code, changes were verified via tests but not committed to this repository. The implementation exists in `aethermap/aethermapd/src/analog_processor.rs` with all tests passing.
 
-**Note:** The razermapper directory is not tracked by git in this repository (external codebase).
+**Note:** The aethermap directory is not tracked by git in this repository (external codebase).
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs` - Added process() method and helper functions
+- `aethermap/aethermapd/src/analog_processor.rs` - Added process() method and helper functions
   - `process()` - Main 2D processing pipeline
   - `normalize()` - Convert raw ADC (0-255) to 0.0-1.0
   - `center()` - Transform to centered coordinates (-0.5 to 0.5)
@@ -86,20 +86,20 @@ Since razermapper/ is external/untracked code, changes were verified via tests b
 - **Found during:** Task 2 (apply_deadzone implementation)
 - **Issue:** Original plan assumed magnitude range 0-1, but centered coordinates have max magnitude of ~0.707
 - **Fix:** Added MAX_MAGNITUDE constant (sqrt(0.5) ≈ 0.707) for circular deadzone, MAX_AXIS (0.5) for square deadzone
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs
 - **Verification:** Tests verify full deflection produces full range output with deadzone=0
 - **Impact:** Critical fix - without this, deadzone scaling would incorrectly reduce all output
 
 **2. [Rule 1 - Bug] Fixed scale_to_output for asymmetric Linux input range**
 - **Issue:** Linux input uses -32768 to 32767 (65535 values, not 65536), causing off-by-one errors
 - **Fix:** Calculate center as `(range_min + range_max) / 2` and clamp output to valid range
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs
 - **Verification:** All range scaling tests pass
 
 **3. [Rule 1 - Bug] Fixed test expectations for deadzone-affected output**
 - **Issue:** Tests expected full range output with default 0.15 deadzone, but deadzone scaling reduces output
 - **Fix:** Set deadzone=0.0 in tests expecting full range output, changed Y=200 (not Y=50) for negative output test
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs (test cases)
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs (test cases)
 - **Verification:** All 12 process tests pass
 
 ---

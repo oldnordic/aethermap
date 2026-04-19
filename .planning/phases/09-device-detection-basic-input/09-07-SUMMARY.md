@@ -2,7 +2,7 @@
 phase: 09-device-detection-basic-input
 plan: 07
 title: "GUI visual keypad layout for button remapping"
-subsystem: "razermapper-gui"
+subsystem: "aethermap-gui"
 tags: ["gui", "keypad", "remapping", "azeron", "ipc"]
 
 # Dependency Graph
@@ -14,8 +14,8 @@ provides:
   - "Visual keypad layout UI"
   - "Button click-to-remap interface"
 affects:
-  - "razermapper-gui/src/gui.rs"
-  - "razermapper-gui/src/ipc.rs"
+  - "aethermap-gui/src/gui.rs"
+  - "aethermap-gui/src/ipc.rs"
 
 # Tech Stack
 added:
@@ -30,7 +30,7 @@ patterns:
 # Key Files Created/Modified
 created: []
 modified:
-  - path: "razermapper-gui/src/gui.rs"
+  - path: "aethermap-gui/src/gui.rs"
     changes:
       - "Added KeypadButton struct with id, label, row, col, current_remap fields"
       - "Added azeron_keypad_layout() function defining 27 buttons across 10 rows"
@@ -39,7 +39,7 @@ modified:
       - "Added keypad_layout, selected_button, device_capabilities State fields"
       - "Added 'Configure Keypad' button for keypad-type devices in view_device_card()"
       - "Modified view_devices_tab() to show keypad view when capabilities loaded"
-  - path: "razermapper-gui/src/ipc.rs"
+  - path: "aethermap-gui/src/ipc.rs"
     changes:
       - "Added DeviceCapabilities import"
       - "Added get_device_capabilities() async method for capability queries"
@@ -64,10 +64,10 @@ Grid-based visual Azeron keypad layout with 27 buttons in 10 rows, clickable for
 - `0b2a025`: feat(09-07): add GUI visual keypad layout for button remapping
 
 ### Task 1: IPC Client Method for Device Capabilities
-Added `get_device_capabilities()` method to `GuiIpcClient` in `razermapper-gui/src/ipc.rs`. This method queries the daemon for device capability information including button count, hat switch presence, and analog stick availability.
+Added `get_device_capabilities()` method to `GuiIpcClient` in `aethermap-gui/src/ipc.rs`. This method queries the daemon for device capability information including button count, hat switch presence, and analog stick availability.
 
 **Files Modified:**
-- `razermapper-gui/src/ipc.rs`: Added method implementation and DeviceCapabilities import
+- `aethermap-gui/src/ipc.rs`: Added method implementation and DeviceCapabilities import
 
 ### Task 2: Azeron Keypad Visual Layout Component
 Created visual keypad layout for the Azeron Cyborg with:
@@ -78,7 +78,7 @@ Created visual keypad layout for the Azeron Cyborg with:
 - Hat switch indicator centered in layout
 
 **Files Modified:**
-- `razermapper-gui/src/gui.rs`: Added structures and view method
+- `aethermap-gui/src/gui.rs`: Added structures and view method
 
 ### Task 3: Integration with Device Selection
 Wired keypad view to device selection UI:
@@ -89,7 +89,7 @@ Wired keypad view to device selection UI:
 - State fields: keypad_layout, selected_button, device_capabilities
 
 **Files Modified:**
-- `razermapper-gui/src/gui.rs`: Added message handlers and UI integration
+- `aethermap-gui/src/gui.rs`: Added message handlers and UI integration
 
 ## Deviations from Plan
 
@@ -99,7 +99,7 @@ All tasks completed as specified. The implementation uses a simplified row-based
 
 ## Verification Results
 
-1. **cargo check -p razermapper-gui**: PASSED
+1. **cargo check -p aethermap-gui**: PASSED
    - Only pre-existing warning about unused get_active_profile method
 
 2. **GUI displays visual Azeron keypad layout**: YES

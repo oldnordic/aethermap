@@ -16,8 +16,8 @@ requires:
   - "09-01 (Device detection and Azeron classification)"
 
 affects:
-  - "razermapperd/src/config.rs (DeviceCapabilities)"
-  - "razermapperd/src/key_parser.rs (JOY_BTN_N support)"
+  - "aethermapd/src/config.rs (DeviceCapabilities)"
+  - "aethermapd/src/key_parser.rs (JOY_BTN_N support)"
 
 # Tech Stack
 added:
@@ -33,8 +33,8 @@ created:
   - "None (all modifications to existing files)"
 
 modified:
-  - "razermapperd/src/key_parser.rs"
-  - "razermapperd/src/config.rs"
+  - "aethermapd/src/key_parser.rs"
+  - "aethermapd/src/config.rs"
 
 # Decisions Made
 1. **JOY_BTN_N Naming Convention**: Extended KeyParser to recognize JOY_BTN_N (N=0-25) names, using Linux input code base 0x100 (256) for BTN_0.
@@ -62,7 +62,7 @@ Added support for Azeron keypad profile persistence with YAML configuration. The
 
 ## Changes Made
 
-### 1. KeyParser Extensions (razermapperd/src/key_parser.rs)
+### 1. KeyParser Extensions (aethermapd/src/key_parser.rs)
 
 Extended the KeyParser to support joystick button names for devices like the Azeron keypad:
 
@@ -79,7 +79,7 @@ for i in 0..=25u16 {
 }
 ```
 
-### 2. DeviceCapabilities Structure (razermapperd/src/config.rs)
+### 2. DeviceCapabilities Structure (aethermapd/src/config.rs)
 
 Added DeviceCapabilities struct to store optional device metadata:
 
@@ -137,7 +137,7 @@ All tests pass:
 - JOY_BTN_N names parse correctly for N=0-25
 - YAML serialization/deserialization works for DeviceCapabilities
 - Optional fields ensure backward compatibility with existing profiles
-- cargo check -p razermapperd passes with no errors
+- cargo check -p aethermapd passes with no errors
 
 ## Commits
 

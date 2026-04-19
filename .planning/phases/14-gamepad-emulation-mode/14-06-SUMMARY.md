@@ -20,13 +20,13 @@ tech_stack:
   patterns: []
 key_files:
   created:
-    - "razermapper/razermapperd/src/analog_processor.rs (tests)"
-    - "razermapper/razermapperd/src/gamepad_device.rs (tests)"
-    - "razermapper/razermapperd/src/device.rs (tests)"
+    - "aethermap/aethermapd/src/analog_processor.rs (tests)"
+    - "aethermap/aethermapd/src/gamepad_device.rs (tests)"
+    - "aethermap/aethermapd/src/device.rs (tests)"
   modified:
-    - "razermapper/razermapperd/src/analog_processor.rs"
-    - "razermapper/razermapperd/src/gamepad_device.rs"
-    - "razermapper/razermapperd/src/device.rs"
+    - "aethermap/aethermapd/src/analog_processor.rs"
+    - "aethermap/aethermapd/src/gamepad_device.rs"
+    - "aethermap/aethermapd/src/device.rs"
 ---
 
 # Phase 14 Plan 6: Gamepad Mode Unit and Integration Tests Summary
@@ -64,42 +64,42 @@ Add comprehensive test coverage for the gamepad emulation mode functionality to 
 - **Found during:** Task 1
 - **Issue:** Initial tests used threshold of 30000 for full deflection, but actual output was ~20000 due to deadzone scaling
 - **Fix:** Adjusted thresholds to 15000 and 10000 to match actual calibration behavior
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs
 - **Commit:** c26f002
 
 **2. [Rule 1 - Bug] Fixed device config initialization in tests**
 - **Found during:** Task 1
 - **Issue:** Tests called process_as_gamepad without adding device config first, causing None returns
 - **Fix:** Added device config initialization in each test using processor.devices.write().await
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs
 - **Commit:** c26f002
 
 **3. [Rule 1 - Bug] Fixed integration test pattern for LayerManager**
 - **Found during:** Task 3
 - **Issue:** Tests tried to modify layer state returned by get_or_create_device_state() but modifications weren't persisted
 - **Fix:** Changed tests to work with local DeviceLayerState instances directly
-- **Files modified:** razermapper/razermapperd/src/device.rs
+- **Files modified:** aethermap/aethermapd/src/device.rs
 - **Commit:** c26f002
 
 **4. [Rule 3 - Auto-fix] Fixed DeviceAnalogConfig not implementing Default**
 - **Found during:** Task 1
 - **Issue:** Test tried to use ..Default::default() for DeviceAnalogConfig
 - **Fix:** Used DeviceAnalogConfig::new() method instead
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs
 - **Commit:** c26f002
 
 **5. [Rule 3 - Auto-fix] Fixed range_min/range_max type mismatch**
 - **Found during:** Task 1
 - **Issue:** AnalogCalibration expected i32 for range_min/max but test used floats
 - **Fix:** Changed -32768.0 and 32767.0 to -32768 and 32767
-- **Files modified:** razermapper/razermapperd/src/analog_processor.rs
+- **Files modified:** aethermap/aethermapd/src/analog_processor.rs
 - **Commit:** c26f002
 
 **6. [Rule 3 - Auto-fix] Fixed analog_calibration borrow error**
 - **Found during:** Task 3
 - **Issue:** Tried to move analog_calibration out of borrowed LayerConfig
 - **Fix:** Used .as_ref() to borrow instead of moving
-- **Files modified:** razermapper/razermapperd/src/device.rs
+- **Files modified:** aethermap/aethermapd/src/device.rs
 - **Commit:** c26f002
 
 ## Test Results

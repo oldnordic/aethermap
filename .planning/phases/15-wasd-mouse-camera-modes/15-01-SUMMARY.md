@@ -23,7 +23,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/analog_processor.rs
+    - aethermap/aethermapd/src/analog_processor.rs
 
 key-decisions:
   - "WASD diagonals use key combinations (W+D, W+A, S+D, S+A) matching standard game expectations"
@@ -67,7 +67,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/analog_processor.rs` - Added WASD key mapping and processing functions
+- `aethermap/aethermapd/src/analog_processor.rs` - Added WASD key mapping and processing functions
 
 ## Decisions Made
 

@@ -30,7 +30,7 @@ patterns:
 # Key Files
 created: []
 modified:
-  - path: "razermapper/razermapperd/src/device.rs"
+  - path: "aethermap/aethermapd/src/device.rs"
     changes:
       - "Added GamepadVirtualDevice field to DeviceManager"
       - "Added layer_manager field and setter"
@@ -39,10 +39,10 @@ modified:
       - "Updated start_event_reader() signature to pass layer_manager and gamepad_device"
       - "Added gamepad mode handling in analog stick event processing"
       - "Added layer-specific calibration lookup and application"
-  - path: "razermapper/razermapperd/src/analog_processor.rs"
+  - path: "aethermap/aethermapd/src/analog_processor.rs"
     changes:
       - "Added process_as_gamepad_with_calibration() method for custom calibration"
-  - path: "razermapper/razermapperd/src/ipc.rs"
+  - path: "aethermap/aethermapd/src/ipc.rs"
     changes:
       - "Fixed LayerConfig creation to include analog_mode field"
 

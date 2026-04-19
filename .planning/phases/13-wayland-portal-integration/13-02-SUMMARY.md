@@ -20,8 +20,8 @@ tech-stack:
   patterns: [async task spawning for portal monitoring, graceful degradation pattern]
 
 key-files:
-  created: [razermapper/razermapper-gui/src/focus_tracker.rs]
-  modified: [razermapper/razermapper-gui/src/lib.rs, razermapper/razermapper-gui/Cargo.toml]
+  created: [aethermap/aethermap-gui/src/focus_tracker.rs]
+  modified: [aethermap/aethermap-gui/src/lib.rs, aethermap/aethermap-gui/Cargo.toml]
 
 key-decisions:
   - "FocusTracker uses graceful fallback - returns no-op tracker when portal unavailable"
@@ -69,9 +69,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-gui/src/focus_tracker.rs` - FocusTracker and FocusEvent with ashpd integration
-- `razermapper/razermapper-gui/src/lib.rs` - Module declaration and re-exports
-- `razermapper/razermapper-gui/Cargo.toml` - Added ashpd tokio feature
+- `aethermap/aethermap-gui/src/focus_tracker.rs` - FocusTracker and FocusEvent with ashpd integration
+- `aethermap/aethermap-gui/src/lib.rs` - Module declaration and re-exports
+- `aethermap/aethermap-gui/Cargo.toml` - Added ashpd tokio feature
 
 ## Decisions Made
 
@@ -88,7 +88,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (initial compilation)
 - **Issue:** ashpd 0.8 requires either async-io or tokio feature for zbus compatibility
 - **Fix:** Added `features = ["wayland", "tokio"]` to ashpd dependency
-- **Files modified:** razermapper/razermapper-gui/Cargo.toml
+- **Files modified:** aethermap/aethermap-gui/Cargo.toml
 - **Verification:** cargo check passes after feature addition
 - **Committed in:** b9d83dd (Task 1 commit)
 
@@ -96,7 +96,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (test verification)
 - **Issue:** `tx` and `portal` parameters unused in placeholder implementation
 - **Fix:** Prefixed with underscore (`_tx`, `_portal`) to indicate intentional non-use
-- **Files modified:** razermapper/razermapper-gui/src/focus_tracker.rs
+- **Files modified:** aethermap/aethermap-gui/src/focus_tracker.rs
 - **Verification:** cargo test passes with no warnings (except pre-existing gui.rs warning)
 - **Committed in:** f1ed566 (Task 3 commit)
 

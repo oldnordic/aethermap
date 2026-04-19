@@ -27,7 +27,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/device.rs
+    - aethermap/aethermapd/src/device.rs
 
 key-decisions:
   - "Use Arc<RwLock<Vec<(Key, bool)>>> for WASD state tracking to enable safe shared mutable access across async closures"
@@ -64,7 +64,7 @@ completed: 2026-02-19
 
 ## Task Commits
 
-**Note:** Code changes are in razermapper/ directory which is not tracked by git. The implementation is complete and verified through compilation.
+**Note:** Code changes are in aethermap/ directory which is not tracked by git. The implementation is complete and verified through compilation.
 
 1. **Task 1: Add previous_keys tracking to device event loop state** - Implementation complete
    - Added wasd_previous_keys as Arc<RwLock<Vec<(Key, bool)>>>
@@ -83,7 +83,7 @@ completed: 2026-02-19
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/device.rs` - Added WASD state tracking and tests (lines 611, 951, 993-1016, 2274-2520)
+- `aethermap/aethermapd/src/device.rs` - Added WASD state tracking and tests (lines 611, 951, 993-1016, 2274-2520)
 
 ## Decisions Made
 

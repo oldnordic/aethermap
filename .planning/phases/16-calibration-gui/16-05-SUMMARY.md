@@ -25,11 +25,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/ipc.rs
-    - razermapper/razermapperd/src/device.rs
-    - razermapper/razermapperd/src/main.rs
-    - razermapper/razermapper-gui/src/ipc.rs
-    - razermapper/razermapper/razermapper-gui/src/gui.rs
+    - aethermap/aethermapd/src/ipc.rs
+    - aethermap/aethermapd/src/device.rs
+    - aethermap/aethermapd/src/main.rs
+    - aethermap/aethermap-gui/src/ipc.rs
+    - aethermap/aethermap/aethermap-gui/src/gui.rs
 
 key-decisions:
   - "Use fire-and-forget UnboundedSender for analog event broadcasting (no backpressure needed)"
@@ -82,11 +82,11 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `razermapper/razermapperd/src/ipc.rs` - Added `broadcast_analog_input()` function (35 lines)
-- `razermapper/razermapperd/src/device.rs` - Added daemon_state field to DeviceManager, set_daemon_state(), updated start_event_reader signature, added broadcast call in event loop
-- `razermapper/razermapperd/src/main.rs` - Set daemon_state and layer_manager on device_manager
-- `razermapper/razermapper-gui/src/ipc.rs` - Added `subscribe_analog_input()` and `unsubscribe_analog_input()` functions (52 lines)
-- `razermapper/razermapper-gui/src/gui.rs` - Added `Message::AnalogInputUpdated`, subscription on open, handler for updates, unsubscribe on close (48 lines)
+- `aethermap/aethermapd/src/ipc.rs` - Added `broadcast_analog_input()` function (35 lines)
+- `aethermap/aethermapd/src/device.rs` - Added daemon_state field to DeviceManager, set_daemon_state(), updated start_event_reader signature, added broadcast call in event loop
+- `aethermap/aethermapd/src/main.rs` - Set daemon_state and layer_manager on device_manager
+- `aethermap/aethermap-gui/src/ipc.rs` - Added `subscribe_analog_input()` and `unsubscribe_analog_input()` functions (52 lines)
+- `aethermap/aethermap-gui/src/gui.rs` - Added `Message::AnalogInputUpdated`, subscription on open, handler for updates, unsubscribe on close (48 lines)
 
 ## Decisions Made
 
@@ -103,8 +103,8 @@ Each task was committed atomically:
 - **Found during:** Task 1 compilation
 - **Issue:** Initial implementation incorrectly tried to call `.get()` on `Arc<RwLock<HashMap>>` without acquiring the inner read lock
 - **Fix:** Changed from `state.read().await.analog_subscribers.clone()` to `state.read().await.analog_subscribers.read().await` with proper guard lifetime
-- **Files modified:** razermapper/razermapperd/src/ipc.rs
-- **Verification:** `cargo check --manifest-path razermapper/razermapperd/Cargo.toml` passes
+- **Files modified:** aethermap/aethermapd/src/ipc.rs
+- **Verification:** `cargo check --manifest-path aethermap/aethermapd/Cargo.toml` passes
 - **Committed in:** `2993318` (separate fix commit)
 
 ---

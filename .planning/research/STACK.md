@@ -22,7 +22,7 @@
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
 | **evdev::KeyCode** | (via evdev 0.12) | Key code to name mapping, enum of all Linux keys | Use for internal key representation. The enum already provides `Key::KEY_A` etc. No separate mapping library needed. |
-| **serde_yaml** | 0.9 | YAML config file parsing | Use for key remapping configuration format. Already in razermapperd dependencies. |
+| **serde_yaml** | 0.9 | YAML config file parsing | Use for key remapping configuration format. Already in aethermapd dependencies. |
 | **indexmap** | 2.0 | Ordered HashMap for key mapping tables | Use when remapping order matters (e.g., cascading remaps). Provides serde support. |
 
 ### Testing Utilities
@@ -43,7 +43,7 @@
 ## Installation
 
 ```toml
-# Add to razermapperd/Cargo.toml if not already present:
+# Add to aethermapd/Cargo.toml if not already present:
 
 [dependencies]
 # Already present - keep these versions

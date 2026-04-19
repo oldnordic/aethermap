@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The remapper_rs project has **CRITICAL quality violations** that must be fixed immediately. The daemon binary (`razermapperd`) **fails to compile** due to syntax errors, missing imports, and type mismatches.
+The remapper_rs project has **CRITICAL quality violations** that must be fixed immediately. The daemon binary (`aethermapd`) **fails to compile** due to syntax errors, missing imports, and type mismatches.
 
 **Severity**: 🔴 **CRITICAL** - Core functionality is non-functional
 
@@ -17,7 +17,7 @@ The remapper_rs project has **CRITICAL quality violations** that must be fixed i
 ## Compilation Errors (4 CRITICAL)
 
 ### 1. Syntax Error: Ambiguous Type Bounds
-**File**: `razermapperd/src/macro_engine.rs:368`
+**File**: `aethermapd/src/macro_engine.rs:368`
 ```rust
 // BROKEN:
 injector: &dyn crate::injector::Injector + Send + Sync
@@ -28,7 +28,7 @@ injector: &(dyn crate::injector::Injector + Send + Sync)
 **Impact**: Parse error prevents compilation
 
 ### 2. Syntax Error: Duplicate Return Statement
-**File**: `razermapperd/src/macro_engine.rs:424-426`
+**File**: `aethermapd/src/macro_engine.rs:424-426`
 ```rust
 // BROKEN (duplicate Ok(())):
         Ok(())
@@ -40,7 +40,7 @@ injector: &(dyn crate::injector::Injector + Send + Sync)
 **Impact**: Expected `;`, found `Ok` - compilation fails
 
 ### 3. Missing Import: debug! Macro
-**File**: `razermapperd/src/injector.rs:450`
+**File**: `aethermapd/src/injector.rs:450`
 ```rust
 debug!("Command stdout: {}", stdout);
 // Error: cannot find macro `debug` in this scope
@@ -48,7 +48,7 @@ debug!("Command stdout: {}", stdout);
 **Fix**: Add `use tracing::debug;` at top of file
 
 ### 4. Type Mismatch: Arc Wrapping
-**File**: `razermapperd/src/main.rs:145`
+**File**: `aethermapd/src/main.rs:145`
 ```rust
 // BROKEN:
 Arc::clone(&injector)
@@ -62,18 +62,18 @@ Arc::clone(&injector)
 ## Code Quality Warnings (7 Issues)
 
 ### Unreachable Code
-**File**: `razermapperd/src/ipc.rs:364`
+**File**: `aethermapd/src/ipc.rs:364`
 ```rust
 return Response::RecordingStopped { ... };
 let mut macros = state.macros.lock().unwrap(); // UNREACHABLE
 ```
 
 ### Unused Variables
-- `razermapperd/src/ipc.rs:262` - `injector` parameter unused
-- `razermapperd/src/security.rs:9` - `prctl` imported but unused
+- `aethermapd/src/ipc.rs:262` - `injector` parameter unused
+- `aethermapd/src/security.rs:9` - `prctl` imported but unused
 
 ### Dead Code (GUI)
-- `razermapper-gui/src/gui.rs:59-67` - 9 Message variants never constructed:
+- `aethermap-gui/src/gui.rs:59-67` - 9 Message variants never constructed:
   - DeviceSelected
   - PlayMacro
   - RecordMacro
@@ -95,25 +95,25 @@ let mut macros = state.macros.lock().unwrap(); // UNREACHABLE
 2. ✅ **No `todo!()` macros** in source code
 3. ✅ **No `TODO` or `FIXME` comments** in source code
 4. ✅ **No panic!("not implemented")** statements
-5. ✅ `razermapper-common` library compiles successfully
-6. ✅ `razermapper-gui` compiles (with warnings)
+5. ✅ `aethermap-common` library compiles successfully
+6. ✅ `aethermap-gui` compiles (with warnings)
 7. ✅ Workspace structure is properly organized
 
 ---
 
 ## Files Requiring Immediate Fixes
 
-1. **`razermapperd/src/macro_engine.rs`** - Lines 368, 424-426
+1. **`aethermapd/src/macro_engine.rs`** - Lines 368, 424-426
    - Add parentheses around trait object
    - Remove duplicate `Ok(())`
 
-2. **`razermapperd/src/injector.rs`** - Line 450
+2. **`aethermapd/src/injector.rs`** - Line 450
    - Add `use tracing::debug;` import
 
-3. **`razermapperd/src/main.rs`** - Line 145
+3. **`aethermapd/src/main.rs`** - Line 145
    - Fix Arc wrapping inconsistency
 
-4. **`razermapperd/src/ipc.rs`** - Lines 362-364
+4. **`aethermapd/src/ipc.rs`** - Lines 362-364
    - Remove or relocate unreachable code
 
 5. **`tests/e2e.rs`** - Line 162
@@ -125,9 +125,9 @@ let mut macros = state.macros.lock().unwrap(); // UNREACHABLE
 
 | Component | Status | Issues |
 |-----------|--------|--------|
-| `razermapper-common` | ✅ Compiles | None |
-| `razermapperd` | ❌ **FAILS** | 4 errors, 3 warnings |
-| `razermapper-gui` | ⚠️ Compiles | 2 warnings |
+| `aethermap-common` | ✅ Compiles | None |
+| `aethermapd` | ❌ **FAILS** | 4 errors, 3 warnings |
+| `aethermap-gui` | ⚠️ Compiles | 2 warnings |
 | `tests/e2e.rs` | ❌ **FAILS** | 5+ errors |
 
 ---

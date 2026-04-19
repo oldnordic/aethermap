@@ -5,7 +5,7 @@ type: execute
 wave: 3
 depends_on: [01-03]
 files_modified:
-  - razermapper/razermapperd/src/device.rs
+  - aethermap/aethermapd/src/device.rs
 autonomous: true
 
 must_haves:
@@ -16,17 +16,17 @@ must_haves:
     - "Event loop order: device -> remap -> (inject if remapped) -> macro engine"
     - "GrabbedDevice has optional remap_engine and injector fields"
   artifacts:
-    - path: "razermapper/razermapperd/src/device.rs"
+    - path: "aethermap/aethermapd/src/device.rs"
       provides: "Event channel with remap capability"
       exports: ["GrabbedDevice", "grab_device"]
       covered_by: "Task 1: Add remap_engine and injector fields to GrabbedDevice"
   key_links:
-    - from: "razermapper/razermapperd/src/device.rs"
-      to: "razermapper/razermapperd/src/remap_engine.rs"
+    - from: "aethermap/aethermapd/src/device.rs"
+      to: "aethermap/aethermapd/src/remap_engine.rs"
       via: "Option<Arc<RemapEngine>> parameter in event processing"
       pattern: "remap_engine.remap"
-    - from: "razermapper/razermapperd/src/device.rs"
-      to: "razermapper/razermapperd/src/injector.rs"
+    - from: "aethermap/aethermapd/src/device.rs"
+      to: "aethermap/aethermapd/src/injector.rs"
       via: "UinputInjector for remapped keys"
       pattern: "injector.key_press|key_release"
 ---
@@ -55,16 +55,16 @@ Output: Modified device.rs that wires RemapEngine into the event processing pipe
 @.planning/phases/01-core-remapping/01-03-PLAN.md
 
 # Existing event loop
-@razermapper/razermapperd/src/device.rs
+@aethermap/aethermapd/src/device.rs
 </context>
 
 <tasks>
 
 <task type="auto">
   <name>Add remap_engine and injector fields to GrabbedDevice</name>
-  <files>razermapper/razermapperd/src/device.rs</files>
+  <files>aethermap/aethermapd/src/device.rs</files>
   <action>
-    Update razermapper/razermapperd/src/device.rs:
+    Update aethermap/aethermapd/src/device.rs:
 
     1. Add remap_engine and injector parameters to GrabbedDevice struct:
        ```rust
@@ -87,7 +87,7 @@ Output: Modified device.rs that wires RemapEngine into the event processing pipe
     REFERENCE: Current GrabbedDevice definition (line ~67)
   </action>
   <verify>
-    grep -n "struct GrabbedDevice\|remap_engine\|injector" razermapper/razermapperd/src/device.rs
+    grep -n "struct GrabbedDevice\|remap_engine\|injector" aethermap/aethermapd/src/device.rs
     Verify fields are added to struct
   </verify>
   <done>
@@ -99,9 +99,9 @@ Output: Modified device.rs that wires RemapEngine into the event processing pipe
 
 <task type="auto">
   <name>Integrate remap into device event processing loop</name>
-  <files>razermapper/razermapperd/src/device.rs</files>
+  <files>aethermap/aethermapd/src/device.rs</files>
   <action>
-    Update razermapper/razermapperd/src/device.rs start_event_reader method:
+    Update aethermap/aethermapd/src/device.rs start_event_reader method:
 
     1. After receiving event (line ~168), check for remap before sending to macro engine:
        ```rust
@@ -129,7 +129,7 @@ Output: Modified device.rs that wires RemapEngine into the event processing pipe
     REFERENCE: Event reading pattern (lines 162-189)
   </action>
   <verify>
-    grep -n "remap_engine\|injector" razermapper/razermapperd/src/device.rs
+    grep -n "remap_engine\|injector" aethermap/aethermapd/src/device.rs
     Verify remap logic is integrated
   </verify>
   <done>
@@ -146,7 +146,7 @@ Output: Modified device.rs that wires RemapEngine into the event processing pipe
 <verification>
 After all tasks complete, verify:
 
-1. cargo check -p razermapperd compiles
+1. cargo check -p aethermapd compiles
 2. Device grab/release works with remap engine integration
 3. Remapped keys are injected
 4. Unremapped keys reach macro engine

@@ -30,9 +30,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/device.rs
-    - razermapper/razermapperd/src/analog_processor.rs
-    - razermapper/razermapperd/src/ipc.rs
+    - aethermap/aethermapd/src/device.rs
+    - aethermap/aethermapd/src/analog_processor.rs
+    - aethermap/aethermapd/src/ipc.rs
 
 key-decisions:
   - "Centralized AnalogProcessor in DeviceManager instead of per-device in GrabbedDevice - simpler architecture, single source of truth"
@@ -115,9 +115,9 @@ No commits made - functionality was already implemented in earlier phases.
 
 ## Files Verified
 
-- `razermapper/razermapperd/src/device.rs` - DeviceManager with analog_processor field, event loop integration
-- `razermapper/razermapperd/src/analog_processor.rs` - Per-device config management, load/save methods
-- `razermapper/razermapperd/src/ipc.rs` - IPC handlers for runtime configuration
+- `aethermap/aethermapd/src/device.rs` - DeviceManager with analog_processor field, event loop integration
+- `aethermap/aethermapd/src/analog_processor.rs` - Per-device config management, load/save methods
+- `aethermap/aethermapd/src/ipc.rs` - IPC handlers for runtime configuration
 
 ## Implementation Details
 
@@ -236,9 +236,9 @@ Request::SetAnalogDeadzone {
 ## Self-Check: PASSED
 
 - **Verified files:**
-  - `razermapper/razermapperd/src/device.rs` - EXISTS, contains analog_processor in DeviceManager
-  - `razermapper/razermapperd/src/analog_processor.rs` - EXISTS, contains per-device config management
-  - `razermapper/razermapperd/src/ipc.rs` - EXISTS, contains analog configuration IPC handlers
+  - `aethermap/aethermapd/src/device.rs` - EXISTS, contains analog_processor in DeviceManager
+  - `aethermap/aethermapd/src/analog_processor.rs` - EXISTS, contains per-device config management
+  - `aethermap/aethermapd/src/ipc.rs` - EXISTS, contains analog configuration IPC handlers
   - `.planning/phases/11-analog-processing-and-calibration/11-04-SUMMARY.md` - EXISTS
 - **Functionality:**
   - AnalogProcessor integrated into event loop - VERIFIED (device.rs lines 742-819)

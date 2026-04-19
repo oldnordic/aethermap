@@ -30,10 +30,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-  - razermapper/razermapper-common/src/lib.rs (analog_mode, camera_output_mode fields)
-  - razermapper/razermapper-common/src/ipc_client.rs (doctest fix)
-  - razermapper/razermapper-gui/src/gui.rs (ApplyAnalogCalibration handler)
-  - razermapper/razermapperd/src/ipc.rs (SetAnalogCalibration handler, conversion functions)
+  - aethermap/aethermap-common/src/lib.rs (analog_mode, camera_output_mode fields)
+  - aethermap/aethermap-common/src/ipc_client.rs (doctest fix)
+  - aethermap/aethermap-gui/src/gui.rs (ApplyAnalogCalibration handler)
+  - aethermap/aethermapd/src/ipc.rs (SetAnalogCalibration handler, conversion functions)
 
 key-decisions:
   - "Added analog_mode and camera_output_mode to AnalogCalibrationConfig with #[serde(default)]"
@@ -83,10 +83,10 @@ completed: 2026-02-19
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Added analog_mode and camera_output_mode fields to AnalogCalibrationConfig, Default impl
-- `razermapper/razermapper-common/src/ipc_client.rs` - Fixed doctest to include new fields
-- `razermapper/razermapper-gui/src/gui.rs` - Updated ApplyAnalogCalibration handler to send mode
-- `razermapper/razermapperd/src/ipc.rs` - Updated SetAnalogCalibration handler, added conversion functions, fixed test fixtures
+- `aethermap/aethermap-common/src/lib.rs` - Added analog_mode and camera_output_mode fields to AnalogCalibrationConfig, Default impl
+- `aethermap/aethermap-common/src/ipc_client.rs` - Fixed doctest to include new fields
+- `aethermap/aethermap-gui/src/gui.rs` - Updated ApplyAnalogCalibration handler to send mode
+- `aethermap/aethermapd/src/ipc.rs` - Updated SetAnalogCalibration handler, added conversion functions, fixed test fixtures
 
 ## Decisions Made
 
@@ -102,10 +102,10 @@ None - plan executed exactly as written. All 4 tasks completed successfully.
 
 ## Self-Check: PASSED
 
-- [x] razermapper/razermapper-common/src/lib.rs contains analog_mode field (line 345)
-- [x] razermapper/razermapper-common/src/lib.rs contains camera_output_mode field (line 349)
-- [x] razermapper/razermapper-gui/src/gui.rs includes mode in ApplyAnalogCalibration (line 1217)
-- [x] razermapper/razermapperd/src/ipc.rs has conversion functions (lines 110-129)
-- [x] razermapper/razermapperd/src/ipc.rs applies mode to layer_config (line 1495)
+- [x] aethermap/aethermap-common/src/lib.rs contains analog_mode field (line 345)
+- [x] aethermap/aethermap-common/src/lib.rs contains camera_output_mode field (line 349)
+- [x] aethermap/aethermap-gui/src/gui.rs includes mode in ApplyAnalogCalibration (line 1217)
+- [x] aethermap/aethermapd/src/ipc.rs has conversion functions (lines 110-129)
+- [x] aethermap/aethermapd/src/ipc.rs applies mode to layer_config (line 1495)
 - [x] All commits exist: b165455, 1418b76, 0cc07aa, f1a8c20
 - [x] All tests pass (8/8 IPC tests)

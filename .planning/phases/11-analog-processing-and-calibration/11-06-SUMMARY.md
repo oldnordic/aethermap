@@ -29,9 +29,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-  - razermapper/razermapper-common/src/lib.rs (Action::AnalogMove variant)
-  - razermapper/razermapperd/src/macro_engine.rs (process_analog_event, execute_macro)
-  - razermapper/razermapperd/src/injector.rs (analog_move trait method)
+  - aethermap/aethermap-common/src/lib.rs (Action::AnalogMove variant)
+  - aethermap/aethermapd/src/macro_engine.rs (process_analog_event, execute_macro)
+  - aethermap/aethermapd/src/injector.rs (analog_move trait method)
 
 key-decisions:
   - "Analog values normalized to -1.0 to 1.0 for device independence"
@@ -62,7 +62,7 @@ completed: 2026-02-19
 
 ## Accomplishments
 
-- Action::AnalogMove variant exists in razermapper-common for analog stick recording
+- Action::AnalogMove variant exists in aethermap-common for analog stick recording
 - process_analog_event records normalized analog movements to macro actions
 - execute_macro replays analog actions through AnalogProcessor and Injector
 - Comprehensive unit tests verify analog recording, normalization, and replay
@@ -88,9 +88,9 @@ Functionality was implemented in prior commits:
 
 ## Files Created/Modified
 
-- `razermapper/razermapper-common/src/lib.rs` - Action::AnalogMove variant with axis_code and normalized value
-- `razermapper/razermapperd/src/macro_engine.rs` - process_analog_event, normalize/denormalize helpers
-- `razermapper/razermapperd/src/injector.rs` - analog_move trait method for injection
+- `aethermap/aethermap-common/src/lib.rs` - Action::AnalogMove variant with axis_code and normalized value
+- `aethermap/aethermapd/src/macro_engine.rs` - process_analog_event, normalize/denormalize helpers
+- `aethermap/aethermapd/src/injector.rs` - analog_move trait method for injection
 
 ## Decisions Made
 

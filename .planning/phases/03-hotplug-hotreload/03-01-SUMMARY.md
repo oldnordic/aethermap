@@ -25,8 +25,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - razermapper/razermapperd/src/hotplug.rs - Udev monitor implementation (verified)
-    - razermapper/razermapperd/src/device.rs - Device add/remove handlers (verified)
+    - aethermap/aethermapd/src/hotplug.rs - Udev monitor implementation (verified)
+    - aethermap/aethermapd/src/device.rs - Device add/remove handlers (verified)
 
 key-decisions:
   - "Implementation uses udev (not inotify) - ROADMAP.md terminology note"
@@ -75,7 +75,7 @@ No commits - this was a verification-only plan with no code modifications.
 ## Files Created/Modified
 
 **Verified (no changes):**
-- `razermapper/razermapperd/src/hotplug.rs` (262 lines)
+- `aethermap/aethermapd/src/hotplug.rs` (262 lines)
   - DeviceMonitor struct with mpsc channel for DeviceEvent streaming
   - spawn_blocking wrapper for udev monitor (line 69-73)
   - udev::MonitorBuilder with match_subsystem("input") (line 120-122)
@@ -83,7 +83,7 @@ No commits - this was a verification-only plan with no code modifications.
   - device_map HashMap for devnode -> device_id tracking (line 127)
   - extract_device_id() using evdev::Device::input_id() (line 199-214)
 
-- `razermapper/razermapperd/src/device.rs` (874 lines)
+- `aethermap/aethermapd/src/device.rs` (874 lines)
   - handle_device_add() method (line 277-337)
     - Re-opens device with evdev::Device::open() (line 287)
     - Extracts VID/PID and formats device_id (line 290-297)

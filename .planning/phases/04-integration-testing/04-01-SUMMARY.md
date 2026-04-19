@@ -108,10 +108,10 @@ _Note: This plan was a pure verification effort. No code changes were required._
 ### Test Execution Results
 
 ```
-$ cargo test -p razermapperd --lib remap_engine::tests
+$ cargo test -p aethermapd --lib remap_engine::tests
 test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out
 
-$ cargo test -p razermapperd --lib key_parser::tests
+$ cargo test -p aethermapd --lib key_parser::tests
 test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 44 filtered out
 ```
 

@@ -10,7 +10,7 @@ Integrate RemapEngine into device event loop for key code translation.
 
 ### Files Modified
 
-#### 1. `razermapper/razermapperd/src/device.rs`
+#### 1. `aethermap/aethermapd/src/device.rs`
 
 **Added imports:**
 - `use std::sync::Arc;`
@@ -67,7 +67,7 @@ if let Some(remap_engine) = &remap_engine {
 }
 ```
 
-#### 2. `razermapper/razermapperd/src/main.rs`
+#### 2. `aethermap/aethermapd/src/main.rs`
 
 **Reorganized initialization order (lines 52-157):**
 - RemapEngine and MacroEngine created before DeviceManager
@@ -81,7 +81,7 @@ if let Some(remap_engine) = &remap_engine {
 
 ## Verification
 
-- [x] cargo check -p razermapperd compiles
+- [x] cargo check -p aethermapd compiles
 - [x] GrabbedDevice has remap_engine and injector optional fields
 - [x] Device event loop checks for remaps before macro engine
 - [x] Remapped keys are injected via UinputInjector

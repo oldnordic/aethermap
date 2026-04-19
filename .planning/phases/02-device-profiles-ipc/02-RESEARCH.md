@@ -51,7 +51,7 @@ Phase 2 extends the Phase 1 RemapEngine from global remaps to per-device profile
 ### Recommended Project Structure
 
 ```
-razermapperd/src/
+aethermapd/src/
 ├── remap_engine.rs     # UPDATE: Add RemapProfile struct, device-specific storage
 ├── config.rs           # UPDATE: Extended YAML parsing for device profiles
 ├── ipc.rs              # UPDATE: New IPC request/response types
@@ -68,7 +68,7 @@ razermapperd/src/
 **Example:**
 
 ```yaml
-# /etc/razermapperd/remaps.yaml
+# /etc/aethermapd/remaps.yaml
 devices:
   # Match by vendor:product ID (Razer BlackWidow)
   "1532:0220":
@@ -92,7 +92,7 @@ devices:
           ctrl: alt
 ```
 
-**Source:** Based on existing Profile struct pattern in `/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/lib.rs:227-231` and macro profile loading in `config.rs:414-465`.
+**Source:** Based on existing Profile struct pattern in `/home/feanor/Projects/remapper_rs/aethermap/aethermap-common/src/lib.rs:227-231` and macro profile loading in `config.rs:414-465`.
 
 ### Pattern 2: RemapProfile Struct with Device Association
 
@@ -125,18 +125,18 @@ pub struct ActiveProfile {
 }
 ```
 
-**Source:** Pattern from Profile struct (`razermapper-common/src/lib.rs:227-231`) and existing RemapEntry in `config.rs:10-17`.
+**Source:** Pattern from Profile struct (`aethermap-common/src/lib.rs:227-231`) and existing RemapEntry in `config.rs:10-17`.
 
 ### Pattern 3: IPC Extension for Profile Queries
 
-**What:** New Request/Response variants added to existing IPC protocol in razermapper-common, following existing patterns for macro/profile operations.
+**What:** New Request/Response variants added to existing IPC protocol in aethermap-common, following existing patterns for macro/profile operations.
 
 **When to use:** GUI needs to query active remaps or switch profiles at runtime.
 
 **Example:**
 
 ```rust
-// In razermapper-common/src/lib.rs
+// In aethermap-common/src/lib.rs
 pub enum Request {
     // ... existing variants ...
 
@@ -191,7 +191,7 @@ pub enum Response {
 }
 ```
 
-**Source:** Existing IPC pattern in `razermapper-common/src/lib.rs:72-159` and `ipc.rs:284-554`.
+**Source:** Existing IPC pattern in `aethermap-common/src/lib.rs:72-159` and `ipc.rs:284-554`.
 
 ### Pattern 4: Atomic Profile Switching via Arc Swap
 
@@ -329,7 +329,7 @@ grabbed_device.active_profile = Some(profile);
 **Example error message:**
 ```
 Error: Invalid key 'KEY_AA' in profile 'gaming' for device 1532:0220
-  /etc/razermapperd/remaps.yaml:15:12
+  /etc/aethermapd/remaps.yaml:15:12
     |
  15 |       KEY_AA: KEY_B
     |            ^^^^^^ Did you mean KEY_A?
@@ -353,7 +353,7 @@ Error: Invalid key 'KEY_AA' in profile 'gaming' for device 1532:0220
 ### Example 1: Extended RemapConfig Structure
 
 ```rust
-// razermapperd/src/config.rs
+// aethermapd/src/config.rs
 
 /// Top-level remap configuration with per-device profiles
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -443,7 +443,7 @@ pub async fn load_remap_config(&self) -> Result<RemapConfig, RemapConfigError> {
 ### Example 2: IPC Handler for Profile Operations
 
 ```rust
-// razermapperd/src/ipc.rs - add to handle_request function
+// aethermapd/src/ipc.rs - add to handle_request function
 
 Request::GetActiveRemaps { device_path } => {
     let state = state.read().await;
@@ -552,7 +552,7 @@ Request::DeactivateRemapProfile { device_path } => {
 ### Example 3: DeviceManager Profile Activation
 
 ```rust
-// razermapperd/src/device.rs - add methods to DeviceManager
+// aethermapd/src/device.rs - add methods to DeviceManager
 
 impl DeviceManager {
     /// Activate a remap profile for a device
@@ -664,7 +664,7 @@ This maps directly to the proposed YAML structure with `devices` as top-level ma
 
 1. **Profile storage format**
    - What we know: ConfigManager supports profiles for macros in separate YAML files
-   - What's unclear: Should remap profiles be separate files (`/etc/razermapperd/remaps.d/{device}.yaml`) or single file with nested structure?
+   - What's unclear: Should remap profiles be separate files (`/etc/aethermapd/remaps.d/{device}.yaml`) or single file with nested structure?
    - **Recommendation:** Start with single file (`remaps.yaml`) for simplicity; split to directory in Phase 3 if config becomes large
 
 2. **Device match pattern syntax**
@@ -688,12 +688,12 @@ This maps directly to the proposed YAML structure with `devices` as top-level ma
 
 ### Primary (HIGH confidence)
 
-- **remap_engine.rs** (`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/remap_engine.rs`) - Existing RemapEngine implementation; Arc<RwLock<HashMap>> pattern
-- **config.rs** (`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/config.rs`) - ConfigManager profile loading methods (save_profile, load_profile)
-- **ipc.rs** (`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/ipc.rs`) - IPC handler patterns; existing Request/Response processing
-- **device.rs** (`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/device.rs`) - DeviceManager and GrabbedDevice structures
-- **lib.rs** (`/home/feanor/Projects/remapper_rs/razermapper/razermapper-common/src/lib.rs`) - Common types including Profile struct
-- **main.rs** (`/home/feanor/Projects/remapper_rs/razermapper/razermapperd/src/main.rs`) - Daemon initialization; component wiring
+- **remap_engine.rs** (`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/remap_engine.rs`) - Existing RemapEngine implementation; Arc<RwLock<HashMap>> pattern
+- **config.rs** (`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/config.rs`) - ConfigManager profile loading methods (save_profile, load_profile)
+- **ipc.rs** (`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/ipc.rs`) - IPC handler patterns; existing Request/Response processing
+- **device.rs** (`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/device.rs`) - DeviceManager and GrabbedDevice structures
+- **lib.rs** (`/home/feanor/Projects/remapper_rs/aethermap/aethermap-common/src/lib.rs`) - Common types including Profile struct
+- **main.rs** (`/home/feanor/Projects/remapper_rs/aethermap/aethermapd/src/main.rs`) - Daemon initialization; component wiring
 
 ### Secondary (MEDIUM confidence)
 

@@ -1,12 +1,12 @@
-# Razermapper Rust Project - Agent Guidelines
+# Aethermap Rust Project - Agent Guidelines
 
 ## Build & Test Commands
 - `cargo build` - Build all workspace members
 - `cargo build --release` - Build optimized release
 - `cargo test` - Run all tests across workspace
-- `cargo test -p razermapperd` - Run daemon tests
-- `cargo test -p razermapper-gui` - Run GUI tests
-- `cargo test -p razermapper-common` - Run common library tests
+- `cargo test -p aethermapd` - Run daemon tests
+- `cargo test -p aethermap-gui` - Run GUI tests
+- `cargo test -p aethermap-common` - Run common library tests
 - `cargo test --test e2e` - Run end-to-end integration tests
 - `cargo clippy` - Lint with Clippy
 - `cargo fmt` - Format code with rustfmt
@@ -24,8 +24,8 @@
 - Use `cfg!` macro for platform-specific code
 
 ## Project Structure
-- Workspace with members: razermapper-common, razermapperd, razermapper-gui, tests
-- Common types and IPC in razermapper-common
-- Privileged daemon in razermapperd (requires root)
-- GUI client in razermapper-gui using iced framework
+- Workspace with members: aethermap-common, aethermapd, aethermap-gui, tests
+- Common types and IPC in aethermap-common
+- Privileged daemon in aethermapd (requires root)
+- GUI client in aethermap-gui using iced framework
 - End-to-end tests in tests/ directory

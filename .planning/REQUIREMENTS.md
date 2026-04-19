@@ -1,4 +1,4 @@
-# Requirements: Razermapper
+# Requirements: Aethermap
 
 **Defined:** 2026-02-17
 **Core Value:** Users can remap any input key to any other key, with remaps persisting across reboots and switchable at runtime.
