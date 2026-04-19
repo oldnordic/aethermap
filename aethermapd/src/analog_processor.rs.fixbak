@@ -1,0 +1,630 @@
+//! AnalogProcessor for EV_ABS event handling with deadzone filtering
+//!
+//! This module provides analog stick processing with:
+//! - Deadzone filtering (values within deadzone return None)
+//! - Sensitivity adjustment (multiplier for output values)
+//! - Response curve application (Linear, Exponential)
+//! - Per-device calibration state tracking
+//!
+//! # Processing Pipeline
+//!
+//! 1. **Deadzone Filter**: If |value| < deadzone, return None (no event)
+//! 2. **Normalization**: Map (deadzone, max) to (0, max)
+//! 3. **Sensitivity**: Apply multiplier (default 1.0)
+//! 4. **Response Curve**: Apply Linear or Exponential transformation
+//!
+//! # Device Configurations
+//!
+//! Each device has independent analog configuration:
+//! - deadzone: 0-32767 range (default ~14000 for ~43%)
+//! - sensitivity: 0.1-5.0 multiplier (default 1.0)
+//! - response_curve: Linear or Exponential
+//!
+//! # Examples
+//!
+//! ```ignore
+//! let processor = AnalogProcessor::new();
+//!
+//! // Process analog event
+//! if let Some(processed) = processor.process_event("1532:0220", 61000, 25000).await {
+//!     // Send processed value to macro engine
+//! } else {
+//!     // Value was filtered by deadzone
+//! }
+//!
+//! // Configure device
+//! processor.set_deadzone("1532:0220", 16000).await;
+//! processor.set_sensitivity("1532:0220", 1.5).await;
+//! ```
+
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use tracing::{debug, info};
+
+/// Default deadzone value (~43% of 32767 range)
+///
+/// This provides a comfortable deadzone for typical analog sticks.
+/// Users can adjust per-device via set_deadzone().
+const DEFAULT_DEADZONE: u16 = 14000;
+
+/// Maximum absolute value for evdev analog events
+const MAX_ABS_VALUE: i32 = 32767;
+
+/// Response curve type for analog processing
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+pub enum ResponseCurve {
+    /// Linear response (no transformation)
+    Linear,
+    /// Exponential response (f(x) = sign(x) * |x|^exponent)
+    Exponential { exponent: f32 },
+}
+
+impl Default for ResponseCurve {
+    fn default() -> Self {
+        Self::Linear
+    }
+}
+
+/// Per-device analog configuration
+///
+/// Stores deadzone, sensitivity, and response curve settings for a single device.
+/// Devices are identified by device_id (vendor:product format).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeviceAnalogConfig {
+    /// Device identifier (vendor:product format, e.g., "1532:0220")
+    pub device_id: String,
+
+    /// Deadzone threshold (0-32767 range)
+    /// Values within +/- deadzone return None (filtered)
+    #[serde(default = "default_deadzone")]
+    pub deadzone: u16,
+
+    /// Sensitivity multiplier (0.1-5.0, default 1.0)
+    #[serde(default = "default_sensitivity")]
+    pub sensitivity: f32,
+
+    /// Response curve for output transformation
+    #[serde(default)]
+    pub response_curve: ResponseCurve,
+
+    /// Inner deadzone for additional precision (reserved for plan 11-06)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_deadzone: Option<u16>,
+
+    /// Outer deadzone for max clamping (reserved for plan 11-06)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outer_deadzone: Option<u16>,
+}
+
+fn default_deadzone() -> u16 {
+    DEFAULT_DEADZONE
+}
+
+fn default_sensitivity() -> f32 {
+    1.0
+}
+
+impl DeviceAnalogConfig {
+    /// Create a new device analog config with defaults
+    pub fn new(device_id: String) -> Self {
+        Self {
+            device_id,
+            deadzone: DEFAULT_DEADZONE,
+            sensitivity: 1.0,
+            response_curve: ResponseCurve::Linear,
+            inner_deadzone: None,
+            outer_deadzone: None,
+        }
+    }
+
+    /// Create a new device analog config with specific deadzone
+    pub fn with_deadzone(device_id: String, deadzone: u16) -> Self {
+        Self {
+            device_id,
+            deadzone,
+            sensitivity: 1.0,
+            response_curve: ResponseCurve::Linear,
+            inner_deadzone: None,
+            outer_deadzone: None,
+        }
+    }
+}
+
+/// Analog processor for EV_ABS event handling
+///
+/// Processes analog stick events with deadzone filtering, sensitivity adjustment,
+/// and response curve application. Maintains per-device configuration state.
+pub struct AnalogProcessor {
+    /// Per-device analog configuration
+    devices: Arc<RwLock<HashMap<String, DeviceAnalogConfig>>>,
+}
+
+impl AnalogProcessor {
+    /// Create a new analog processor
+    pub fn new() -> Self {
+        Self {
+            devices: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    /// Process an analog event
+    ///
+    /// Applies deadzone filtering, normalization, sensitivity, and response curve.
+    /// Returns None if value is within deadzone (filtered).
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier (vendor:product format)
+    /// * `axis_code` - Axis code (61000-61005 for ABS_X through ABS_RZ)
+    /// * `raw_value` - Raw value from evdev (-32768 to 32767)
+    ///
+    /// # Returns
+    ///
+    /// * `Some(i32)` - Processed value (outside deadzone)
+    /// * `None` - Value filtered by deadzone
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// // Process ABS_X event
+    /// if let Some(value) = processor.process_event("1532:0220", 61000, 25000).await {
+    ///     // Send to macro engine
+    /// }
+    /// ```
+    pub async fn process_event(
+        &self,
+        device_id: &str,
+        axis_code: u16,
+        raw_value: i32,
+    ) -> Option<i32> {
+        // Get or create device config
+        let config = self.get_or_create_device_config(device_id).await;
+        let deadzone = config.deadzone as i32;
+
+        // Step 1: Deadzone filtering
+        // If |value| < deadzone, return None (filtered)
+        if raw_value.abs() < deadzone {
+            debug!(
+                "Analog event filtered by deadzone: device={}, axis={}, value={}, deadzone={}",
+                device_id, axis_code, raw_value, deadzone
+            );
+            return None;
+        }
+
+        // Step 2: Normalization
+        // Map (deadzone, max) to (0, max)
+        let sign = raw_value.signum();
+        let abs_value = raw_value.abs();
+        let normalized = ((abs_value - deadzone) as f32 / (MAX_ABS_VALUE - deadzone) as f32)
+            .clamp(0.0, 1.0);
+
+        // Step 3: Sensitivity multiplier
+        let scaled = normalized * config.sensitivity;
+
+        // Step 4: Response curve
+        let output = match config.response_curve {
+            ResponseCurve::Linear => {
+                // Linear: pass through scaled value
+                scaled
+            }
+            ResponseCurve::Exponential { exponent } => {
+                // Exponential: f(x) = sign(x) * |x|^exponent
+                // Apply exponent to scaled value (0.0 to 1.0)
+                scaled.powf(exponent.clamp(0.1, 5.0))
+            }
+        };
+
+        // Convert back to i32 range
+        let final_value = (sign as f32 * output * MAX_ABS_VALUE as f32) as i32;
+
+        debug!(
+            "Analog event processed: device={}, axis={}, raw={}, deadzone={}, sensitivity={:.2}, curve={:?}, output={}",
+            device_id, axis_code, raw_value, deadzone, config.sensitivity, config.response_curve, final_value
+        );
+
+        Some(final_value)
+    }
+
+    /// Set deadzone for a device
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier
+    /// * `value` - Deadzone threshold (0-32767)
+    pub async fn set_deadzone(&self, device_id: &str, value: u16) {
+        let mut devices = self.devices.write().await;
+        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
+            DeviceAnalogConfig::new(device_id.to_string())
+        });
+        config.deadzone = value;
+        info!(
+            "Deadzone updated: device={}, deadzone={}",
+            device_id, value
+        );
+    }
+
+    /// Set sensitivity for a device
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier
+    /// * `value` - Sensitivity multiplier (0.1-5.0)
+    pub async fn set_sensitivity(&self, device_id: &str, value: f32) {
+        let clamped = value.clamp(0.1, 5.0);
+        let mut devices = self.devices.write().await;
+        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
+            DeviceAnalogConfig::new(device_id.to_string())
+        });
+        config.sensitivity = clamped;
+        info!(
+            "Sensitivity updated: device={}, sensitivity={:.2}",
+            device_id, clamped
+        );
+    }
+
+    /// Set response curve for a device
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier
+    /// * `curve` - Response curve type
+    pub async fn set_response_curve(&self, device_id: &str, curve: ResponseCurve) {
+        let mut devices = self.devices.write().await;
+        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
+            DeviceAnalogConfig::new(device_id.to_string())
+        });
+        config.response_curve = curve;
+        info!(
+            "Response curve updated: device={}, curve={:?}",
+            device_id, curve
+        );
+    }
+
+    /// Get or create device configuration
+    ///
+    /// Returns the device configuration, creating with defaults if not exists.
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier
+    ///
+    /// # Returns
+    ///
+    /// Device configuration (cloned for independent use)
+    pub async fn get_or_create_device_config(&self, device_id: &str) -> DeviceAnalogConfig {
+        let devices = self.devices.read().await;
+        if let Some(config) = devices.get(device_id) {
+            config.clone()
+        } else {
+            drop(devices);
+            let mut devices = self.devices.write().await;
+            devices
+                .entry(device_id.to_string())
+                .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()))
+                .clone()
+        }
+    }
+
+    /// Get device configuration
+    ///
+    /// Returns None if device not configured.
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier
+    ///
+    /// # Returns
+    ///
+    /// * `Some(DeviceAnalogConfig)` - Device configuration
+    /// * `None` - Device not configured
+    pub async fn get_device_config(&self, device_id: &str) -> Option<DeviceAnalogConfig> {
+        let devices = self.devices.read().await;
+        devices.get(device_id).cloned()
+    }
+
+    /// Remove device configuration
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - Device identifier
+    pub async fn remove_device_config(&self, device_id: &str) {
+        let mut devices = self.devices.write().await;
+        if devices.remove(device_id).is_some() {
+            info!("Device config removed: {}", device_id);
+        }
+    }
+
+    /// Get all configured devices
+    ///
+    /// # Returns
+    ///
+    /// Vector of device identifiers with analog configuration
+    pub async fn get_configured_devices(&self) -> Vec<String> {
+        let devices = self.devices.read().await;
+        devices.keys().cloned().collect()
+    }
+}
+
+impl Default for AnalogProcessor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_processor() -> AnalogProcessor {
+        AnalogProcessor::new()
+    }
+
+    #[tokio::test]
+    async fn test_analog_processor_creation() {
+        let processor = create_test_processor();
+        let devices = processor.get_configured_devices().await;
+        assert!(devices.is_empty(), "New processor should have no devices");
+    }
+
+    #[tokio::test]
+    async fn test_deadzone_filtering() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Value within deadzone (14000) should return None
+        let result = processor.process_event(device_id, 61000, 10000).await;
+        assert!(result.is_none(), "Value within deadzone should be filtered");
+
+        // Negative value within deadzone should return None
+        let result = processor.process_event(device_id, 61000, -10000).await;
+        assert!(result.is_none(), "Negative value within deadzone should be filtered");
+
+        // Center value should return None
+        let result = processor.process_event(device_id, 61000, 0).await;
+        assert!(result.is_none(), "Center value should be filtered");
+    }
+
+    #[tokio::test]
+    async fn test_deadzone_passthrough() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Value outside deadzone should be processed
+        let result = processor.process_event(device_id, 61000, 25000).await;
+        assert!(result.is_some(), "Value outside deadzone should pass through");
+
+        // Negative value outside deadzone should be processed
+        let result = processor.process_event(device_id, 61000, -25000).await;
+        assert!(result.is_some(), "Negative value outside deadzone should pass through");
+
+        // Max value should be processed
+        let result = processor.process_event(device_id, 61000, 32767).await;
+        assert!(result.is_some(), "Max value should pass through");
+
+        // Min value should be processed
+        let result = processor.process_event(device_id, 61000, -32768).await;
+        assert!(result.is_some(), "Min value should pass through");
+    }
+
+    #[tokio::test]
+    async fn test_sensitivity_multiplier() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Set sensitivity to 2.0
+        processor.set_sensitivity(device_id, 2.0).await;
+
+        // Process same value with different sensitivity
+        let output_default = create_test_processor()
+            .process_event(device_id, 61000, 25000)
+            .await;
+        let output_boosted = processor.process_event(device_id, 61000, 25000).await;
+
+        assert!(output_default.is_some());
+        assert!(output_boosted.is_some());
+
+        // Boosted output should be higher (approximately 2x)
+        let default_val = output_default.unwrap();
+        let boosted_val = output_boosted.unwrap();
+        assert!(
+            boosted_val.abs() > default_val.abs(),
+            "Sensitivity 2.0 should produce higher output"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_linear_response_curve() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Linear is default
+        let config = processor.get_or_create_device_config(device_id).await;
+        assert!(matches!(config.response_curve, ResponseCurve::Linear));
+
+        // Process value
+        let result = processor.process_event(device_id, 61000, 25000).await;
+        assert!(result.is_some());
+
+        // Set explicit linear curve
+        processor
+            .set_response_curve(device_id, ResponseCurve::Linear)
+            .await;
+
+        let result2 = processor.process_event(device_id, 61000, 25000).await;
+        assert!(result2.is_some());
+
+        // Results should be similar (linear = no transformation)
+        let val1 = result.unwrap();
+        let val2 = result2.unwrap();
+        assert_eq!(val1, val2, "Linear curve should produce same output");
+    }
+
+    #[tokio::test]
+    async fn test_exponential_response_curve() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Test exponential curve with exponent 2.0
+        processor
+            .set_response_curve(device_id, ResponseCurve::Exponential { exponent: 2.0 })
+            .await;
+
+        let result = processor.process_event(device_id, 61000, 25000).await;
+        assert!(result.is_some());
+
+        // Exponential curve should reduce small values more than large values
+        let linear_result = create_test_processor()
+            .process_event(device_id, 61000, 25000)
+            .await;
+        let exp_result = result.unwrap();
+        let linear_val = linear_result.unwrap();
+
+        // With exponent 2.0, medium values should be lower than linear
+        assert!(
+            exp_result.abs() < linear_val.abs(),
+            "Exponential curve should reduce medium values"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_per_device_config() {
+        let processor = create_test_processor();
+        let device1 = "device1";
+        let device2 = "device2";
+
+        // Set different deadzones
+        processor.set_deadzone(device1, 10000).await;
+        processor.set_deadzone(device2, 20000).await;
+
+        // Same value should have different results
+        let result1 = processor.process_event(device1, 61000, 15000).await;
+        let result2 = processor.process_event(device2, 61000, 15000).await;
+
+        // Device1 (deadzone 10000) should pass through 15000
+        assert!(result1.is_some(), "Device1 should pass through value 15000");
+
+        // Device2 (deadzone 20000) should filter 15000
+        assert!(result2.is_none(), "Device2 should filter value 15000");
+    }
+
+    #[tokio::test]
+    async fn test_default_config() {
+        let processor = create_test_processor();
+        let device_id = "new_device";
+
+        // New device should get default config
+        let config = processor.get_or_create_device_config(device_id).await;
+        assert_eq!(config.deadzone, DEFAULT_DEADZONE);
+        assert_eq!(config.sensitivity, 1.0);
+        assert_eq!(config.response_curve, ResponseCurve::Linear);
+
+        // Config should persist for subsequent calls
+        let config2 = processor.get_or_create_device_config(device_id).await;
+        assert_eq!(config.device_id, config2.device_id);
+    }
+
+    #[tokio::test]
+    async fn test_remove_device_config() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Create config
+        processor.set_deadzone(device_id, 15000).await;
+
+        // Verify it exists
+        let config = processor.get_device_config(device_id).await;
+        assert!(config.is_some());
+
+        // Remove it
+        processor.remove_device_config(device_id).await;
+
+        // Verify it's gone
+        let config = processor.get_device_config(device_id).await;
+        assert!(config.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_get_configured_devices() {
+        let processor = create_test_processor();
+
+        // Initially empty
+        let devices = processor.get_configured_devices().await;
+        assert!(devices.is_empty());
+
+        // Add some devices
+        processor.set_deadzone("device1", 10000).await;
+        processor.set_deadzone("device2", 15000).await;
+        processor.set_deadzone("device3", 20000).await;
+
+        // Should have 3 devices
+        let devices = processor.get_configured_devices().await;
+        assert_eq!(devices.len(), 3);
+
+        // Remove one
+        processor.remove_device_config("device2").await;
+
+        // Should have 2 devices
+        let devices = processor.get_configured_devices().await;
+        assert_eq!(devices.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_exponential_clamping() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Test with very high exponent (should clamp)
+        processor
+            .set_response_curve(device_id, ResponseCurve::Exponential { exponent: 10.0 })
+            .await;
+
+        let result = processor.process_event(device_id, 61000, 25000).await;
+        assert!(result.is_some(), "Exponential with high exponent should work");
+
+        // Test with very low exponent (should clamp)
+        processor
+            .set_response_curve(device_id, ResponseCurve::Exponential { exponent: 0.01 })
+            .await;
+
+        let result = processor.process_event(device_id, 61000, 25000).await;
+        assert!(result.is_some(), "Exponential with low exponent should work");
+    }
+
+    #[tokio::test]
+    async fn test_sensitivity_clamping() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Test with sensitivity too high (should clamp to 5.0)
+        processor.set_sensitivity(device_id, 10.0).await;
+        let config = processor.get_device_config(device_id).await;
+        assert!(config.is_some());
+        assert_eq!(config.unwrap().sensitivity, 5.0);
+
+        // Test with sensitivity too low (should clamp to 0.1)
+        processor.set_sensitivity(device_id, 0.01).await;
+        let config = processor.get_device_config(device_id).await;
+        assert!(config.is_some());
+        assert_eq!(config.unwrap().sensitivity, 0.1);
+    }
+
+    #[tokio::test]
+    async fn test_axis_codes() {
+        let processor = create_test_processor();
+        let device_id = "test_device";
+
+        // Test all supported axis codes
+        let axis_codes = [61000, 61001, 61002, 61003, 61004, 61005];
+
+        for axis in axis_codes {
+            let result = processor.process_event(device_id, axis, 25000).await;
+            assert!(
+                result.is_some(),
+                "Axis code {} should be supported",
+                axis
+            );
+        }
+    }
+}

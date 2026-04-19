@@ -1,0 +1,53 @@
+[Unit]
+Description=Aethermap Daemon - Advanced keyboard and mouse macro mapping
+Documentation=https://github.com/aethermap/aethermap
+After=network.target local-fs.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/aethermapd
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+User=root
+Group=input
+
+# Security hardening
+CapabilityBoundingSet=CAP_SYS_RAWIO
+AmbientCapabilities=CAP_SYS_RAWIO
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+
+# Directory permissions
+RuntimeDirectory=aethermap
+RuntimeDirectoryMode=0750
+StateDirectory=aethermap
+StateDirectoryMode=0750
+CacheDirectory=aethermap
+CacheDirectoryMode=0750
+ConfigurationDirectory=aethermap
+ConfigurationDirectoryMode=0750
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aethermapd
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

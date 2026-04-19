@@ -1,0 +1,89 @@
+# Default configuration for aethermap daemon
+# This file can be edited to customize the behavior of the daemon
+
+# Daemon settings
+daemon:
+  # Unix socket path for IPC communication
+  socket_path: "/run/aethermap/aethermap.sock"
+  # Log level (trace, debug, info, warn, error)
+  log_level: "info"
+  # Whether to drop privileges after initialization
+  drop_privileges: true
+
+# Device discovery settings
+device_discovery:
+  # Directory where input devices are located
+  input_devices_path: "/dev/input/by-id"
+  # Whether to use OpenRazer database for device filtering
+  use_openrazer_db: true
+  # Fallback device name matching pattern
+  fallback_name_pattern: "Razer"
+
+# Macro engine settings
+macro_engine:
+  # Maximum number of concurrent macros
+  max_concurrent_macros: 10
+  # Default delay between macro actions in milliseconds
+  default_delay: 10
+  # Whether to enable macro recording by default
+  enable_recording: true
+
+# Configuration persistence
+config:
+  # Path to the main configuration file
+  config_file: "/etc/aethermap/config.yaml"
+  # Path to the macros definition file
+  macros_file: "/etc/aethermap/macros.yaml"
+  # Path to the binary cache file for faster loading
+  cache_file: "/var/cache/aethermap/macros.bin"
+  # Whether to automatically save macros on change
+  auto_save: true
+  # Check for configuration changes every N seconds
+  reload_interval: 30
+
+# Security settings
+security:
+  # Group that owns the Unix socket
+  socket_group: "input"
+  # Socket permissions (octal format)
+  socket_permissions: "0660"
+  # Whether to require authentication token for clients
+  require_auth_token: false
+  # Capabilities to retain after privilege dropping
+  retain_capabilities: ["CAP_SYS_RAWIO"]
+
+# LED control settings
+led_control:
+  # Whether to enable LED control
+  enabled: true
+  # Interface to use (dbus, direct)
+  interface: "dbus"
+  # Default color RGB values (0-255)
+  default_color: [0, 255, 0]  # Green
+
+# Performance settings
+performance:
+  # Device polling interval in milliseconds
+  device_poll_interval: 1
+  # Size of the event queue
+  event_queue_size: 1000
+  # Whether to enable thread pooling for macro execution
+  thread_pool: true
+
+# Default macros
+default_macros:
+  - name: "Example Macro"
+    description: "Example macro demonstrating functionality"
+    trigger:
+      keys: [30, 46]  # A + C keys
+      modifiers: [29]  # Ctrl key
+    actions:
+      - type: "key_press"
+        value: 30  # A key
+      - type: "delay"
+        value: 50
+      - type: "key_release"
+        value: 30
+      - type: "delay"
+        value: 50
+    enabled: false

@@ -1,0 +1,26 @@
+post_install() {
+    systemd-sysusers aethermap.conf
+    udevadm control --reload-rules
+    
+    # Set directory permissions
+    chown -R aethermap:aethermap /etc/aethermap
+    mkdir -p /var/cache/aethermap
+    chown -R aethermap:aethermap /var/cache/aethermap
+
+    echo "The aethermap daemon runs as the 'aethermap' user."
+    echo "Start the service with: systemctl start aethermapd"
+    echo "Enable it on boot with: systemctl enable aethermapd"
+    echo "Then run: aethermap-gui"
+}
+
+post_upgrade() {
+    udevadm control --reload-rules
+    chown -R aethermap:aethermap /etc/aethermap
+    mkdir -p /var/cache/aethermap
+    chown -R aethermap:aethermap /var/cache/aethermap
+    echo "Restart the aethermap service: systemctl restart aethermapd"
+}
+
+post_remove() {
+    systemctl disable --now aethermapd 2>/dev/null || true
+}

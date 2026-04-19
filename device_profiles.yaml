@@ -1,0 +1,189 @@
+# Device Profiles for Azeron Cyborg 2
+# Device ID: 16d0:12f7 (Azeron Cyborg 2 Keypad)
+#
+# This file contains pre-configured profiles for the Azeron Cyborg 2.
+# Each profile defines remappings for the 26 joystick buttons plus analog/hat mappings.
+
+devices:
+  "16d0:12f7":
+    profiles:
+      # Gaming Profile - WASD style
+      gaming:
+        name: "Gaming"
+        remaps:
+          # D-Pad buttons
+          joy_btn_0: KEY_W          # D-Pad Up -> W
+          joy_btn_1: KEY_D          # D-Pad Right -> D
+          joy_btn_2: KEY_S          # D-Pad Down -> S
+          joy_btn_3: KEY_A          # D-Pad Left -> A
+
+          # Thumb buttons (right side)
+          joy_btn_4: KEY_E          # Thumb Top -> E (use item)
+          joy_btn_5: KEY_R          # Thumb Middle -> R (reload)
+          joy_btn_6: KEY_F          # Thumb Bottom -> F (flashlight)
+
+          # Left cluster (number keys)
+          joy_btn_7: KEY_1          # Left Cluster 1 -> 1
+          joy_btn_8: KEY_2          # Left Cluster 2 -> 2
+          joy_btn_9: KEY_3          # Left Cluster 3 -> 3
+          joy_btn_10: KEY_4         # Left Cluster 4 -> 4
+
+          # Main keypad
+          joy_btn_11: KEY_5         # Key 01 -> 5
+          joy_btn_12: KEY_6         # Key 02 -> 6
+          joy_btn_13: KEY_7         # Key 03 -> 7 (weapon switch)
+          joy_btn_14: KEY_8         # Key 04 -> 8
+          joy_btn_15: KEY_9         # Key 05 -> 9
+          joy_btn_16: KEY_0         # Key 06 -> 0
+
+          # Right cluster (utility)
+          joy_btn_17: KEY_Q         # Right Cluster 1 -> Q
+          joy_btn_18: KEY_G         # Right Cluster 2 -> G (grenade)
+          joy_btn_19: KEY_C         # Right Cluster 3 -> C (crouch)
+
+          # Modifier keys
+          joy_btn_20: KEY_LEFTSHIFT # Modifier 1 -> Shift
+          joy_btn_21: KEY_LEFTCTRL  # Modifier 2 -> Ctrl
+          joy_btn_22: KEY_LEFTALT   # Modifier 3 -> Alt
+          joy_btn_23: KEY_SPACE     # Modifier 4 -> Space
+
+          # Action keys
+          joy_btn_24: KEY_TAB       # Action 1 -> Tab
+          joy_btn_25: KEY_ENTER     # Action 2 -> Enter
+
+          # Extra buttons
+          joy_btn_26: KEY_ESC       # Extra -> ESC
+
+      # MOBA Profile
+      moba:
+        name: "MOBA"
+        remaps:
+          # D-Pad as camera
+          joy_btn_0: BTN_TRIGGER_HAPPY5   # D-Pad Up -> Camera Up (mouse scroll)
+          joy_btn_1: BTN_SIDE            # D-Pad Right -> Side button
+          joy_btn_2: BTN_TRIGGER_HAPPY4   # D-Pad Down -> Camera Down
+          joy_btn_3: BTN_EXTRA           # D-Pad Left -> Extra button
+
+          # Abilities (thumb buttons)
+          joy_btn_4: KEY_Q               # Q - Ability 1
+          joy_btn_5: KEY_W               # W - Ability 2
+          joy_btn_6: KEY_E               # E - Ability 3
+
+          # Item cluster
+          joy_btn_7: KEY_1               # 1 - Item 1
+          joy_btn_8: KEY_2               # 2 - Item 2
+          joy_btn_9: KEY_3               # 3 - Item 3
+          joy_btn_10: KEY_4              # 4 - Item 4
+
+          # Main keypad (spells)
+          joy_btn_11: KEY_Q              # Q - Spell 1
+          joy_btn_12: KEY_W              # W - Spell 2
+          joy_btn_13: KEY_E              # E - Spell 3
+          joy_btn_14: KEY_R              # R - Spell 4
+          joy_btn_15: KEY_D              # D - Summoner Spell D
+          joy_btn_16: KEY_F              # F - Summoner Spell F
+
+          # Utility
+          joy_btn_17: KEY_B              # B - Back
+          joy_btn_18: KEY_G              # G - Ping
+          joy_btn_19: KEY_SPACE          # Space - Stop
+
+          # Modifiers
+          joy_btn_20: KEY_LEFTSHIFT      # Shift
+          joy_btn_21: KEY_LEFTCTRL       # Ctrl
+          joy_btn_22: KEY_LEFTALT        # Alt (self cast)
+          joy_btn_23: KEY_SPACE          # Space
+
+          joy_btn_24: KEY_TAB            # Tab - Scoreboard
+          joy_btn_25: KEY_ENTER          # Enter - Chat
+          joy_btn_26: KEY_ESC            # ESC
+
+      # Productivity Profile
+      productivity:
+        name: "Productivity"
+        remaps:
+          # D-Pad as arrow keys
+          joy_btn_0: KEY_UP             # Up
+          joy_btn_1: KEY_RIGHT          # Right
+          joy_btn_2: KEY_DOWN           # Down
+          joy_btn_3: KEY_LEFT           # Left
+
+          # Thumb buttons
+          joy_btn_4: KEY_DELETE         # Delete
+          joy_btn_5: KEY_HOME           # Home
+          joy_btn_6: KEY_END            # End
+
+          # Number cluster
+          joy_btn_7: KEY_1
+          joy_btn_8: KEY_2
+          joy_btn_9: KEY_3
+          joy_btn_10: KEY_4
+
+          # Main keypad
+          joy_btn_11: KEY_5
+          joy_btn_12: KEY_6
+          joy_btn_13: KEY_7
+          joy_btn_14: KEY_8
+          joy_btn_15: KEY_9
+          joy_btn_16: KEY_0
+
+          # Right cluster
+          joy_btn_17: KEY_INSERT
+          joy_btn_18: KEY_PAGEUP
+          joy_btn_19: KEY_PAGEDOWN
+
+          # Modifiers
+          joy_btn_20: KEY_LEFTSHIFT
+          joy_btn_21: KEY_LEFTCTRL
+          joy_btn_22: KEY_LEFTALT
+          joy_btn_23: KEY_SPACE
+
+          joy_btn_24: KEY_TAB
+          joy_btn_25: KEY_ENTER
+          joy_btn_26: KEY_ESC
+
+      # Media Profile
+      media:
+        name: "Media"
+        remaps:
+          # D-Pad as media arrows
+          joy_btn_0: KEY_UP
+          joy_btn_1: KEY_RIGHT
+          joy_btn_2: KEY_DOWN
+          joy_btn_3: KEY_LEFT
+
+          # Volume controls
+          joy_btn_4: KEY_MUTE           # Mute
+          joy_btn_5: KEY_VOLUMEDOWN     # Volume Down
+          joy_btn_6: KEY_VOLUMEUP       # Volume Up
+
+          # Media navigation
+          joy_btn_7: KEY_PREVIOUSSONG   # Previous track
+          joy_btn_8: KEY_NEXTSONG       # Next track
+          joy_btn_9: KEY_PLAYPAUSE      # Play/Pause
+          joy_btn_10: KEY_MEDIA         # Media key
+
+          joy_btn_11: KEY_STOPCD        # Stop
+          joy_btn_12: KEY_EJECTCD       # Eject
+
+          # Modifiers
+          joy_btn_20: KEY_LEFTCTRL
+          joy_btn_21: KEY_LEFTSHIFT
+          joy_btn_22: KEY_LEFTALT
+          joy_btn_23: KEY_SPACE
+
+          joy_btn_24: KEY_TAB
+          joy_btn_25: KEY_ENTER
+          joy_btn_26: KEY_ESC
+
+    # Device capabilities (for GUI)
+    capabilities:
+      has_analog_stick: true
+      has_hat_switch: true
+      joystick_button_count: 26
+      led_zones:
+        - "Side"
+      device_type: "Keypad"
+
+# Default profile to use for new devices
+default: "gaming"

@@ -1,0 +1,21 @@
+[Unit]
+Description=Aethermap Input Remapping Daemon
+After=network.target openrazer-daemon.service
+Wants=openrazer-daemon.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/aethermapd
+Restart=on-failure
+RestartSec=5
+
+# Socket location - systemd creates /run/aethermap/ for us
+RuntimeDirectory=aethermap
+RuntimeDirectoryMode=0755
+
+# Required for uinput and evdev access - no sandboxing for now
+# This service needs full access to /dev/uinput and /dev/input/*
+NoNewPrivileges=false
+
+[Install]
+WantedBy=multi-user.target

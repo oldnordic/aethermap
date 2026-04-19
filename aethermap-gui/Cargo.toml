@@ -1,0 +1,36 @@
+[package]
+name = "aethermap-gui"
+version = "1.4.1"
+edition = "2021"
+
+[lib]
+name = "aethermap_gui"
+path = "src/lib.rs"
+
+[[bin]]
+name = "aethermap-gui"
+path = "src/main.rs"
+
+[dependencies]
+# GUI framework
+iced = { version = "0.12", features = ["tokio", "svg", "canvas"] }
+
+# Common types and IPC
+aethermap-common = { path = "../aethermap-common" }
+
+# Serialization
+serde = { workspace = true }
+bincode = { workspace = true }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Wayland portal integration
+ashpd = { version = "0.8", default-features = false, features = ["wayland", "tokio"] }

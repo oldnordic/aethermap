@@ -1,0 +1,2 @@
+# systemd sysusers configuration for aethermap
+u aethermap - "Aethermap daemon user"

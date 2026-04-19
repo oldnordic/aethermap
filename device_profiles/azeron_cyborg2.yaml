@@ -1,0 +1,220 @@
+# Azeron Cyborg 2 Device Profile
+#
+# The Azeron Cyborg 2 is a gaming keypad with:
+# - 26 programmable buttons (including d-pad, thumb cluster, modifiers)
+# - 2 analog joysticks (left thumbstick + right adjustable joystick)
+# - 8-way hat switch on main joystick
+# - OLED display for profile/mode indication
+# - Side LED bar (blue, brightness adjustable)
+# - Built-in profile switching (3 profiles accessible via hardware)
+#
+# Device ID: 16d0:12f7
+# Vendor: MCS / Azeron LTD
+
+name: "Azeron Cyborg 2"
+vendor_id: 0x16d0
+product_id: 0x12f7
+
+# Device capabilities
+capabilities:
+  # Number of programmable buttons
+  button_count: 26
+
+  # Analog joysticks
+  joysticks: 2
+
+  # Hat switches
+  hats: 1
+
+  # LED support
+  led_brightness: true
+  led_rgb: false  # Only brightness, no RGB color control
+
+  # OLED display
+  oled_display: true  # Not yet implemented
+
+  # Profile switching (built-in hardware profiles)
+  hardware_profiles: 3
+
+  # Mouse emulation mode (configurable via official software)
+  mouse_emulation: true
+
+# Button Layout (based on official Azeron software numbering)
+#
+# The Cyborg 2 buttons are exposed as joystick buttons (JS0 interface)
+# This maps button numbers to logical names for the UI
+
+button_layout:
+  # D-Pad / D-Pad Buttons (surrounding left joystick)
+  dpad_up:      { js_button: 0,  name: "D-Pad Up",     default_key: "KEY_W" }
+  dpad_right:   { js_button: 1,  name: "D-Pad Right",  default_key: "KEY_D" }
+  dpad_down:    { js_button: 2,  name: "D-Pad Down",   default_key: "KEY_S" }
+  dpad_left:   { js_button: 3,  name: "D-Pad Left",  default_key: "KEY_A" }
+
+  # Thumb Buttons (right side, below LCD)
+  thumb_top:       { js_button: 4,  name: "Thumb Top",    default_key: "KEY_E" }
+  thumb_middle:    { js_button: 5,  name: "Thumb Middle", default_key: "KEY_R" }
+  thumb_bottom:    { js_button: 6,  name: "Thumb Bottom", default_key: "KEY_F" }
+
+  # Left Cluster (left of main keypad area)
+  cluster_1:   { js_button: 7,  name: "Left Cluster 1", default_key: "KEY_1" }
+  cluster_2:   { js_button: 8,  name: "Left Cluster 2", default_key: "KEY_2" }
+  cluster_3:   { js_button: 9,  name: "Left Cluster 3", default_key: "KEY_3" }
+  cluster_4:   { js_button: 10, name: "Left Cluster 4", default_key: "KEY_4" }
+
+  # Main Keypad (grid layout)
+  key_01:      { js_button: 11, name: "Key 01",        default_key: "KEY_5" }
+  key_02:      { js_button: 12, name: "Key 02",        default_key: "KEY_6" }
+  key_03:      { js_button: 13, name: "Key 03",        default_key: "KEY_7" }
+  key_04:      { js_button: 14, name: "Key 04",        default_key: "KEY_8" }
+  key_05:      { js_button: 15, name: "Key 05",        default_key: "KEY_9" }
+  key_06:      { js_button: 16, name: "Key 06",        default_key: "KEY_0" }
+
+  # Right Cluster (right of main keypad)
+  cluster_5:   { js_button: 17, name: "Right Cluster 1", default_key: "KEY_T" }
+  cluster_6:   { js_button: 18, name: "Right Cluster 2", default_key: "KEY_Y" }
+  cluster_7:   { js_button: 19, name: "Right Cluster 3", default_key: "KEY_G" }
+
+  # Modifier Keys
+  mod_1:        { js_button: 20, name: "Modifier 1",     default_key: "KEY_LEFTSHIFT" }
+  mod_2:        { js_button: 21, name: "Modifier 2",     default_key: "KEY_LEFTCTRL" }
+  mod_3:        { js_button: 22, name: "Modifier 3",     default_key: "KEY_LEFTALT" }
+  mod_4:        { js_button: 23, name: "Modifier 4",     default_key: "KEY_SPACE" }
+
+  # Special Action Keys
+  action_1:     { js_button: 24, name: "Action 1",        default_key: "KEY_TAB" }
+  action_2:     { js_button: 25, name: "Action 2",        default_key: "KEY_ENTER" }
+
+# Joystick Configuration
+joysticks:
+  left_stick:
+    index: 0        # js0
+    axis_x: 0        # ABS_X
+    axis_y: 1        # ABS_Y
+    deadzone: 14000  # Default deadzone from noreza
+    name: "Left Thumbstick"
+
+  right_stick:
+    index: 1        # js1 (second joystick interface)
+    axis_x: 0        # ABS_X
+    axis_y: 1        # ABS_Y
+    deadzone: 14000
+    name: "Right Joystick"
+    # Note: Right stick position/angle may be adjustable in hardware
+
+# Hat Switch (8-way on left joystick)
+hat_switch:
+  index: 0
+  name: "Hat Switch"
+  mappings:
+    up:     { js_hat: 0, js_value: 8,  default_key: "KEY_KP8" }    # Y+
+    right:  { js_hat: 0, js_value: 2,  default_key: "KEY_KP6" }    # X+
+    down:   { js_hat: 0, js_value: 0,  default_key: "KEY_KP2" }    # Y-
+    left:   { js_hat: 0, js_value: 4,  default_key: "KEY_KP4" }    # X-
+
+# Input Interfaces
+interfaces:
+  - name: "Keyboard + Joystick (JS0)"
+    path: "/dev/input/event27"
+    js_device: "/dev/input/js0"
+    capabilities: [keys, joystick, hat]
+
+  - name: "Mouse Emulation"
+    path: "/dev/input/event28"
+    capabilities: [mouse]
+
+  - name: "Joystick Only (JS1)"
+    path: "/dev/input/event29"
+    js_device: "/dev/input/js1"
+    capabilities: [joystick]
+
+# LED Configuration
+led:
+  type: "single_zone"
+  zone: "Side"
+  brightness_range: [0, 100]
+  default_brightness: 100
+  # Protocol discovered via Wireshark
+  packet_size: 64
+
+# Profile Switching
+profile_switching:
+  # Hardware profiles (switched via device buttons)
+  hardware_profiles:
+    - id: 1
+      name: "Profile 1"
+      oled_icon: "1"  # Shown on OLED display
+
+    - id: 2
+      name: "Profile 2"
+      oled_icon: "2"
+
+    - id: 3
+      name: "Profile 3"
+      oled_icon: "3"
+
+  # Default keymap per hardware profile
+  default_profiles:
+    1: "gaming"
+    2: "productivity"
+    3: "media"
+
+# Calibration
+calibration:
+  # Joystick deadzones (can be adjusted per-profile)
+  joysticks:
+    left_stick:
+      deadzone: 14000
+      min_x: 0
+      max_x: 65535
+      min_y: 0
+      max_y: 65535
+    right_stick:
+      deadzone: 14000
+      min_x: 0
+      max_x: 65535
+      min_y: 0
+      max_y: 65535
+
+# Preset Keymaps
+presets:
+  gaming:
+    name: "Gaming"
+    description: "WASD + gaming controls"
+    mappings:
+      dpad_up:      "KEY_W"
+      dpad_left:    "KEY_A"
+      dpad_down:    "KEY_S"
+      dpad_right:   "KEY_D"
+      thumb_top:    "KEY_R"
+      thumb_middle: "KEY_F"
+      thumb_bottom: "KEY_C"
+      cluster_1:    "KEY_1"
+      cluster_2:    "KEY_2"
+      cluster_3:    "KEY_3"
+      cluster_4:    "KEY_4"
+
+  productivity:
+    name: "Productivity"
+    description: "Office and application shortcuts"
+    mappings:
+      dpad_up:      "KEY_UP"
+      dpad_left:    "KEY_LEFT"
+      dpad_down:    "KEY_DOWN"
+      dpad_right:   "KEY_RIGHT"
+      thumb_top:    "KEY_DELETE"
+      thumb_middle: "KEY_HOME"
+      thumb_bottom: "KEY_END"
+
+  media:
+    name: "Media"
+    description: "Media player controls"
+    mappings:
+      dpad_up:      "KEY_VOLUMEUP"
+      dpad_down:    "KEY_VOLUMEDOWN"
+      dpad_left:    "KEY_PREVIOUSSONG"
+      dpad_right:   "KEY_NEXTSONG"
+      thumb_top:    "KEY_MUTE"
+      thumb_middle: "KEY_PLAYPAUSE"
+      thumb_bottom: "KEY_MEDIA"
+      action_1:     "KEY_EJECTCD"

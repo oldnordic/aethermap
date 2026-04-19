@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Aethermap
+Comment=Input remapper and macro engine for Linux devices
+Exec=aethermap-gui
+Icon=input-keyboard
+Terminal=false
+Type=Application
+Categories=Utility;Settings;HardwareSettings;
+Keywords=aethermap;macro;keyboard;mouse;remap;

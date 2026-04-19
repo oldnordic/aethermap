@@ -1,0 +1,44 @@
+# Aethermap Configuration
+# Generated based on DaemonConfig structure
+
+daemon:
+  socket_path: "/run/aethermap/aethermap.sock"
+  log_level: "info"
+  drop_privileges: true
+
+device_discovery:
+  input_devices_path: "/dev/input/by-id"
+  use_openrazer_db: true
+  fallback_name_pattern: "Razer"
+
+macro_engine:
+  max_concurrent_macros: 10
+  default_delay: 10
+  enable_recording: true
+  latency_offset_ms: 0
+  jitter_pct: 0.0
+
+config:
+  config_file: "/etc/aethermap/config.yaml"
+  macros_file: "/etc/aethermap/macros.yaml"
+  cache_file: "/var/cache/aethermap/macros.bin"
+  auto_save: true
+  reload_interval: 30
+
+security:
+  socket_group: "input"
+  socket_permissions: "0660"
+  require_auth_token: false
+  retain_capabilities: ["CAP_SYS_RAWIO"]
+
+led_control:
+  enabled: true
+  interface: "dbus"
+  default_color: [0, 255, 0]
+
+performance:
+  device_poll_interval: 1
+  event_queue_size: 1000
+  thread_pool: true
+
+auto_switch_rules: []

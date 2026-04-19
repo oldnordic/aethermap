@@ -1,0 +1,17 @@
+[package]
+name = "aethermap-common"
+version = "1.4.1"
+edition = "2021"
+description = "Shared types and IPC protocol for aethermap"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde = { workspace = true }
+bincode = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+tempfile = { workspace = true }
+
+[dev-dependencies]
+tokio-test = "0.4"

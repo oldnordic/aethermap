@@ -1,0 +1,16 @@
+[package]
+name = "aethermap-e2e-tests"
+version = "0.2.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+aethermap-common = { path = "../aethermap-common" }
+tokio = { workspace = true }
+tempfile = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[[test]]
+name = "e2e"
+path = "e2e.rs"

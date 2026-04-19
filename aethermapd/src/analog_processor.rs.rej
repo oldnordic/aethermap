@@ -1,0 +1,73 @@
+--- aethermapd/src/analog_processor.rs
++++ aethermapd/src/analog_processor.rs
+@@ -244,6 +244,70 @@ impl AnalogProcessor {
+         );
+     }
+ 
++    /// Set deadzone percentage for a device
++    ///
++    /// Converts percentage (0-100) to raw deadzone value (0-32767).
++    /// Conversion formula: percentage * 32767 / 100
++    ///
++    /// # Arguments
++    ///
++    /// * `device_id` - Device identifier
++    /// * `percentage` - Deadzone percentage (0-100)
++    ///
++    /// # Returns
++    ///
++    /// * `Ok(())` - Deadzone set successfully
++    /// * `Err(String)` - Invalid percentage (must be 0-100)
++    pub async fn set_deadzone_percentage(&self, device_id: &str, percentage: u8) -> Result<(), String> {
++        if percentage > 100 {
++            return Err(format!(
++                "Invalid deadzone percentage: {} (must be 0-100)",
++                percentage
++            ));
++        }
++
++        // Convert percentage to raw value: percentage * 32767 / 100
++        let raw_value = (percentage as u32 * MAX_ABS_VALUE as u32 / 100) as u16;
++
++        let mut devices = self.devices.write().await;
++        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
++            DeviceAnalogConfig::new(device_id.to_string())
++        });
++        config.deadzone = raw_value;
++
++        info!(
++            "Deadzone updated via percentage: device={}, {}% = {} raw",
++            device_id, percentage, raw_value
++        );
++
++        Ok(())
++    }
++
++    /// Get deadzone percentage for a device
++    ///
++    /// Converts raw deadzone value to percentage (0-100).
++    /// Conversion formula: raw * 100 / 32767
++    ///
++    /// # Arguments
++    ///
++    /// * `device_id` - Device identifier
++    ///
++    /// # Returns
++    ///
++    /// Deadzone percentage (0-100), or default percentage if device not configured
++    pub async fn get_deadzone_percentage(&self, device_id: &str) -> u8 {
++        let devices = self.devices.read().await;
++        if let Some(config) = devices.get(device_id) {
++            // Convert raw value to percentage: raw * 100 / 32767
++            let percentage = (config.deadzone as u32 * 100 / MAX_ABS_VALUE as u32) as u8;
++            percentage
++        } else {
++            // Return default percentage if device not configured
++            let default_percentage = (DEFAULT_DEADZONE as u32 * 100 / MAX_ABS_VALUE as u32) as u8;
++            default_percentage
++        }
++    }
++
+     /// Set sensitivity for a device
+     ///
+     /// # Arguments
