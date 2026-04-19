@@ -1,12 +1,17 @@
 [package]
 name = "aethermapd"
-version = "1.4.1"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
 description = "Privileged system daemon for aethermap"
-license = "MIT OR Apache-2.0"
 
 [dependencies]
-aethermap-common = { path = "../aethermap-common" }
+aethermap-common = { workspace = true }
 
 evdev = "0.12"
 uinput-sys = "0.1"
@@ -19,7 +24,7 @@ serde = { workspace = true }
 bincode = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-tempfile = "3"
+tempfile = { workspace = true }
 async-trait = "0.1"
 hidapi = { version = "2.4", features = ["linux-static-hidraw"] }
 thiserror = { workspace = true }

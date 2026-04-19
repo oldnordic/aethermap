@@ -1,9 +1,14 @@
 [package]
 name = "aethermap-common"
-version = "1.4.1"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
 description = "Shared types and IPC protocol for aethermap"
-license = "MIT OR Apache-2.0"
 
 [dependencies]
 serde = { workspace = true }
