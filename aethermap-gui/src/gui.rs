@@ -7,7 +7,7 @@ use iced::{
     Alignment,
 };
 use std::sync::Arc;
-use crate::theme::{aether_dark, aether_light, container_styles};
+use crate::theme::{self, aether_dark, aether_light};
 
 // Import custom widgets
 use crate::widgets::{AnalogVisualizer, CurveGraph, analog_visualizer::DeadzoneShape as WidgetDeadzoneShape};
@@ -2946,7 +2946,7 @@ impl State {
                     )
                     .padding(16)
                     .width(Length::Fill)
-                    .style(container_styles::card)
+                    .style(theme::styles::card)
                     .into()
                 );
             }
@@ -3001,7 +3001,7 @@ impl State {
                 text("GRABBED").size(10)
             )
             .padding([4, 8])
-            .style(container_styles::card)
+            .style(theme::styles::card)
         } else {
             container(text("").size(10))
         };
@@ -3289,7 +3289,7 @@ impl State {
         container(card_content)
             .padding(16)
             .width(Length::Fill)
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
     }
 
@@ -3378,7 +3378,7 @@ impl State {
             )
             .padding(12)
             .width(Length::Fill)
-            .style(container_styles::card)
+            .style(theme::styles::card)
         } else {
             container(text(""))
         };
@@ -3398,7 +3398,7 @@ impl State {
         container(panel_content)
             .padding(20)
             .width(Length::Fill)
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
     }
 
@@ -3440,7 +3440,7 @@ impl State {
         container(content)
             .padding(20)
             .width(Length::Fill)
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
     }
 
@@ -3515,7 +3515,7 @@ impl State {
             )
             .padding(12)
             .width(Length::Fill)
-            .style(container_styles::card);
+            .style(theme::styles::card);
 
             list = list.push(macro_card);
         }
@@ -3584,7 +3584,7 @@ impl State {
             container(panel_content)
                 .padding(20)
                 .width(Length::Fill)
-                .style(container_styles::card),
+                .style(theme::styles::card),
         ]
         .spacing(10)
         .into()
@@ -3802,7 +3802,7 @@ impl State {
             if let Some(ref focus) = self.current_focus {
                 container(text(focus).size(14))
                     .padding([4, 12])
-                    .style(container_styles::card)
+                    .style(theme::styles::card)
             } else {
                 container(text("Unknown").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb(0.6, 0.6, 0.6))))
                     .padding([4, 12])
@@ -3944,7 +3944,7 @@ impl State {
         container(content)
             .padding(20)
             .width(Length::Fill)
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
     }
 
@@ -4091,7 +4091,7 @@ impl State {
         container(content)
             .padding(20)
             .width(Length::Fill)
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
     }
 
@@ -4255,7 +4255,7 @@ impl State {
         .height(iced::Length::Fixed(54.0))
         .center_x()
         .center_y()
-        .style(container_styles::card)
+        .style(theme::styles::card)
         .into();
 
         // Insert hat switch at center position (row 5, col 2)
@@ -4338,7 +4338,7 @@ impl State {
                     .size(12)
             )
             .padding([4, 8])
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
         } else {
             // No active layer - show default base layer
@@ -4346,7 +4346,7 @@ impl State {
                 text("Layer 0: Base").size(12)
             )
             .padding([4, 8])
-            .style(container_styles::card)
+            .style(theme::styles::card)
             .into()
         }
     }
@@ -4641,7 +4641,7 @@ impl State {
             )
             .padding(24)
             .width(Length::Fixed(300.0))
-            .style(container_styles::card);
+            .style(theme::styles::card);
 
             // Overlay dialog on semi-transparent background
             Some(
@@ -4903,7 +4903,7 @@ impl State {
                 .padding(20)
             )
             .max_width(500)
-            .style(container_styles::card);
+            .style(theme::styles::card);
 
             // Modal overlay
             Some(
@@ -4930,7 +4930,7 @@ impl State {
             let dialog = container(view.view())
                 .max_width(600)
                 .max_height(800)
-                .style(container_styles::card);
+                .style(theme::styles::card);
 
             // Modal overlay
             Some(
