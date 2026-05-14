@@ -1559,158 +1559,40 @@ impl Application for State {
 
             // LED Configuration handlers
             Message::OpenLedConfig(device_id) => {
-                self.led_config_device = Some(device_id.clone());
-                self.selected_led_zone = Some(LedZone::Logo); // Default to Logo zone
-                return Command::batch([
-                    Command::none(),
-                    Command::perform(
-                        async move { device_id },
-                        |device_id| Message::RefreshLedState(device_id)
-                    ),
-                ]);
+                crate::handlers::led::open(self, device_id)
             }
-
             Message::CloseLedConfig => {
-                self.led_config_device = None;
-                self.selected_led_zone = None;
-                self.pending_led_color = None;
-                Command::none()
+                crate::handlers::led::close(self)
             }
-
             Message::SelectLedZone(zone) => {
-                self.selected_led_zone = Some(zone);
-                Command::none()
+                crate::handlers::led::select_zone(self, zone)
             }
-
             Message::RefreshLedState(device_id) => {
-                let socket_path = self.socket_path.clone();
-                let device_id_clone = device_id.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.get_all_led_colors(&device_id_clone).await
-                    },
-                    move |result| match result {
-                        Ok(colors) => Message::LedStateLoaded(device_id, Ok(colors)),
-                        Err(e) => Message::LedStateLoaded(device_id, Err(e)),
-                    },
-                )
+                crate::handlers::led::refresh(self, device_id)
             }
-
             Message::LedStateLoaded(device_id, result) => {
-                match result {
-                    Ok(colors) => {
-                        // Initialize LED state for device if not exists
-                        let led_state = self.led_states.entry(device_id.clone()).or_default();
-                        led_state.zone_colors = colors;
-                        Command::none()
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to load LED state: {}", e);
-                        // Silent fail - LED may not be supported
-                        Command::none()
-                    }
-                }
+                crate::handlers::led::state_loaded(self, device_id, result)
             }
-
             Message::SetLedColor(device_id, zone, red, green, blue) => {
-                let socket_path = self.socket_path.clone();
-                let device_id_clone = device_id.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.set_led_color(&device_id_clone, zone, red, green, blue).await
-                    },
-                    move |result| match result {
-                        Ok(_) => Message::LedColorSet(Ok(())),
-                        Err(e) => Message::LedColorSet(Err(e)),
-                    },
-                )
+                crate::handlers::led::set_color(self, device_id, zone, red, green, blue)
             }
-
             Message::LedColorSet(result) => {
-                match result {
-                    Ok(_) => {
-                        // Success - color updated
-                        Command::none()
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to set LED color: {}", e);
-                        self.add_notification(&format!("Failed to set LED color: {}", e), true);
-                        Command::none()
-                    }
-                }
+                crate::handlers::led::color_set(self, result)
             }
-
             Message::SetLedBrightness(device_id, zone, brightness) => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.set_led_brightness(&device_id, zone, brightness).await
-                    },
-                    |result| match result {
-                        Ok(_) => Message::LedBrightnessSet(Ok(())),
-                        Err(e) => Message::LedBrightnessSet(Err(e)),
-                    },
-                )
+                crate::handlers::led::set_brightness(self, device_id, zone, brightness)
             }
-
             Message::LedBrightnessSet(result) => {
-                match result {
-                    Ok(_) => {
-                        // Success - brightness updated
-                        Command::none()
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to set LED brightness: {}", e);
-                        self.add_notification(&format!("Failed to set LED brightness: {}", e), true);
-                        Command::none()
-                    }
-                }
+                crate::handlers::led::brightness_set(self, result)
             }
-
             Message::SetLedPattern(device_id, pattern) => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.set_led_pattern(&device_id, pattern).await
-                    },
-                    |result| match result {
-                        Ok(_) => Message::LedPatternSet(Ok(())),
-                        Err(e) => Message::LedPatternSet(Err(e)),
-                    },
-                )
+                crate::handlers::led::set_pattern(self, device_id, pattern)
             }
-
             Message::LedPatternSet(result) => {
-                match result {
-                    Ok(_) => {
-                        // Success - pattern updated
-                        Command::none()
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to set LED pattern: {}", e);
-                        self.add_notification(&format!("Failed to set LED pattern: {}", e), true);
-                        Command::none()
-                    }
-                }
+                crate::handlers::led::pattern_set(self, result)
             }
-
             Message::LedSliderChanged(red, green, blue) => {
-                self.pending_led_color = Some((red, green, blue));
-                // If a device and zone are selected, apply the color immediately
-                if let (Some(ref device_id), Some(zone)) = (&self.led_config_device, self.selected_led_zone) {
-                    let device_id = device_id.clone();
-                    return Command::perform(
-                        async move { (device_id, zone, red, green, blue) },
-                        |(device_id, zone, red, green, blue)| {
-                            Message::SetLedColor(device_id, zone, red, green, blue)
-                        },
-                    );
-                }
-                Command::none()
+                crate::handlers::led::slider_changed(self, red, green, blue)
             }
         }
     }
