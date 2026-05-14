@@ -5,6 +5,7 @@
 pub mod ipc;
 pub mod gui;
 pub mod theme;
+pub mod views;
 pub mod focus_tracker;
 pub mod widgets;
 
