@@ -730,181 +730,76 @@ impl Application for State {
                 Command::none()
             }
             Message::LoadMacros => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.list_macros().await.map_err(|e| e.to_string())
-                    },
-                    Message::MacrosLoaded,
-                )
+                crate::handlers::macros::load(self)
             }
             Message::MacrosLoaded(Ok(macros)) => {
-                let count = macros.len();
-                self.macros = macros;
-                self.add_notification(&format!("Loaded {} macros", count), false);
-                Command::none()
+                crate::handlers::macros::loaded(self, macros)
             }
             Message::MacrosLoaded(Err(e)) => {
-                self.add_notification(&format!("Error loading macros: {}", e), true);
-                Command::none()
+                crate::handlers::macros::load_error(self, e)
             }
             Message::LoadMacroSettings => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.get_macro_settings().await.map_err(|e| e.to_string())
-                    },
-                    Message::MacroSettingsLoaded,
-                )
+                crate::handlers::macros::load_settings(self)
             }
             Message::MacroSettingsLoaded(Ok(settings)) => {
-                self.macro_settings = settings;
-                Command::none()
+                crate::handlers::macros::settings_loaded(self, settings)
             }
             Message::MacroSettingsLoaded(Err(e)) => {
-                self.add_notification(&format!("Error loading macro settings: {}", e), true);
-                Command::none()
+                crate::handlers::macros::settings_load_error(self, e)
             }
             Message::SetMacroSettings(settings) => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.set_macro_settings(settings).await.map_err(|e| e.to_string())
-                    },
-                    |result| match result {
-                        Ok(_) => Message::TickAnimations, // Silent success
-                        Err(e) => Message::ShowNotification(format!("Failed to save settings: {}", e), true),
-                    }
-                )
+                crate::handlers::macros::set_settings(self, settings)
             }
             Message::LatencyChanged(ms) => {
-                self.macro_settings.latency_offset_ms = ms;
-                let settings = self.macro_settings.clone();
-                Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| msg)
+                crate::handlers::macros::latency_changed(self, ms)
             }
             Message::JitterChanged(pct) => {
-                self.macro_settings.jitter_pct = pct;
-                let settings = self.macro_settings.clone();
-                Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| msg)
+                crate::handlers::macros::jitter_changed(self, pct)
             }
             Message::CaptureMouseToggled(enabled) => {
-                self.macro_settings.capture_mouse = enabled;
-                let settings = self.macro_settings.clone();
-                Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| msg)
+                crate::handlers::macros::capture_mouse_toggled(self, enabled)
             }
             Message::PlayMacro(macro_name) => {
-                let socket_path = self.socket_path.clone();
-                let name = macro_name.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.test_macro(&name).await.map(|_| name).map_err(|e| e.to_string())
-                    },
-                    Message::MacroPlayed,
-                )
+                crate::handlers::macros::play(self, macro_name)
             }
             Message::MacroPlayed(Ok(name)) => {
-                self.add_notification(&format!("Played macro: {}", name), false);
-                Command::none()
+                crate::handlers::macros::played_ok(self, name)
             }
             Message::MacroPlayed(Err(e)) => {
-                self.add_notification(&format!("Failed to play: {}", e), true);
-                Command::none()
+                crate::handlers::macros::played_error(self, e)
             }
             Message::UpdateMacroName(name) => {
-                self.new_macro_name = name;
-                Command::none()
+                crate::handlers::macros::update_name(self, name)
             }
             Message::UpdateProfileName(name) => {
-                self.profile_name = name;
-                Command::none()
+                crate::handlers::macros::update_profile_name(self, name)
             }
             Message::StartRecording => {
-                if self.new_macro_name.trim().is_empty() {
-                    self.add_notification("Enter a macro name first", true);
-                    return Command::none();
-                }
-                if self.grabbed_devices.is_empty() {
-                    self.add_notification("Grab a device first", true);
-                    return Command::none();
-                }
-
-                let device_path = self.grabbed_devices.iter().next().unwrap().clone();
-                let socket_path = self.socket_path.clone();
-                let macro_name = self.new_macro_name.clone();
-                let capture_mouse = self.macro_settings.capture_mouse;
-                self.recording = true;
-                self.recording_macro_name = Some(macro_name.clone());
-
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.start_recording_macro(&device_path, &macro_name, capture_mouse)
-                            .await
-                            .map(|_| macro_name)
-                            .map_err(|e| e.to_string())
-                    },
-                    Message::RecordingStarted,
-                )
+                crate::handlers::macros::start_recording(self)
             }
             Message::RecordingStarted(Ok(name)) => {
-                self.add_notification(&format!("Recording '{}' - Press keys now!", name), false);
-                Command::none()
+                crate::handlers::macros::recording_started_ok(self, name)
             }
             Message::RecordingStarted(Err(e)) => {
-                self.recording = false;
-                self.recording_macro_name = None;
-                self.add_notification(&format!("Failed to start recording: {}", e), true);
-                Command::none()
+                crate::handlers::macros::recording_started_error(self, e)
             }
             Message::StopRecording => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.stop_recording_macro().await.map_err(|e| e.to_string())
-                    },
-                    Message::RecordingStopped,
-                )
+                crate::handlers::macros::stop_recording(self)
             }
             Message::RecordingStopped(Ok(macro_entry)) => {
-                let name = macro_entry.name.clone();
-                self.macros.push(macro_entry);
-                self.recording = false;
-                self.recording_macro_name = None;
-                self.recently_updated_macros.insert(name.clone(), Instant::now());
-                self.new_macro_name.clear();
-                self.add_notification(&format!("Recorded macro: {}", name), false);
-                Command::none()
+                crate::handlers::macros::recording_stopped_ok(self, macro_entry)
             }
             Message::RecordingStopped(Err(e)) => {
-                self.recording = false;
-                self.recording_macro_name = None;
-                self.add_notification(&format!("Recording failed: {}", e), true);
-                Command::none()
+                crate::handlers::macros::recording_stopped_error(self, e)
             }
             Message::DeleteMacro(macro_name) => {
-                let socket_path = self.socket_path.clone();
-                let name = macro_name.clone();
-                Command::perform(
-                    async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        client.delete_macro(&name).await.map(|_| name).map_err(|e| e.to_string())
-                    },
-                    Message::MacroDeleted,
-                )
+                crate::handlers::macros::delete(self, macro_name)
             }
             Message::MacroDeleted(Ok(name)) => {
-                self.macros.retain(|m| m.name != name);
-                self.add_notification(&format!("Deleted: {}", name), false);
-                Command::none()
+                crate::handlers::macros::deleted_ok(self, name)
             }
             Message::MacroDeleted(Err(e)) => {
-                self.add_notification(&format!("Delete failed: {}", e), true);
-                Command::none()
+                crate::handlers::macros::deleted_error(self, e)
             }
             Message::SaveProfile => {
                 if self.profile_name.trim().is_empty() {
