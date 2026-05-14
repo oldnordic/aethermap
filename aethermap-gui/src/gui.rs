@@ -1,7 +1,7 @@
 use iced::{
     widget::{
-        button, checkbox, column, container, row, text, text_input, scrollable,
-        horizontal_rule, vertical_rule, pick_list, slider, Column, Space,
+        button, column, container, row, text, text_input, scrollable,
+        horizontal_rule, vertical_rule, pick_list, Column, Space,
     },
     Element, Length, Subscription, Theme, Application, Command,
     Alignment,
@@ -11,7 +11,7 @@ use crate::theme::{self, aether_dark, aether_light};
 use crate::views;
 
 // Import custom widgets
-use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, Action, AnalogMode, CameraOutputMode, Request, Response, AutoSwitchRule as CommonAutoSwitchRule};
+use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, AnalogMode, CameraOutputMode, Request, Response, AutoSwitchRule as CommonAutoSwitchRule};
 use aethermap_common::HotkeyBinding as CommonHotkeyBinding;
 use aethermap_common::ipc_client::IpcClient;
 use std::path::PathBuf;
@@ -2888,233 +2888,7 @@ impl State {
     }
 
     fn view_macros_tab(&self) -> Element<'_, Message> {
-        let header = row![
-            text("MACROS").size(24),
-            Space::with_width(Length::Fill),
-            text(format!("{} total", self.macros.len())).size(14),
-        ]
-        .align_items(Alignment::Center);
-
-        let recording_section = self.view_recording_panel();
-        let settings_section = self.view_macro_settings_panel();
-        let macro_list = self.view_macro_list();
-
-        column![
-            header,
-            Space::with_height(20),
-            row![
-                recording_section,
-                settings_section,
-            ].spacing(20),
-            Space::with_height(20),
-            text("MACRO LIBRARY").size(18),
-            Space::with_height(10),
-            macro_list,
-        ]
-        .spacing(10)
-        .into()
-    }
-
-    fn view_recording_panel(&self) -> Element<'_, Message> {
-        let name_input = text_input("Enter macro name (e.g., 'Quick Reload')", &self.new_macro_name)
-            .on_input(Message::UpdateMacroName)
-            .padding(12)
-            .size(14);
-
-        let record_button = if self.recording {
-            let indicator = if self.recording_pulse { "●" } else { "○" };
-            button(
-                row![
-                    text(indicator).size(18),
-                    Space::with_width(8),
-                    text("STOP RECORDING").size(14),
-                ]
-                .align_items(Alignment::Center)
-            )
-            .on_press(Message::StopRecording)
-            .style(iced::theme::Button::Destructive)
-            .padding([14, 24])
-        } else {
-            button(
-                row![
-                    text("⏺").size(18),
-                    Space::with_width(8),
-                    text("START RECORDING").size(14),
-                ]
-                .align_items(Alignment::Center)
-            )
-            .on_press(Message::StartRecording)
-            .style(iced::theme::Button::Primary)
-            .padding([14, 24])
-        };
-
-        let instructions = column![
-            text("Recording Instructions").size(14),
-            Space::with_height(8),
-            text("1. Go to Devices tab and grab a device").size(12),
-            text("2. Enter a descriptive macro name above").size(12),
-            text("3. Click 'Start Recording' and press keys").size(12),
-            text("4. Click 'Stop Recording' when finished").size(12),
-        ]
-        .spacing(4);
-
-        let recording_status = if self.recording {
-            container(
-                row![
-                    text("●").size(14),
-                    Space::with_width(8),
-                    text(format!(
-                        "Recording '{}' - Press keys on grabbed device...",
-                        self.recording_macro_name.as_deref().unwrap_or("")
-                    )).size(13),
-                ]
-                .align_items(Alignment::Center)
-            )
-            .padding(12)
-            .width(Length::Fill)
-            .style(theme::styles::card)
-        } else {
-            container(text(""))
-        };
-
-        let panel_content = column![
-            text("MACRO RECORDING").size(16),
-            Space::with_height(16),
-            name_input,
-            Space::with_height(16),
-            instructions,
-            Space::with_height(16),
-            recording_status,
-            Space::with_height(16),
-            container(record_button).center_x(),
-        ];
-
-        container(panel_content)
-            .padding(20)
-            .width(Length::Fill)
-            .style(theme::styles::card)
-            .into()
-    }
-
-    fn view_macro_settings_panel(&self) -> Element<'_, Message> {
-        let latency_label = text(format!("Latency Offset: {}ms", self.macro_settings.latency_offset_ms)).size(14);
-        let latency_slider = slider(
-            0..=200,
-            self.macro_settings.latency_offset_ms,
-            Message::LatencyChanged,
-        );
-
-        let jitter_label = text(format!("Jitter: {:.0}%", self.macro_settings.jitter_pct * 100.0)).size(14);
-        let jitter_slider = slider(
-            0.0..=0.5,
-            self.macro_settings.jitter_pct,
-            Message::JitterChanged,
-        ).step(0.01);
-
-        let capture_mouse_checkbox = checkbox(
-            "Capture Mouse (Macro playback moves mouse)",
-            self.macro_settings.capture_mouse,
-        )
-        .on_toggle(Message::CaptureMouseToggled)
-        .size(14);
-
-        let content = column![
-            text("GLOBAL MACRO SETTINGS").size(16),
-            Space::with_height(16),
-            latency_label,
-            latency_slider,
-            Space::with_height(12),
-            jitter_label,
-            jitter_slider,
-            Space::with_height(16),
-            capture_mouse_checkbox,
-        ]
-        .spacing(4);
-
-        container(content)
-            .padding(20)
-            .width(Length::Fill)
-            .style(theme::styles::card)
-            .into()
-    }
-
-    /// View a single macro action with icon formatting
-    fn view_macro_action(&self, action: &Action) -> Element<'_, Message> {
-        let action_text = Self::format_action_with_icon(action);
-        text(action_text).size(11).into()
-    }
-
-    fn view_macro_list(&self) -> Element<'_, Message> {
-        if self.macros.is_empty() {
-            return container(
-                column![
-                    text("No macros yet").size(14),
-                    text("Record your first macro above").size(12),
-                ]
-                .spacing(8)
-                .align_items(Alignment::Center)
-            )
-            .padding(20)
-            .width(Length::Fill)
-            .center_x()
-            .into();
-        }
-
-        let mut list: Column<Message> = column![].spacing(8);
-
-        for macro_entry in &self.macros {
-            let is_recent = self.recently_updated_macros.contains_key(&macro_entry.name);
-            let name_prefix = if is_recent { "★ " } else { "⚡ " };
-
-            // Create action preview list (show first 3 actions)
-            let action_preview: Vec<Element<'_, Message>> = macro_entry.actions
-                .iter()
-                .take(3)
-                .map(|action| self.view_macro_action(action))
-                .collect();
-
-            let more_indicator = if macro_entry.actions.len() > 3 {
-                Some(text(format!("+ {} more actions...", macro_entry.actions.len() - 3)).size(10))
-            } else {
-                None
-            };
-
-            let macro_card = container(
-                row![
-                    column![
-                        text(format!("{}{}", name_prefix, macro_entry.name)).size(15),
-                        text(format!(
-                            "{} actions | {} trigger keys | {}",
-                            macro_entry.actions.len(),
-                            macro_entry.trigger.keys.len(),
-                            if macro_entry.enabled { "enabled" } else { "disabled" }
-                        )).size(11),
-                        // Show action previews
-                        column(action_preview)
-                            .spacing(2)
-                            .padding([4, 0]),
-                        more_indicator.unwrap_or_else(|| text("").size(10)),
-                    ]
-                    .spacing(4),
-                    Space::with_width(Length::Fill),
-                    button("▶ Test")
-                        .on_press(Message::PlayMacro(macro_entry.name.clone()))
-                        .style(iced::theme::Button::Secondary),
-                    button("🗑")
-                        .on_press(Message::DeleteMacro(macro_entry.name.clone()))
-                        .style(iced::theme::Button::Destructive),
-                ]
-                .spacing(8)
-                .align_items(Alignment::Center)
-            )
-            .padding(12)
-            .width(Length::Fill)
-            .style(theme::styles::card);
-
-            list = list.push(macro_card);
-        }
-
-        scrollable(list).height(300).into()
+        views::macros::view(self)
     }
 
     fn view_profiles_tab(&self) -> Element<'_, Message> {
@@ -3356,33 +3130,6 @@ impl State {
     }
 
     /// Format an action with an appropriate icon for display
-    fn format_action_with_icon(action: &Action) -> String {
-        match action {
-            Action::KeyPress(key) => format!("⌨️ Press Key {}", key),
-            Action::KeyRelease(key) => format!("⌨️ Release Key {}", key),
-            Action::Delay(ms) => format!("⏱️ Wait {}ms", ms),
-            Action::MousePress(btn) => format!("🖱️ Click Button {}", btn),
-            Action::MouseRelease(btn) => format!("🖱️ Release Button {}", btn),
-            Action::MouseMove(x, y) => format!("↕️ Move X={} Y={}", x, y),
-            Action::MouseScroll(amount) => format!("🔄 Scroll {}", amount),
-            Action::Execute(cmd) => format!("▶️ Execute {}", cmd),
-            Action::Type(text) => format!("⌨️ Type {}", text),
-            Action::AnalogMove { axis_code, normalized } => {
-                // Convert axis code to human-readable name
-                let axis_name = match axis_code {
-                    61000 => "X",
-                    61001 => "Y",
-                    61002 => "Z",
-                    61003 => "RX",
-                    61004 => "RY",
-                    61005 => "RZ",
-                    _ => "UNKNOWN",
-                };
-                format!("🕹️ Analog({}, {:.2})", axis_name, normalized)
-            }
-        }
-    }
-
     /// View for auto-switch rules configuration
     ///
     /// Displays the current focus, list of rules, and controls for adding/editing rules.
