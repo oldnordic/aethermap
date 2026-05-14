@@ -10,7 +10,7 @@ use crate::theme::{aether_dark, aether_light};
 use crate::views;
 
 // Import custom widgets
-use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, AnalogMode, CameraOutputMode, Request, Response, AutoSwitchRule as CommonAutoSwitchRule};
+use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, AnalogMode, CameraOutputMode, Request, Response};
 use aethermap_common::HotkeyBinding as CommonHotkeyBinding;
 use aethermap_common::ipc_client::IpcClient;
 use std::path::PathBuf;
@@ -574,199 +574,40 @@ impl Application for State {
 
             // Auto-Switch Rules Management
             Message::ShowAutoSwitchRules(device_id) => {
-                self.auto_switch_view = Some(AutoSwitchRulesView {
-                    device_id: device_id.clone(),
-                    rules: Vec::new(),
-                    editing_rule: None,
-                    new_app_id: String::new(),
-                    new_profile_name: String::new(),
-                    new_layer_id: String::new(),
-                });
-                // Load rules from daemon
-                let device_id_clone = device_id.clone();
-                Command::perform(
-                    async move { device_id_clone },
-                    |id| Message::LoadAutoSwitchRules(id)
-                )
+                crate::handlers::auto_switch::show(self, device_id)
             }
             Message::CloseAutoSwitchRules => {
-                self.auto_switch_view = None;
-                Command::none()
+                crate::handlers::auto_switch::close(self)
             }
             Message::LoadAutoSwitchRules(_device_id) => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = IpcClient::with_socket_path(&socket_path);
-                        let request = Request::GetAutoSwitchRules;
-                        match client.send(&request).await {
-                            Ok(Response::AutoSwitchRules { rules }) => {
-                                // Convert common::AutoSwitchRule to gui::AutoSwitchRule
-                                Ok(rules.into_iter().map(|r| AutoSwitchRule {
-                                    app_id: r.app_id,
-                                    profile_name: r.profile_name,
-                                    device_id: r.device_id,
-                                    layer_id: r.layer_id,
-                                }).collect())
-                            }
-                            Ok(Response::Error(msg)) => Err(msg),
-                            Err(e) => Err(format!("IPC error: {}", e)),
-                            _ => Err("Unexpected response".to_string()),
-                        }
-                    },
-                    Message::AutoSwitchRulesLoaded,
-                )
+                crate::handlers::auto_switch::load(self)
             }
             Message::AutoSwitchRulesLoaded(Ok(rules)) => {
-                self.auto_switch_view.as_mut().map(|view| {
-                    view.rules = rules;
-                });
-                Command::none()
+                crate::handlers::auto_switch::loaded(self, rules)
             }
             Message::AutoSwitchRulesLoaded(Err(error)) => {
-                self.add_notification(&format!("Failed to load auto-switch rules: {}", error), true);
-                Command::none()
+                crate::handlers::auto_switch::load_error(self, error)
             }
             Message::EditAutoSwitchRule(index) => {
-                if let Some(view) = &self.auto_switch_view {
-                    if let Some(rule) = view.rules.get(index) {
-                        self.auto_switch_view = Some(AutoSwitchRulesView {
-                            device_id: view.device_id.clone(),
-                            rules: view.rules.clone(),
-                            editing_rule: Some(index),
-                            new_app_id: rule.app_id.clone(),
-                            new_profile_name: rule.profile_name.clone(),
-                            new_layer_id: rule.layer_id.map(|id| id.to_string()).unwrap_or_default(),
-                        });
-                    }
-                }
-                Command::none()
+                crate::handlers::auto_switch::edit(self, index)
             }
             Message::AutoSwitchAppIdChanged(value) => {
-                self.auto_switch_view.as_mut().map(|view| {
-                    view.new_app_id = value;
-                });
-                Command::none()
+                crate::handlers::auto_switch::app_id_changed(self, value)
             }
             Message::AutoSwitchProfileNameChanged(value) => {
-                self.auto_switch_view.as_mut().map(|view| {
-                    view.new_profile_name = value;
-                });
-                Command::none()
+                crate::handlers::auto_switch::profile_name_changed(self, value)
             }
             Message::AutoSwitchLayerIdChanged(value) => {
-                self.auto_switch_view.as_mut().map(|view| {
-                    view.new_layer_id = value;
-                });
-                Command::none()
+                crate::handlers::auto_switch::layer_id_changed(self, value)
             }
             Message::AutoSwitchUseCurrentApp => {
-                if let Some(ref focus) = self.current_focus {
-                    self.auto_switch_view.as_mut().map(|view| {
-                        view.new_app_id = focus.clone();
-                    });
-                }
-                Command::none()
+                crate::handlers::auto_switch::use_current_app(self)
             }
             Message::SaveAutoSwitchRule => {
-                if let Some(mut view) = self.auto_switch_view.clone() {
-                    let rule = AutoSwitchRule {
-                        app_id: view.new_app_id.clone(),
-                        profile_name: view.new_profile_name.clone(),
-                        device_id: Some(view.device_id.clone()),
-                        layer_id: view.new_layer_id.parse().ok(),
-                    };
-
-                    if let Some(editing) = view.editing_rule {
-                        if editing < view.rules.len() {
-                            view.rules[editing] = rule.clone();
-                        }
-                    } else {
-                        view.rules.push(rule.clone());
-                    }
-
-                    view.editing_rule = None;
-                    view.new_app_id = String::new();
-                    view.new_profile_name = String::new();
-                    view.new_layer_id = String::new();
-
-                    let rules = view.rules.clone();
-                    let socket_path = self.socket_path.clone();
-
-                    // Update local state immediately
-                    self.auto_switch_view = Some(view);
-
-                    // Sync to daemon
-                    Command::perform(
-                        async move {
-                            // Convert GUI AutoSwitchRule to common AutoSwitchRule
-                            let common_rules: Vec<CommonAutoSwitchRule> = rules.into_iter()
-                                .map(|r| CommonAutoSwitchRule {
-                                    app_id: r.app_id,
-                                    profile_name: r.profile_name,
-                                    device_id: r.device_id,
-                                    layer_id: r.layer_id,
-                                })
-                                .collect();
-
-                            let client = IpcClient::with_socket_path(socket_path);
-                            let request = Request::SetAutoSwitchRules { rules: common_rules };
-                            match client.send(&request).await {
-                                Ok(Response::AutoSwitchRulesAck) => Ok(()),
-                                Ok(Response::Error(msg)) => Err(msg),
-                                Err(e) => Err(format!("IPC error: {}", e)),
-                                _ => Err("Unexpected response".to_string()),
-                            }
-                        },
-                        |result| match result {
-                            Ok(()) => Message::ShowNotification("Auto-switch rules saved".to_string(), false),
-                            Err(e) => Message::ShowNotification(format!("Failed to save rules: {}", e), true),
-                        }
-                    )
-                } else {
-                    Command::none()
-                }
+                crate::handlers::auto_switch::save(self)
             }
             Message::DeleteAutoSwitchRule(index) => {
-                if let Some(view) = self.auto_switch_view.clone() {
-                    if index < view.rules.len() {
-                        let mut rules = view.rules.clone();
-                        rules.remove(index);
-                        let socket_path = self.socket_path.clone();
-
-                        // Update local state immediately
-                        self.auto_switch_view.as_mut().map(|v| v.rules = rules.clone());
-
-                        // Sync to daemon
-                        return Command::perform(
-                            async move {
-                                // Convert GUI AutoSwitchRule to common AutoSwitchRule
-                                let common_rules: Vec<CommonAutoSwitchRule> = rules.into_iter()
-                                    .map(|r| CommonAutoSwitchRule {
-                                        app_id: r.app_id,
-                                        profile_name: r.profile_name,
-                                        device_id: r.device_id,
-                                        layer_id: r.layer_id,
-                                    })
-                                    .collect();
-
-                                let client = IpcClient::with_socket_path(&socket_path);
-                                let request = Request::SetAutoSwitchRules { rules: common_rules };
-                                match client.send(&request).await {
-                                    Ok(Response::AutoSwitchRulesAck) => Ok(()),
-                                    Ok(Response::Error(msg)) => Err(msg),
-                                    Err(e) => Err(format!("IPC error: {}", e)),
-                                    _ => Err("Unexpected response".to_string()),
-                                }
-                            },
-                            |result| match result {
-                                Ok(()) => Message::ShowNotification("Rule deleted".to_string(), false),
-                                Err(e) => Message::ShowNotification(format!("Failed to delete rule: {}", e), true),
-                            }
-                        );
-                    }
-                }
-                Command::none()
+                crate::handlers::auto_switch::delete(self, index)
             }
 
             // Hotkey Bindings Management
@@ -2423,7 +2264,7 @@ impl Application for State {
 }
 
 impl State {
-    fn add_notification(&mut self, message: &str, is_error: bool) {
+    pub(crate) fn add_notification(&mut self, message: &str, is_error: bool) {
         self.notifications.push_back(Notification {
             message: message.to_string(),
             is_error,
