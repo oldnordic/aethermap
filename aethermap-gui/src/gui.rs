@@ -2719,76 +2719,7 @@ impl State {
     }
 
     fn view_sidebar(&self) -> Element<'_, Message> {
-        let logo = column![
-            text("◢").size(40),
-            text("AETHERMAP").size(16),
-            text("v1.4.1").size(10),
-        ]
-        .spacing(2)
-        .align_items(Alignment::Center)
-        .width(Length::Fill);
-
-        let nav_button = |label: &str, icon: &str, tab: Tab| {
-            let is_active = self.active_tab == tab;
-            let btn_style = if is_active {
-                iced::theme::Button::Primary
-            } else {
-                iced::theme::Button::Text
-            };
-
-            button(
-                row![
-                    text(icon).size(18),
-                    Space::with_width(10),
-                    text(label).size(14),
-                ]
-                .align_items(Alignment::Center)
-            )
-            .on_press(Message::SwitchTab(tab))
-            .style(btn_style)
-            .padding([12, 20])
-            .width(Length::Fill)
-        };
-
-        let connection_status = if self.daemon_connected {
-            row![
-                text("●").size(12),
-                Space::with_width(8),
-                text("Connected").size(11),
-            ]
-        } else {
-            row![
-                text("○").size(12),
-                Space::with_width(8),
-                text("Disconnected").size(11),
-            ]
-        }
-        .align_items(Alignment::Center);
-
-        let sidebar_content = column![
-            logo,
-            Space::with_height(30),
-            nav_button("Devices", "🎮", Tab::Devices),
-            nav_button("Macros", "⚡", Tab::Macros),
-            nav_button("Profiles", "📁", Tab::Profiles),
-            Space::with_height(Length::Fill),
-            horizontal_rule(1),
-            Space::with_height(10),
-            connection_status,
-            Space::with_height(5),
-            button("Refresh")
-                .on_press(Message::CheckDaemonConnection)
-                .style(iced::theme::Button::Text)
-                .width(Length::Fill),
-        ]
-        .spacing(4)
-        .padding(16)
-        .align_items(Alignment::Center);
-
-        container(sidebar_content)
-            .width(180)
-            .height(Length::Fill)
-            .into()
+        views::sidebar::view(self)
     }
 
     fn view_main_content(&self) -> Element<'_, Message> {
