@@ -15,7 +15,6 @@ use crate::widgets::{AnalogVisualizer, CurveGraph, analog_visualizer::DeadzoneSh
 use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, Action, AnalogMode, CameraOutputMode, Request, Response, AutoSwitchRule as CommonAutoSwitchRule};
 use aethermap_common::HotkeyBinding as CommonHotkeyBinding;
 use aethermap_common::ipc_client::IpcClient;
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::collections::{VecDeque, HashMap, HashSet};
 use std::time::{Duration, Instant};
@@ -54,43 +53,7 @@ pub use views::keypad::{KeypadButton, azeron_keypad_layout};
 
 pub use views::auto_switch::{AutoSwitchRule, AutoSwitchRulesView};
 
-/// Hotkey binding for manual profile switching
-///
-/// GUI representation of HotkeyBinding from the daemon config.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HotkeyBinding {
-    /// Modifier keys (Ctrl, Alt, Shift, Super)
-    pub modifiers: Vec<String>,
-    /// Trigger key (number 1-9 for profile switching)
-    pub key: String,
-    /// Profile to activate when hotkey pressed
-    pub profile_name: String,
-    /// Device to apply to (None = all devices)
-    pub device_id: Option<String>,
-    /// Layer to activate (None = profile default)
-    pub layer_id: Option<usize>,
-}
-
-/// Hotkey bindings view state
-///
-/// Manages the UI for configuring global hotkey bindings.
-#[derive(Debug, Clone, Default)]
-pub struct HotkeyBindingsView {
-    /// Device ID being configured
-    pub device_id: String,
-    /// List of configured bindings
-    pub bindings: Vec<HotkeyBinding>,
-    /// Currently editing binding index (None = adding new)
-    pub editing_binding: Option<usize>,
-    /// New binding modifiers (checkboxes)
-    pub new_modifiers: Vec<String>,
-    /// New binding key input
-    pub new_key: String,
-    /// New binding profile_name input
-    pub new_profile_name: String,
-    /// New binding layer_id input
-    pub new_layer_id: String,
-}
+pub use views::hotkeys::{HotkeyBinding, HotkeyBindingsView};
 
 /// Deadzone shape for analog calibration
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -3637,166 +3600,9 @@ impl State {
     }
 
     fn view_hotkey_bindings(&self) -> Element<'_, Message> {
-        let view = self.hotkey_view.as_ref().unwrap();
-
-        // Bindings list header
-        let bindings_header = row![
-            text("Hotkey Bindings").size(18),
-            Space::with_width(Length::Fill),
-            if view.editing_binding.is_some() {
-                button("Cancel")
-                    .on_press(Message::EditHotkeyBinding(usize::MAX))
-                    .style(iced::theme::Button::Text)
-            } else {
-                button("Add Binding")
-                    .on_press(Message::EditHotkeyBinding(usize::MAX))
-                    .style(iced::theme::Button::Primary)
-            },
-        ]
-        .align_items(Alignment::Center);
-
-        // Bindings list
-        let bindings_list = if view.bindings.is_empty() {
-            column![
-                Space::with_height(20),
-                text("No bindings configured").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb(0.6, 0.6, 0.6))),
-                Space::with_height(8),
-                text("Add a binding to switch profiles using keyboard shortcuts").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb(0.5, 0.5, 0.5))),
-            ]
-            .align_items(Alignment::Center)
-        } else {
-            let mut list = column![].spacing(8);
-            for (idx, binding) in view.bindings.iter().enumerate() {
-                let is_editing = view.editing_binding == Some(idx);
-                let modifiers_str = binding.modifiers.join("+");
-                let indicator: Element<'_, Message> = if is_editing {
-                    container(text("▶")).padding([0, 8]).into()
-                } else {
-                    Space::with_width(20).into()
-                };
-                let row = row![
-                    indicator,
-                    column![
-                        text(format!("{}+{} → {}", modifiers_str, binding.key, binding.profile_name)).size(14),
-                        text(format!("Layer: {}",
-                            binding.layer_id.map(|l| l.to_string()).unwrap_or_else(|| "default".to_string()))).size(12),
-                    ]
-                    .spacing(2),
-                    Space::with_width(Length::Fill),
-                    button("Edit")
-                        .on_press(Message::EditHotkeyBinding(idx))
-                        .style(iced::theme::Button::Text),
-                    button("Delete")
-                        .on_press(Message::DeleteHotkeyBinding(idx))
-                        .style(iced::theme::Button::Destructive),
-                ]
-                .spacing(8)
-                .align_items(Alignment::Center);
-                list = list.push(row);
-            }
-            list
-        };
-
-        // Edit form (shown when editing or adding)
-        let edit_form = if view.editing_binding.is_some() {
-            Some(column![
-                Space::with_height(20),
-                text(if view.editing_binding.unwrap_or(0) < view.bindings.len() {
-                    "Edit Binding"
-                } else {
-                    "Add New Binding"
-                }).size(16),
-                Space::with_height(12),
-                text("Modifiers:").size(14),
-                row![
-                    self.modifier_checkbox("Ctrl", "ctrl", &view.new_modifiers),
-                    self.modifier_checkbox("Alt", "alt", &view.new_modifiers),
-                    self.modifier_checkbox("Shift", "shift", &view.new_modifiers),
-                    self.modifier_checkbox("Super", "super", &view.new_modifiers),
-                ]
-                .spacing(8),
-                Space::with_height(8),
-                row![
-                    text("Key:").size(14),
-                    Space::with_width(8),
-                    text_input("1", &view.new_key)
-                        .on_input(Message::HotkeyKeyChanged)
-                        .padding(8)
-                        .size(14),
-                ]
-                .spacing(4)
-                .align_items(Alignment::Center),
-                Space::with_height(8),
-                row![
-                    text("Profile:").size(14),
-                    Space::with_width(8),
-                    text_input("default", &view.new_profile_name)
-                        .on_input(Message::HotkeyProfileNameChanged)
-                        .padding(8)
-                        .size(14),
-                ]
-                .spacing(4)
-                .align_items(Alignment::Center),
-                Space::with_height(8),
-                row![
-                    text("Layer (optional):").size(14),
-                    Space::with_width(8),
-                    text_input("0", &view.new_layer_id)
-                        .on_input(Message::HotkeyLayerIdChanged)
-                        .padding(8)
-                        .size(14),
-                ]
-                .spacing(4)
-                .align_items(Alignment::Center),
-                Space::with_height(12),
-                row![
-                    Space::with_width(Length::Fill),
-                    button("Save Binding")
-                        .on_press(Message::SaveHotkeyBinding)
-                        .style(iced::theme::Button::Primary),
-                ]
-                .align_items(Alignment::Center),
-            ]
-            .spacing(4))
-        } else {
-            None
-        };
-
-        let mut content = column![
-            bindings_header,
-            Space::with_height(12),
-            scrollable(bindings_list).height(Length::Fixed(200.0)),
-        ]
-        .spacing(4);
-
-        if let Some(form) = edit_form {
-            content = content.push(form);
-        }
-
-        container(content)
-            .padding(20)
-            .width(Length::Fill)
-            .style(theme::styles::card)
-            .into()
+        views::hotkeys::view(self)
     }
 
-    /// Helper function to create a modifier checkbox
-    fn modifier_checkbox<'a>(&'a self, label: &str, modifier: &str, selected: &[String]) -> Element<'a, Message> {
-        let is_checked = selected.iter().any(|m| m.to_lowercase() == modifier);
-        let btn = if is_checked {
-            button(text(format!("[{}] ", label)).size(12))
-        } else {
-            button(text(format!("[ ] {}", label)).size(12))
-        };
-        btn.on_press(Message::ToggleHotkeyModifier(modifier.to_string()))
-            .style(iced::theme::Button::Text)
-            .into()
-    }
-
-    /// Format a remap target key name for display
-    ///
-    /// Converts internal key names like "KEY_A", "BTN_LEFT", etc.
-    /// into user-friendly display names like "A", "LMB", etc.
     fn view_azeron_keypad(&self) -> Element<'_, Message> {
         views::keypad::view(self)
     }
