@@ -4058,36 +4058,7 @@ impl State {
     }
 
     fn view_status_bar(&self) -> Element<'_, Message> {
-        let connection_indicator = if self.daemon_connected {
-            text("● Connected").size(12)
-        } else {
-            text("○ Disconnected").size(12)
-        };
-
-        let latest_notification = if let Some(notif) = self.notifications.back() {
-            if notif.is_error {
-                text(&notif.message).size(12)
-            } else {
-                text(&notif.message).size(12)
-            }
-        } else {
-            text("Ready").size(12)
-        };
-
-        container(
-            row![
-                connection_indicator,
-                text(" | ").size(12),
-                latest_notification,
-                Space::with_width(Length::Fill),
-                text(format!("{} macros", self.macros.len())).size(12),
-            ]
-            .spacing(5)
-            .align_items(Alignment::Center)
-        )
-        .padding([8, 16])
-        .width(Length::Fill)
-        .into()
+        views::status_bar::view(self)
     }
 
     /// View layer indicator for a device
