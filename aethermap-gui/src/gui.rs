@@ -10,8 +10,7 @@ use crate::theme::{aether_dark, aether_light};
 use crate::views;
 
 // Import custom widgets
-use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, AnalogMode, CameraOutputMode, Request, Response};
-use aethermap_common::HotkeyBinding as CommonHotkeyBinding;
+use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, AnalogMode, CameraOutputMode};
 use aethermap_common::ipc_client::IpcClient;
 use std::path::PathBuf;
 use std::collections::{VecDeque, HashMap, HashSet};
@@ -612,209 +611,43 @@ impl Application for State {
 
             // Hotkey Bindings Management
             Message::ShowHotkeyBindings(device_id) => {
-                self.hotkey_view = Some(HotkeyBindingsView {
-                    device_id: device_id.clone(),
-                    bindings: Vec::new(),
-                    editing_binding: None,
-                    new_modifiers: Vec::new(),
-                    new_key: String::new(),
-                    new_profile_name: String::new(),
-                    new_layer_id: String::new(),
-                });
-                // Load bindings from daemon
-                let device_id_clone = device_id.clone();
-                Command::perform(
-                    async move { device_id_clone },
-                    |id| Message::LoadHotkeyBindings(id)
-                )
+                crate::handlers::hotkeys::show(self, device_id)
             }
             Message::CloseHotkeyBindings => {
-                self.hotkey_view = None;
-                Command::none()
+                crate::handlers::hotkeys::close(self)
             }
             Message::LoadHotkeyBindings(device_id) => {
-                let socket_path = self.socket_path.clone();
-                Command::perform(
-                    async move {
-                        let client = IpcClient::with_socket_path(&socket_path);
-                        let request = Request::ListHotkeys { device_id };
-                        match client.send(&request).await {
-                            Ok(Response::HotkeyList { bindings, .. }) => {
-                                // Convert common::HotkeyBinding to gui::HotkeyBinding
-                                Ok(bindings.into_iter().map(|b| HotkeyBinding {
-                                    modifiers: b.modifiers,
-                                    key: b.key,
-                                    profile_name: b.profile_name,
-                                    device_id: b.device_id,
-                                    layer_id: b.layer_id,
-                                }).collect())
-                            }
-                            Ok(Response::Error(msg)) => Err(msg),
-                            Err(e) => Err(format!("IPC error: {}", e)),
-                            _ => Err("Unexpected response".to_string()),
-                        }
-                    },
-                    Message::HotkeyBindingsLoaded,
-                )
+                crate::handlers::hotkeys::load(self, device_id)
             }
             Message::HotkeyBindingsLoaded(Ok(bindings)) => {
-                if let Some(view) = &mut self.hotkey_view {
-                    view.bindings = bindings;
-                }
-                Command::none()
+                crate::handlers::hotkeys::loaded(self, bindings)
             }
             Message::HotkeyBindingsLoaded(Err(error)) => {
-                self.add_notification(&format!("Failed to load hotkey bindings: {}", error), true);
-                Command::none()
+                crate::handlers::hotkeys::load_error(self, error)
             }
             Message::EditHotkeyBinding(index) => {
-                if let Some(view) = &self.hotkey_view {
-                    if let Some(binding) = view.bindings.get(index) {
-                        self.hotkey_view = Some(HotkeyBindingsView {
-                            device_id: view.device_id.clone(),
-                            bindings: view.bindings.clone(),
-                            editing_binding: Some(index),
-                            new_modifiers: binding.modifiers.clone(),
-                            new_key: binding.key.clone(),
-                            new_profile_name: binding.profile_name.clone(),
-                            new_layer_id: binding.layer_id.map(|id| id.to_string()).unwrap_or_default(),
-                        });
-                    }
-                }
-                Command::none()
+                crate::handlers::hotkeys::edit(self, index)
             }
             Message::ToggleHotkeyModifier(modifier) => {
-                self.hotkey_view.as_mut().map(|view| {
-                    if view.new_modifiers.contains(&modifier) {
-                        view.new_modifiers.retain(|m| m != &modifier);
-                    } else {
-                        view.new_modifiers.push(modifier);
-                    }
-                });
-                Command::none()
+                crate::handlers::hotkeys::toggle_modifier(self, modifier)
             }
             Message::HotkeyKeyChanged(value) => {
-                self.hotkey_view.as_mut().map(|view| {
-                    view.new_key = value;
-                });
-                Command::none()
+                crate::handlers::hotkeys::key_changed(self, value)
             }
             Message::HotkeyProfileNameChanged(value) => {
-                self.hotkey_view.as_mut().map(|view| {
-                    view.new_profile_name = value;
-                });
-                Command::none()
+                crate::handlers::hotkeys::profile_name_changed(self, value)
             }
             Message::HotkeyLayerIdChanged(value) => {
-                self.hotkey_view.as_mut().map(|view| {
-                    view.new_layer_id = value;
-                });
-                Command::none()
+                crate::handlers::hotkeys::layer_id_changed(self, value)
             }
             Message::SaveHotkeyBinding => {
-                if let Some(view) = &self.hotkey_view {
-                    let device_id = view.device_id.clone();
-                    let binding = CommonHotkeyBinding {
-                        modifiers: view.new_modifiers.clone(),
-                        key: view.new_key.clone(),
-                        profile_name: view.new_profile_name.clone(),
-                        device_id: Some(view.device_id.clone()),
-                        layer_id: if view.new_layer_id.is_empty() { None } else { view.new_layer_id.parse().ok() },
-                    };
-                    let socket_path = self.socket_path.clone();
-
-                    // Update local state immediately
-                    if let Some(local_view) = &self.hotkey_view {
-                        let gui_binding = HotkeyBinding {
-                            modifiers: binding.modifiers.clone(),
-                            key: binding.key.clone(),
-                            profile_name: binding.profile_name.clone(),
-                            device_id: binding.device_id.clone(),
-                            layer_id: binding.layer_id,
-                        };
-                        let mut updated_view = local_view.clone();
-                        if let Some(editing) = local_view.editing_binding {
-                            if editing < local_view.bindings.len() {
-                                updated_view.bindings[editing] = gui_binding;
-                            }
-                        } else {
-                            updated_view.bindings.push(gui_binding);
-                        }
-                        updated_view.editing_binding = None;
-                        updated_view.new_modifiers = Vec::new();
-                        updated_view.new_key = String::new();
-                        updated_view.new_profile_name = String::new();
-                        updated_view.new_layer_id = String::new();
-                        self.hotkey_view = Some(updated_view);
-                    }
-
-                    return Command::perform(
-                        async move {
-                            let client = IpcClient::with_socket_path(&socket_path);
-                            let request = Request::RegisterHotkey { device_id, binding };
-                            match client.send(&request).await {
-                                Ok(Response::HotkeyRegistered { .. }) => Ok(()),
-                                Ok(Response::Error(msg)) => Err(msg),
-                                Err(e) => Err(format!("IPC error: {}", e)),
-                                _ => Err("Unexpected response".to_string()),
-                            }
-                        },
-                        |result| match result {
-                            Ok(()) => Message::ShowNotification("Hotkey saved".to_string(), false),
-                            Err(e) => Message::ShowNotification(format!("Failed to save hotkey: {}", e), true),
-                        }
-                    );
-                }
-                Command::none()
+                crate::handlers::hotkeys::save(self)
             }
             Message::DeleteHotkeyBinding(index) => {
-                if let Some(view) = &self.hotkey_view {
-                    if index < view.bindings.len() {
-                        let device_id = view.device_id.clone();
-                        let binding = view.bindings[index].clone();
-                        let socket_path = self.socket_path.clone();
-
-                        // Update local state immediately
-                        let updated_bindings = view.bindings.iter()
-                            .enumerate()
-                            .filter(|(i, _)| *i != index)
-                            .map(|(_, b)| b.clone())
-                            .collect();
-
-                        return Command::perform(
-                            async move {
-                                let client = IpcClient::with_socket_path(&socket_path);
-                                let request = Request::RemoveHotkey {
-                                    device_id,
-                                    key: binding.key.clone(),
-                                    modifiers: binding.modifiers.clone(),
-                                };
-                                match client.send(&request).await {
-                                    Ok(Response::HotkeyRemoved { .. }) => Ok(()),
-                                    Ok(Response::Error(msg)) => Err(msg),
-                                    Err(e) => Err(format!("IPC error: {}", e)),
-                                    _ => Err("Unexpected response".to_string()),
-                                }
-                            },
-                            move |result| {
-                                if result.is_ok() {
-                                    Message::HotkeyBindingsUpdated(updated_bindings)
-                                } else {
-                                    let err_msg = result.unwrap_err();
-                                    Message::ShowNotification(format!("Failed to delete hotkey: {}", err_msg), true)
-                                }
-                            }
-                        );
-                    }
-                }
-                Command::none()
+                crate::handlers::hotkeys::delete(self, index)
             }
             Message::HotkeyBindingsUpdated(bindings) => {
-                if let Some(view) = &mut self.hotkey_view {
-                    view.bindings = bindings;
-                }
-                self.add_notification("Hotkey deleted", false);
-                Command::none()
+                crate::handlers::hotkeys::bindings_updated(self, bindings)
             }
 
             // Analog Calibration Management
