@@ -652,248 +652,58 @@ impl Application for State {
 
             // Analog Calibration Management
             Message::OpenAnalogCalibration { device_id, layer_id } => {
-                // Create the view with loading state
-                self.analog_calibration_view = Some(AnalogCalibrationView {
-                    device_id: device_id.clone(),
-                    layer_id,
-                    calibration: CalibrationConfig::default(),
-                    deadzone_shape_selected: DeadzoneShape::Circular,
-                    sensitivity_curve_selected: SensitivityCurve::Linear,
-                    analog_mode_selected: AnalogMode::Disabled,
-                    camera_mode_selected: CameraOutputMode::Scroll,
-                    invert_x_checked: false,
-                    invert_y_checked: false,
-                    stick_x: 0.0,
-                    stick_y: 0.0,
-                    loading: true,
-                    error: None,
-                    last_visualizer_update: Instant::now(),
-                    visualizer_cache: Arc::new(iced::widget::canvas::Cache::default()),
-                });
-
-                // Load calibration from daemon
-                let device_id_clone = device_id.clone();
-                let socket_path = self.socket_path.clone();
-
-                // Subscribe to analog input updates
-                let device_id_subscribe = device_id.clone();
-                let socket_path_subscribe = self.socket_path.clone();
-
-                Command::batch(vec![
-                    // Subscribe to analog input updates
-                    Command::perform(
-                        async move {
-                            let client = crate::ipc::IpcClient::new(socket_path_subscribe);
-                            client.subscribe_analog_input(&device_id_subscribe).await
-                        },
-                        |result| match result {
-                            Ok(_) => Message::ShowNotification("Subscribed to analog input".to_string(), false),
-                            Err(e) => Message::ShowNotification(format!("Subscription failed: {}", e), true),
-                        },
-                    ),
-                    // Load calibration data
-                    Command::perform(
-                        async move {
-                            let client = crate::ipc::IpcClient::new(socket_path);
-                            client.get_analog_calibration(&device_id_clone, layer_id).await
-                        },
-                        Message::AnalogCalibrationLoaded,
-                    ),
-                ])
+                crate::handlers::analog::open(self, device_id, layer_id)
             }
             Message::AnalogCalibrationLoaded(Ok(calibration)) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    // Convert common config to local CalibrationConfig
-                    view.calibration = CalibrationConfig {
-                        deadzone: calibration.deadzone,
-                        deadzone_shape: calibration.deadzone_shape.clone(),
-                        sensitivity: calibration.sensitivity.clone(),
-                        sensitivity_multiplier: calibration.sensitivity_multiplier,
-                        range_min: calibration.range_min,
-                        range_max: calibration.range_max,
-                        invert_x: calibration.invert_x,
-                        invert_y: calibration.invert_y,
-                        exponent: calibration.exponent,
-                    };
-                    view.loading = false;
-
-                    // Update selections from loaded calibration
-                    view.deadzone_shape_selected = match calibration.deadzone_shape.as_str() {
-                        "circular" => DeadzoneShape::Circular,
-                        "square" => DeadzoneShape::Square,
-                        _ => DeadzoneShape::Circular,
-                    };
-                    view.sensitivity_curve_selected = match calibration.sensitivity.as_str() {
-                        "linear" => SensitivityCurve::Linear,
-                        "quadratic" => SensitivityCurve::Quadratic,
-                        "exponential" => SensitivityCurve::Exponential,
-                        _ => SensitivityCurve::Linear,
-                    };
-                    view.invert_x_checked = calibration.invert_x;
-                    view.invert_y_checked = calibration.invert_y;
-                }
-                Command::none()
+                crate::handlers::analog::loaded(self, calibration)
             }
             Message::AnalogCalibrationLoaded(Err(error)) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.error = Some(error);
-                    view.loading = false;
-                }
-                Command::none()
+                crate::handlers::analog::load_error(self, error)
             }
             Message::AnalogDeadzoneChanged(value) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.calibration.deadzone = value;
-                    // Clear cache so deadzone redraws with new size
-                    view.visualizer_cache.clear();
-                }
-                Command::none()
+                crate::handlers::analog::deadzone_changed(self, value)
             }
             Message::AnalogDeadzoneShapeChanged(shape) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.deadzone_shape_selected = shape;
-                    view.calibration.deadzone_shape = shape.to_string().to_lowercase();
-                    // Clear cache so deadzone redraws with new shape
-                    view.visualizer_cache.clear();
-                }
-                Command::none()
+                crate::handlers::analog::deadzone_shape_changed(self, shape)
             }
             Message::AnalogSensitivityChanged(value) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.calibration.sensitivity_multiplier = value;
-                }
-                Command::none()
+                crate::handlers::analog::sensitivity_changed(self, value)
             }
             Message::AnalogSensitivityCurveChanged(curve) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.sensitivity_curve_selected = curve;
-                    view.calibration.sensitivity = curve.to_string().to_lowercase();
-                }
-                Command::none()
+                crate::handlers::analog::sensitivity_curve_changed(self, curve)
             }
             Message::AnalogRangeMinChanged(value) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.calibration.range_min = value;
-                }
-                Command::none()
+                crate::handlers::analog::range_min_changed(self, value)
             }
             Message::AnalogRangeMaxChanged(value) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.calibration.range_max = value;
-                }
-                Command::none()
+                crate::handlers::analog::range_max_changed(self, value)
             }
             Message::AnalogInvertXToggled(checked) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.invert_x_checked = checked;
-                    view.calibration.invert_x = checked;
-                }
-                Command::none()
+                crate::handlers::analog::invert_x_toggled(self, checked)
             }
             Message::AnalogInvertYToggled(checked) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.invert_y_checked = checked;
-                    view.calibration.invert_y = checked;
-                }
-                Command::none()
+                crate::handlers::analog::invert_y_toggled(self, checked)
             }
             Message::AnalogModeChanged(mode) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.analog_mode_selected = mode;
-                }
-                Command::none()
+                crate::handlers::analog::analog_mode_changed(self, mode)
             }
             Message::CameraModeChanged(mode) => {
-                if let Some(view) = &mut self.analog_calibration_view {
-                    view.camera_mode_selected = mode;
-                }
-                Command::none()
+                crate::handlers::analog::camera_mode_changed(self, mode)
             }
             Message::ApplyAnalogCalibration => {
-                if let Some(view) = self.analog_calibration_view.clone() {
-                    let device_id = view.device_id.clone();
-                    let layer_id = view.layer_id;
-                    let calibration = aethermap_common::AnalogCalibrationConfig {
-                        deadzone: view.calibration.deadzone,
-                        deadzone_shape: view.calibration.deadzone_shape.clone(),
-                        sensitivity: view.calibration.sensitivity.clone(),
-                        sensitivity_multiplier: view.calibration.sensitivity_multiplier,
-                        range_min: view.calibration.range_min,
-                        range_max: view.calibration.range_max,
-                        invert_x: view.calibration.invert_x,
-                        invert_y: view.calibration.invert_y,
-                        exponent: view.calibration.exponent,
-                        analog_mode: view.analog_mode_selected,
-                        camera_output_mode: if view.analog_mode_selected == aethermap_common::AnalogMode::Camera {
-                            Some(view.camera_mode_selected)
-                        } else {
-                            None
-                        },
-                    };
-                    let socket_path = self.socket_path.clone();
-
-                    return Command::perform(
-                        async move {
-                            let client = crate::ipc::IpcClient::new(socket_path);
-                            client.set_analog_calibration(&device_id, layer_id, calibration).await
-                                .map_err(|e| e.to_string())
-                        },
-                        Message::AnalogCalibrationApplied,
-                    );
-                }
-                Command::none()
+                crate::handlers::analog::apply(self)
             }
             Message::AnalogCalibrationApplied(Ok(())) => {
-                self.add_notification("Calibration saved successfully", false);
-                Command::none()
+                crate::handlers::analog::applied_ok(self)
             }
             Message::AnalogCalibrationApplied(Err(error)) => {
-                self.add_notification(&format!("Failed to save calibration: {}", error), true);
-                if let Some(view) = &mut self.analog_calibration_view {
-                    let mut view = view.clone();
-                    view.error = Some(error);
-                    self.analog_calibration_view = Some(view);
-                }
-                Command::none()
+                crate::handlers::analog::applied_error(self, error)
             }
             Message::CloseAnalogCalibration => {
-                // Unsubscribe from analog input updates
-                let device_id = self.analog_calibration_view.as_ref()
-                    .map(|v| v.device_id.clone())
-                    .unwrap_or_default();
-                let socket_path = self.socket_path.clone();
-
-                self.analog_calibration_view = None;
-
-                // Unsubscribe is fire-and-forget - we don't need to wait for result
-                // Spawn a background task to handle it
-                let _ = std::thread::spawn(move || {
-                    let rt = tokio::runtime::Runtime::new().unwrap();
-                    rt.block_on(async move {
-                        let client = crate::ipc::IpcClient::new(socket_path);
-                        if let Err(e) = client.unsubscribe_analog_input(&device_id).await {
-                            eprintln!("Failed to unsubscribe: {}", e);
-                        }
-                    });
-                });
-
-                Command::none()
+                crate::handlers::analog::close(self)
             }
             Message::AnalogInputUpdated(x, y) => {
-                // Update analog calibration view stick position with throttling
-                // Throttle to ~30 FPS (33ms between updates) to prevent overwhelming the GUI
-                if let Some(view) = &mut self.analog_calibration_view {
-                    if view.last_visualizer_update.elapsed() >= Duration::from_millis(33) {
-                        view.stick_x = x;
-                        view.stick_y = y;
-                        view.last_visualizer_update = Instant::now();
-                        Command::none() // Triggers redraw
-                    } else {
-                        Command::none() // Skip redraw, no state change
-                    }
-                } else {
-                    Command::none()
-                }
+                crate::handlers::analog::input_updated(self, x, y)
             }
 
             Message::LoadDevices => {
