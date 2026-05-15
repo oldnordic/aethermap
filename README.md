@@ -9,7 +9,12 @@ Originally designed for Razer and Azeron devices, Aethermap now supports any evd
 - **Ergonomic Macros:** Human-like macro execution with randomized jitter and network latency compensation.
 - **Mixed Input Support:** Record and play back complex sequences combining keyboard keys and mouse buttons.
 - **Physical Device Merging:** Robust grouping of multiple event nodes into single physical device entries.
-- **Adaptive COSMIC Theme:** Modern Iced-based GUI that automatically follows system Light/Dark mode settings.
+- **Adaptive COSMIC Theme:** Modern Iced-based GUI with a modular theme system that automatically follows system Light/Dark mode settings.
+- **Analog Stick Processing:** Deadzone calibration, response curves (linear, exponential), and D-pad emulation for analog sticks.
+- **Layer System:** Multiple input layers with hold and toggle activation modes.
+- **Auto Profile Switching:** Automatically switch remap profiles based on the focused application window.
+- **Global Hotkeys:** System-wide hotkey bindings that work regardless of which application is focused.
+- **LED Control:** Per-zone LED color and pattern configuration for devices with RGB support.
 - **Low-Level Control:** Privileged daemon for exclusive device grabbing and uinput-based virtual injection.
 - **Device Support:** 
     - **Azeron:** Cyborg, Compact, Classic (including analog stick support).
@@ -35,10 +40,22 @@ Originally designed for Razer and Azeron devices, Aethermap now supports any evd
 
 Launch the GUI from your application menu or run `aethermap-gui`.
 
-- **Devices Tab:** Manage your connected hardware and toggle exclusive access.
+- **Keypad Tab:** Key-by-key remapping for your device's buttons.
 - **Macros Tab:** Record, edit, and assign macros with adjustable humanization settings.
+- **Hotkeys Tab:** Create and manage global hotkey bindings.
+- **LED Tab:** Configure per-zone LED colors and animation patterns.
+- **Analog Tab:** Calibrate analog sticks with deadzone, response curve, and D-pad emulation settings.
+- **Auto-Switch Tab:** Set rules for automatic profile switching based on focused application.
+- **Profiles Tab:** Create, switch, and organize remap profiles.
+- **Devices Tab:** Manage connected hardware and toggle exclusive access.
 - **Settings:** Tune global latency offsets and jitter intensity to match your playstyle and connection.
+
+## Documentation
+
+- [User Manual](MANUAL.md) — Setup, configuration, and troubleshooting.
+- [Azeron Setup Guide](AZERON_SETUP.md) — Azeron Cyborg 2 specific setup.
+- [Changelog](CHANGELOG.md) — Version history and release notes.
 
 ## License
 
-This project is licensed under the GPL-2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GPL-2.0-only License - see the [LICENSE](LICENSE) file for details.

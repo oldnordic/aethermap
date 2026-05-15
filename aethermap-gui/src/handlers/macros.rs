@@ -1,7 +1,7 @@
-use std::time::Instant;
-use iced::Command;
+use crate::gui::{Message, State};
 use aethermap_common::MacroSettings;
-use crate::gui::{State, Message};
+use iced::Command;
+use std::time::Instant;
 
 pub fn load(state: &State) -> Command<Message> {
     let socket_path = state.socket_path.clone();
@@ -52,7 +52,10 @@ pub fn set_settings(state: &State, settings: MacroSettings) -> Command<Message> 
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.set_macro_settings(settings).await.map_err(|e| e.to_string())
+            client
+                .set_macro_settings(settings)
+                .await
+                .map_err(|e| e.to_string())
         },
         |result| match result {
             Ok(_) => Message::TickAnimations,
@@ -64,19 +67,25 @@ pub fn set_settings(state: &State, settings: MacroSettings) -> Command<Message> 
 pub fn latency_changed(state: &mut State, ms: u32) -> Command<Message> {
     state.macro_settings.latency_offset_ms = ms;
     let settings = state.macro_settings.clone();
-    Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| msg)
+    Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| {
+        msg
+    })
 }
 
 pub fn jitter_changed(state: &mut State, pct: f32) -> Command<Message> {
     state.macro_settings.jitter_pct = pct;
     let settings = state.macro_settings.clone();
-    Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| msg)
+    Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| {
+        msg
+    })
 }
 
 pub fn capture_mouse_toggled(state: &mut State, enabled: bool) -> Command<Message> {
     state.macro_settings.capture_mouse = enabled;
     let settings = state.macro_settings.clone();
-    Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| msg)
+    Command::perform(async move { Message::SetMacroSettings(settings) }, |msg| {
+        msg
+    })
 }
 
 pub fn play(state: &State, macro_name: String) -> Command<Message> {
@@ -85,7 +94,11 @@ pub fn play(state: &State, macro_name: String) -> Command<Message> {
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.test_macro(&name).await.map(|_| name).map_err(|e| e.to_string())
+            client
+                .test_macro(&name)
+                .await
+                .map(|_| name)
+                .map_err(|e| e.to_string())
         },
         Message::MacroPlayed,
     )
@@ -131,7 +144,8 @@ pub fn start_recording(state: &mut State) -> Command<Message> {
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.start_recording_macro(&device_path, &macro_name, capture_mouse)
+            client
+                .start_recording_macro(&device_path, &macro_name, capture_mouse)
                 .await
                 .map(|_| macro_name)
                 .map_err(|e| e.to_string())
@@ -157,18 +171,26 @@ pub fn stop_recording(state: &State) -> Command<Message> {
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.stop_recording_macro().await.map_err(|e| e.to_string())
+            client
+                .stop_recording_macro()
+                .await
+                .map_err(|e| e.to_string())
         },
         Message::RecordingStopped,
     )
 }
 
-pub fn recording_stopped_ok(state: &mut State, macro_entry: aethermap_common::MacroEntry) -> Command<Message> {
+pub fn recording_stopped_ok(
+    state: &mut State,
+    macro_entry: aethermap_common::MacroEntry,
+) -> Command<Message> {
     let name = macro_entry.name.clone();
     state.macros.push(macro_entry);
     state.recording = false;
     state.recording_macro_name = None;
-    state.recently_updated_macros.insert(name.clone(), Instant::now());
+    state
+        .recently_updated_macros
+        .insert(name.clone(), Instant::now());
     state.new_macro_name.clear();
     state.add_notification(&format!("Recorded macro: {}", name), false);
     Command::none()
@@ -187,7 +209,11 @@ pub fn delete(state: &State, macro_name: String) -> Command<Message> {
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.delete_macro(&name).await.map(|_| name).map_err(|e| e.to_string())
+            client
+                .delete_macro(&name)
+                .await
+                .map(|_| name)
+                .map_err(|e| e.to_string())
         },
         Message::MacroDeleted,
     )

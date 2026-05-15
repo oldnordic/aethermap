@@ -8,32 +8,32 @@
 //! - Security management
 //! - Layer management for multi-layer remapping
 
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tokio::sync::RwLock;
-use std::collections::HashMap;
 
-pub mod config;
-pub mod device;
-pub mod hotplug;
-pub mod key_parser;
-pub mod layer_manager;
 pub mod analog_calibration;
 pub mod analog_processor;
-pub mod macro_engine;
-pub mod remap_engine;
+pub mod auto_profile_switcher;
+pub mod config;
+pub mod device;
+pub mod gamepad_device;
+pub mod global_hotkey_manager;
+pub mod hotplug;
 pub mod injector;
 pub mod ipc;
-pub mod security;
+pub mod key_parser;
+pub mod layer_manager;
 pub mod led_controller;
-pub mod auto_profile_switcher;
-pub mod global_hotkey_manager;
-pub mod gamepad_device;
+pub mod macro_engine;
+pub mod remap_engine;
+pub mod security;
 
 // Re-export common types
 pub use aethermap_common::{DeviceInfo, MacroEntry, Profile};
 // Re-export config types
-pub use config::{RemapEntry, RemapConfigError, AutoSwitchRule};
+pub use config::{AutoSwitchRule, RemapConfigError, RemapEntry};
 // Re-export remap types
 pub use remap_engine::{RemapProfile, RemapTable};
 // Re-export hotplug types
@@ -41,19 +41,19 @@ pub use hotplug::{DeviceEvent, DeviceMonitor};
 // Re-export device types
 pub use device::{DeviceProfileInfo, GrabbedDevice};
 // Re-export layer manager types
-pub use layer_manager::{LayerManager, DeviceLayerState, LayerConfig, LayerMode};
+pub use layer_manager::{DeviceLayerState, LayerConfig, LayerManager, LayerMode};
 // Re-export analog calibration types
 pub use analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
 // Re-export analog processor types
 pub use analog_processor::{AnalogProcessor, DeviceAnalogConfig, ResponseCurve};
 // Re-export LED controller types
-pub use led_controller::{LedController, LedZone, LedState, LedError, DeviceLedState};
+pub use led_controller::{DeviceLedState, LedController, LedError, LedState, LedZone};
 // Re-export auto profile switcher types
 pub use auto_profile_switcher::AutoProfileSwitcher;
 // Re-export global hotkey manager types
 pub use global_hotkey_manager::GlobalHotkeyManager;
 // Re-export gamepad device types
-pub use gamepad_device::{GamepadVirtualDevice, GamepadAxis};
+pub use gamepad_device::{GamepadAxis, GamepadVirtualDevice};
 
 /// DaemonState holds the shared state of the daemon
 pub struct DaemonState {
@@ -81,8 +81,18 @@ pub struct DaemonState {
     ///
     /// Maps device_id (vendor:product format) to a list of response senders.
     /// Subscribers receive real-time analog input updates via IPC.
-    pub analog_subscribers: Arc<RwLock<HashMap<String, Vec<tokio::sync::mpsc::UnboundedSender<aethermap_common::Response>>>>>,
+    pub analog_subscribers: Arc<
+        RwLock<
+            HashMap<String, Vec<tokio::sync::mpsc::UnboundedSender<aethermap_common::Response>>>,
+        >,
+    >,
     pub active_recording: Option<(String, String)>, // (name, device_path)
+}
+
+impl Default for DaemonState {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl DaemonState {
@@ -138,7 +148,8 @@ impl DaemonState {
     /// * `device_id` - Device identifier (vendor:product format)
     pub async fn initialize_led_state(&self, device_id: &str) {
         let mut led_state = self.led_state.write().await;
-        led_state.entry(device_id.to_string())
+        led_state
+            .entry(device_id.to_string())
             .or_insert_with(DeviceLedState::default);
     }
 }

@@ -1,8 +1,8 @@
+use crate::gui::{Message, State};
 use iced::{
     widget::{container, row, text, Space},
-    Element, Length, Alignment,
+    Alignment, Element, Length,
 };
-use crate::gui::{State, Message};
 
 pub fn view(state: &State) -> Element<'_, Message> {
     let connection_indicator = if state.daemon_connected {
@@ -26,7 +26,7 @@ pub fn view(state: &State) -> Element<'_, Message> {
             text(format!("{} macros", state.macros.len())).size(12),
         ]
         .spacing(5)
-        .align_items(Alignment::Center)
+        .align_items(Alignment::Center),
     )
     .padding([8, 16])
     .width(Length::Fill)

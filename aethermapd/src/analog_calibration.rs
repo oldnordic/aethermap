@@ -14,12 +14,14 @@ use serde::{Deserialize, Serialize};
 /// Determines how the deadzone is calculated from X/Y coordinates.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum DeadzoneShape {
     /// Circular deadzone - smoother diagonal response
     ///
     /// The deadzone is calculated as sqrt(x^2 + y^2). This provides
     /// more natural movement for analog sticks where diagonal input
     /// is common.
+    #[default]
     Circular,
 
     /// Square deadzone - precise axis-aligned movement
@@ -30,21 +32,17 @@ pub enum DeadzoneShape {
     Square,
 }
 
-impl Default for DeadzoneShape {
-    fn default() -> Self {
-        Self::Circular
-    }
-}
-
 /// Sensitivity response curve type
 ///
 /// Determines how input values are mapped to output values.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum SensitivityCurve {
     /// Linear response (1:1 mapping)
     ///
     /// Output is directly proportional to input. No transformation applied.
+    #[default]
     Linear,
 
     /// Quadratic response (exponent = 2)
@@ -58,12 +56,6 @@ pub enum SensitivityCurve {
     /// Output follows x^exponent curve. Higher exponents provide more
     /// aggressive curves with increased low-precision range.
     Exponential { exponent: f32 },
-}
-
-impl Default for SensitivityCurve {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 /// Analog stick calibration configuration
@@ -131,19 +123,19 @@ pub struct AnalogCalibration {
 // Default value functions
 
 fn default_deadzone() -> f32 {
-    0.15  // 15% deadzone typical for analog sticks
+    0.15 // 15% deadzone typical for analog sticks
 }
 
 fn default_sensitivity_multiplier() -> f32 {
-    1.0   // No scaling by default
+    1.0 // No scaling by default
 }
 
 fn default_range_min() -> i32 {
-    -32768  // Linux input minimum
+    -32768 // Linux input minimum
 }
 
 fn default_range_max() -> i32 {
-    32767   // Linux input maximum
+    32767 // Linux input maximum
 }
 
 impl Default for AnalogCalibration {
@@ -210,7 +202,7 @@ impl AnalogCalibration {
 
         // Validate exponent if present
         if let SensitivityCurve::Exponential { exponent } = self.sensitivity {
-            if exponent < 0.1 || exponent > 10.0 {
+            if !(0.1..=10.0).contains(&exponent) {
                 return Err(format!(
                     "Exponential curve exponent must be between 0.1 and 10.0, got {}",
                     exponent
@@ -223,6 +215,7 @@ impl AnalogCalibration {
 }
 
 #[cfg(test)]
+#[allow(clippy::field_reassign_with_default)]
 mod tests {
     use super::*;
 
@@ -236,8 +229,8 @@ mod tests {
         assert_eq!(calib.sensitivity_multiplier, 1.0);
         assert_eq!(calib.range_min, -32768);
         assert_eq!(calib.range_max, 32767);
-        assert_eq!(calib.invert_x, false);
-        assert_eq!(calib.invert_y, false);
+        assert!(!calib.invert_x);
+        assert!(!calib.invert_y);
     }
 
     #[test]
@@ -319,7 +312,10 @@ mod tests {
         assert_eq!(deserialized.deadzone, original.deadzone);
         assert_eq!(deserialized.deadzone_shape, original.deadzone_shape);
         assert_eq!(deserialized.sensitivity, original.sensitivity);
-        assert_eq!(deserialized.sensitivity_multiplier, original.sensitivity_multiplier);
+        assert_eq!(
+            deserialized.sensitivity_multiplier,
+            original.sensitivity_multiplier
+        );
         assert_eq!(deserialized.range_min, original.range_min);
         assert_eq!(deserialized.range_max, original.range_max);
         assert_eq!(deserialized.invert_x, original.invert_x);
@@ -382,8 +378,8 @@ mod tests {
     #[test]
     fn test_inversion_defaults() {
         let calib = AnalogCalibration::default();
-        assert_eq!(calib.invert_x, false);
-        assert_eq!(calib.invert_y, false);
+        assert!(!calib.invert_x);
+        assert!(!calib.invert_y);
     }
 
     #[test]
@@ -433,8 +429,8 @@ sensitivity_multiplier: 2.0
         assert_eq!(calib.sensitivity, SensitivityCurve::Linear);
         assert_eq!(calib.range_min, -32768);
         assert_eq!(calib.range_max, 32767);
-        assert_eq!(calib.invert_x, false);
-        assert_eq!(calib.invert_y, false);
+        assert!(!calib.invert_x);
+        assert!(!calib.invert_y);
     }
 
     #[test]

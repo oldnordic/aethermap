@@ -1,9 +1,11 @@
+use crate::gui::{Message, State};
+use crate::views::analog::{
+    AnalogCalibrationView, CalibrationConfig, DeadzoneShape, SensitivityCurve,
+};
+use aethermap_common::{AnalogMode, CameraOutputMode};
+use iced::Command;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use iced::Command;
-use aethermap_common::{AnalogMode, CameraOutputMode};
-use crate::gui::{State, Message};
-use crate::views::analog::{AnalogCalibrationView, CalibrationConfig, DeadzoneShape, SensitivityCurve};
 
 pub fn open(state: &mut State, device_id: String, layer_id: usize) -> Command<Message> {
     state.analog_calibration_view = Some(AnalogCalibrationView {
@@ -43,14 +45,19 @@ pub fn open(state: &mut State, device_id: String, layer_id: usize) -> Command<Me
         Command::perform(
             async move {
                 let client = crate::ipc::IpcClient::new(socket_path);
-                client.get_analog_calibration(&device_id_clone, layer_id).await
+                client
+                    .get_analog_calibration(&device_id_clone, layer_id)
+                    .await
             },
             Message::AnalogCalibrationLoaded,
         ),
     ])
 }
 
-pub fn loaded(state: &mut State, calibration: aethermap_common::AnalogCalibrationConfig) -> Command<Message> {
+pub fn loaded(
+    state: &mut State,
+    calibration: aethermap_common::AnalogCalibrationConfig,
+) -> Command<Message> {
     if let Some(view) = &mut state.analog_calibration_view {
         view.calibration = CalibrationConfig {
             deadzone: calibration.deadzone,
@@ -180,7 +187,8 @@ pub fn apply(state: &mut State) -> Command<Message> {
             invert_y: view.calibration.invert_y,
             exponent: view.calibration.exponent,
             analog_mode: view.analog_mode_selected,
-            camera_output_mode: if view.analog_mode_selected == aethermap_common::AnalogMode::Camera {
+            camera_output_mode: if view.analog_mode_selected == aethermap_common::AnalogMode::Camera
+            {
                 Some(view.camera_mode_selected)
             } else {
                 None
@@ -191,7 +199,9 @@ pub fn apply(state: &mut State) -> Command<Message> {
         return Command::perform(
             async move {
                 let client = crate::ipc::IpcClient::new(socket_path);
-                client.set_analog_calibration(&device_id, layer_id, calibration).await
+                client
+                    .set_analog_calibration(&device_id, layer_id, calibration)
+                    .await
                     .map_err(|e| e.to_string())
             },
             Message::AnalogCalibrationApplied,
@@ -216,7 +226,9 @@ pub fn applied_error(state: &mut State, error: String) -> Command<Message> {
 }
 
 pub fn close(state: &mut State) -> Command<Message> {
-    let device_id = state.analog_calibration_view.as_ref()
+    let device_id = state
+        .analog_calibration_view
+        .as_ref()
         .map(|v| v.device_id.clone())
         .unwrap_or_default();
     let socket_path = state.socket_path.clone();

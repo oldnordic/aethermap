@@ -43,7 +43,9 @@ fn create_test_config_manager(temp_dir: &TempDir) -> ConfigManager {
         remaps_path: temp_dir.path().join("remaps.yaml"),
         device_profiles_path: temp_dir.path().join("device_profiles.yaml"),
         layer_state_path: temp_dir.path().join("layer_state.yaml"),
-        config: Arc::new(tokio::sync::RwLock::new(aethermapd::config::DaemonConfig::default())),
+        config: Arc::new(tokio::sync::RwLock::new(
+            aethermapd::config::DaemonConfig::default(),
+        )),
         macros: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
         profiles: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
         remaps: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
@@ -269,7 +271,10 @@ devices:
 
     rt.block_on(async {
         let result = manager.reload_device_profiles().await;
-        assert!(result.is_ok(), "Valid device profiles should load successfully");
+        assert!(
+            result.is_ok(),
+            "Valid device profiles should load successfully"
+        );
 
         // Verify profiles are loaded
         let devices = manager.list_profile_devices().await;
@@ -339,17 +344,9 @@ devices:
 
         // Verify original config is still active
         let devices = manager.list_profile_devices().await;
-        assert_eq!(
-            devices.len(),
-            1,
-            "Original device list should remain"
-        );
+        assert_eq!(devices.len(), 1, "Original device list should remain");
         let profiles = manager.list_device_profiles("1532:0220").await;
-        assert_eq!(
-            profiles.len(),
-            1,
-            "Original profiles should remain"
-        );
+        assert_eq!(profiles.len(), 1, "Original profiles should remain");
     });
 }
 
@@ -421,11 +418,7 @@ devices:
 
         // Verify original config is fully intact (not partially replaced)
         let devices = manager.list_profile_devices().await;
-        assert_eq!(
-            devices.len(),
-            2,
-            "Should keep both original devices"
-        );
+        assert_eq!(devices.len(), 2, "Should keep both original devices");
         assert!(devices.contains(&"1532:0220".to_string()));
         assert!(devices.contains(&"046d:c52b".to_string()));
     });
@@ -485,15 +478,9 @@ fn test_concurrent_reload_safety() {
         let manager2 = manager.clone();
         let manager3 = manager.clone();
 
-        let task1 = tokio::spawn(async move {
-            manager1.load_remaps().await
-        });
-        let task2 = tokio::spawn(async move {
-            manager2.load_remaps().await
-        });
-        let task3 = tokio::spawn(async move {
-            manager3.load_remaps().await
-        });
+        let task1 = tokio::spawn(async move { manager1.load_remaps().await });
+        let task2 = tokio::spawn(async move { manager2.load_remaps().await });
+        let task3 = tokio::spawn(async move { manager3.load_remaps().await });
 
         // All should succeed
         let results = vec![

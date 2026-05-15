@@ -31,3 +31,16 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Agent/IDE configurations (not user-facing)
+.claude/
+.magellan/
+.githooks/
+AGENTS.md
+CLAUDE.md
+
+# Code intelligence database
+*.db
+
+# Internal planning docs (not user-facing)
+docs/superpowers/

@@ -1,12 +1,12 @@
 use aethermap_common::tracing;
-use std::sync::{Arc, RwLock};
 use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::os::unix::io::{AsRawFd, RawFd};
+use std::sync::{Arc, RwLock};
 // use std::io::Write;
 use std::mem;
-use tracing::{info, warn, error, debug};
 use tokio::time::{sleep, Duration};
+use tracing::{debug, error, info, warn};
 
 // Linux input event constants
 const EV_SYN: u16 = 0x00;
@@ -30,13 +30,14 @@ const ABS_RZ: u16 = 0x05;
 const KEY_LEFTSHIFT: u16 = 42;
 
 // uinput ioctl constants
+#[allow(dead_code)]
 const UINPUT_IOCTL_BASE: u8 = b'U';
-const UI_SET_EVBIT: u64 = 0x40045564;   // _IOW('U', 100, int)
-const UI_SET_KEYBIT: u64 = 0x40045565;  // _IOW('U', 101, int)
-const UI_SET_RELBIT: u64 = 0x40045566;  // _IOW('U', 102, int)
-const UI_SET_ABSBIT: u64 = 0x40045567;  // _IOW('U', 103, int)
-const UI_DEV_CREATE: u64 = 0x5501;      // _IO('U', 1)
-const UI_DEV_DESTROY: u64 = 0x5502;     // _IO('U', 2)
+const UI_SET_EVBIT: u64 = 0x40045564; // _IOW('U', 100, int)
+const UI_SET_KEYBIT: u64 = 0x40045565; // _IOW('U', 101, int)
+const UI_SET_RELBIT: u64 = 0x40045566; // _IOW('U', 102, int)
+const UI_SET_ABSBIT: u64 = 0x40045567; // _IOW('U', 103, int)
+const UI_DEV_CREATE: u64 = 0x5501; // _IO('U', 1)
+const UI_DEV_DESTROY: u64 = 0x5502; // _IO('U', 2)
 
 /// Linux input_event structure
 #[repr(C)]
@@ -72,15 +73,42 @@ struct InputId {
 #[async_trait::async_trait]
 pub trait Injector: Send + Sync {
     async fn initialize(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn key_press(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn key_release(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn mouse_press(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn mouse_release(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn mouse_move(&self, x: i32, y: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn mouse_scroll(&self, amount: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn type_string(&self, text: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn execute_command(&self, command: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-    async fn analog_move(&self, axis_code: u16, value: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn key_press(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn key_release(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn mouse_press(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn mouse_release(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn mouse_move(
+        &self,
+        x: i32,
+        y: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn mouse_scroll(
+        &self,
+        amount: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn type_string(&self, text: &str)
+        -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn execute_command(
+        &self,
+        command: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn analog_move(
+        &self,
+        axis_code: u16,
+        value: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }
 
 /// Convert axis code to evdev absolute axis type
@@ -147,18 +175,18 @@ impl UinputInjector {
         }
 
         // Special characters
-        key_map.insert(' ', 57);  // KEY_SPACE
-        key_map.insert('-', 12);  // KEY_MINUS
-        key_map.insert('=', 13);  // KEY_EQUAL
-        key_map.insert('[', 26);  // KEY_LEFTBRACE
-        key_map.insert(']', 27);  // KEY_RIGHTBRACE
+        key_map.insert(' ', 57); // KEY_SPACE
+        key_map.insert('-', 12); // KEY_MINUS
+        key_map.insert('=', 13); // KEY_EQUAL
+        key_map.insert('[', 26); // KEY_LEFTBRACE
+        key_map.insert(']', 27); // KEY_RIGHTBRACE
         key_map.insert('\\', 43); // KEY_BACKSLASH
-        key_map.insert(';', 39);  // KEY_SEMICOLON
+        key_map.insert(';', 39); // KEY_SEMICOLON
         key_map.insert('\'', 40); // KEY_APOSTROPHE
-        key_map.insert('`', 41);  // KEY_GRAVE
-        key_map.insert(',', 51);  // KEY_COMMA
-        key_map.insert('.', 52);  // KEY_DOT
-        key_map.insert('/', 53);  // KEY_SLASH
+        key_map.insert('`', 41); // KEY_GRAVE
+        key_map.insert(',', 51); // KEY_COMMA
+        key_map.insert('.', 52); // KEY_DOT
+        key_map.insert('/', 53); // KEY_SLASH
         key_map.insert('\n', 28); // KEY_ENTER
         key_map.insert('\t', 15); // KEY_TAB
 
@@ -172,7 +200,9 @@ impl UinputInjector {
     /// Initialize the uinput device - creates a virtual keyboard and mouse
     pub async fn initialize(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             if *initialized {
                 return Ok(());
@@ -287,7 +317,12 @@ impl UinputInjector {
             let dev_ptr = &dev as *const UinputUserDev as *const u8;
             let dev_slice = std::slice::from_raw_parts(dev_ptr, mem::size_of::<UinputUserDev>());
 
-            if libc::write(fd, dev_slice.as_ptr() as *const libc::c_void, dev_slice.len()) < 0 {
+            if libc::write(
+                fd,
+                dev_slice.as_ptr() as *const libc::c_void,
+                dev_slice.len(),
+            ) < 0
+            {
                 return Err("Failed to write uinput device structure".into());
             }
 
@@ -297,17 +332,24 @@ impl UinputInjector {
             }
         }
 
-        info!("Successfully created uinput virtual device: {}", String::from_utf8_lossy(name));
+        info!(
+            "Successfully created uinput virtual device: {}",
+            String::from_utf8_lossy(name)
+        );
 
         // Store the file descriptor
         {
-            let mut uinput_fd = self.uinput_fd.try_write()
+            let mut uinput_fd = self
+                .uinput_fd
+                .try_write()
                 .map_err(|_| "Lock poisoned on uinput_fd write")?;
             *uinput_fd = Some(fd);
         }
 
         {
-            let mut initialized = self.initialized.try_write()
+            let mut initialized = self
+                .initialized
+                .try_write()
                 .map_err(|_| "Lock poisoned on initialized write")?;
             *initialized = true;
         }
@@ -319,9 +361,16 @@ impl UinputInjector {
     }
 
     /// Write an input event to the uinput device
-    fn write_event(&self, type_: u16, code: u16, value: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    fn write_event(
+        &self,
+        type_: u16,
+        code: u16,
+        value: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let fd = {
-            let uinput_fd = self.uinput_fd.try_read()
+            let uinput_fd = self
+                .uinput_fd
+                .try_read()
                 .map_err(|_| "Lock poisoned on uinput_fd read")?;
             uinput_fd.ok_or("Uinput device not initialized")?
         };
@@ -341,9 +390,15 @@ impl UinputInjector {
             let event_ptr = &event as *const InputEvent as *const u8;
             let event_slice = std::slice::from_raw_parts(event_ptr, mem::size_of::<InputEvent>());
 
-            let written = libc::write(fd, event_slice.as_ptr() as *const libc::c_void, event_slice.len());
+            let written = libc::write(
+                fd,
+                event_slice.as_ptr() as *const libc::c_void,
+                event_slice.len(),
+            );
             if written < 0 {
-                return Err(format!("Failed to write event: {}", std::io::Error::last_os_error()).into());
+                return Err(
+                    format!("Failed to write event: {}", std::io::Error::last_os_error()).into(),
+                );
             }
         }
 
@@ -356,9 +411,14 @@ impl UinputInjector {
     }
 
     /// Press a key (sends key down event + sync)
-    pub async fn key_press(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn key_press(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -374,9 +434,14 @@ impl UinputInjector {
     }
 
     /// Release a key (sends key up event + sync)
-    pub async fn key_release(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn key_release(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -392,9 +457,14 @@ impl UinputInjector {
     }
 
     /// Press a mouse button
-    pub async fn mouse_press(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn mouse_press(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -413,9 +483,14 @@ impl UinputInjector {
     }
 
     /// Release a mouse button
-    pub async fn mouse_release(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn mouse_release(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -432,9 +507,15 @@ impl UinputInjector {
     }
 
     /// Move the mouse cursor (relative movement)
-    pub async fn mouse_move(&self, x: i32, y: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn mouse_move(
+        &self,
+        x: i32,
+        y: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -455,9 +536,14 @@ impl UinputInjector {
     }
 
     /// Scroll the mouse wheel
-    pub async fn mouse_scroll(&self, amount: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn mouse_scroll(
+        &self,
+        amount: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -473,9 +559,14 @@ impl UinputInjector {
     }
 
     /// Type a string by simulating key presses and releases
-    pub async fn type_string(&self, text: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn type_string(
+        &self,
+        text: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -488,7 +579,9 @@ impl UinputInjector {
 
         for c in text.chars() {
             let key_code = {
-                let key_map = self.key_map.try_read()
+                let key_map = self
+                    .key_map
+                    .try_read()
                     .map_err(|_| "Lock poisoned on key_map read")?;
                 key_map.get(&c).copied()
             };
@@ -520,7 +613,10 @@ impl UinputInjector {
     }
 
     /// Execute a system command with security restrictions
-    pub async fn execute_command(&self, command: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn execute_command(
+        &self,
+        command: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         info!("Executing command: {}", command);
 
         let parts: Vec<&str> = command.split_whitespace().collect();
@@ -533,8 +629,14 @@ impl UinputInjector {
 
         // Security: Only allow whitelisted commands
         let allowed_commands = [
-            "xdotool", "xrandr", "amixer", "notify-send", "pactl",
-            "playerctl", "brightnessctl", "xbacklight",
+            "xdotool",
+            "xrandr",
+            "amixer",
+            "notify-send",
+            "pactl",
+            "playerctl",
+            "brightnessctl",
+            "xbacklight",
         ];
 
         if !allowed_commands.contains(&program) {
@@ -544,8 +646,8 @@ impl UinputInjector {
 
         info!("Executing allowed command: {} {:?}", program, args);
 
-        use tokio::process::Command;
         use std::process::Stdio;
+        use tokio::process::Command;
 
         let output = tokio::time::timeout(
             Duration::from_secs(10),
@@ -553,12 +655,16 @@ impl UinputInjector {
                 .args(args)
                 .env_clear()
                 .env("PATH", "/usr/bin:/bin")
-                .env("DISPLAY", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()))
+                .env(
+                    "DISPLAY",
+                    std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()),
+                )
                 .stdin(Stdio::null())
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
-                .output()
-        ).await;
+                .output(),
+        )
+        .await;
 
         match output {
             Ok(Ok(output)) => {
@@ -584,9 +690,15 @@ impl UinputInjector {
     ///
     /// # Returns
     /// Ok(()) if successful, Err on failure
-    pub async fn analog_move(&self, axis_code: u16, value: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn analog_move(
+        &self,
+        axis_code: u16,
+        value: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let needs_init = {
-            let initialized = self.initialized.try_read()
+            let initialized = self
+                .initialized
+                .try_read()
                 .map_err(|_| "Lock poisoned on initialized check")?;
             !*initialized
         };
@@ -599,7 +711,10 @@ impl UinputInjector {
         let abs_axis = axis_code_to_type(axis_code)
             .ok_or_else(|| format!("Invalid axis code: {}", axis_code))?;
 
-        debug!("Analog move: axis_code={}, abs_axis={}, value={}", axis_code, abs_axis, value);
+        debug!(
+            "Analog move: axis_code={}, abs_axis={}, value={}",
+            axis_code, abs_axis, value
+        );
         self.write_event(EV_ABS, abs_axis, value)?;
         self.sync()?;
         Ok(())
@@ -612,39 +727,68 @@ impl Injector for UinputInjector {
         UinputInjector::initialize(self).await
     }
 
-    async fn key_press(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn key_press(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::key_press(self, key_code).await
     }
 
-    async fn key_release(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn key_release(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::key_release(self, key_code).await
     }
 
-    async fn mouse_press(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_press(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::mouse_press(self, button).await
     }
 
-    async fn mouse_release(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_release(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::mouse_release(self, button).await
     }
 
-    async fn mouse_move(&self, x: i32, y: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_move(
+        &self,
+        x: i32,
+        y: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::mouse_move(self, x, y).await
     }
 
-    async fn mouse_scroll(&self, amount: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_scroll(
+        &self,
+        amount: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::mouse_scroll(self, amount).await
     }
 
-    async fn type_string(&self, text: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn type_string(
+        &self,
+        text: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::type_string(self, text).await
     }
 
-    async fn execute_command(&self, command: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn execute_command(
+        &self,
+        command: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::execute_command(self, command).await
     }
 
-    async fn analog_move(&self, axis_code: u16, value: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn analog_move(
+        &self,
+        axis_code: u16,
+        value: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         UinputInjector::analog_move(self, axis_code, value).await
     }
 }

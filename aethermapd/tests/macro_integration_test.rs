@@ -3,7 +3,7 @@
 //! These tests verify end-to-end functionality of macros with mixed
 //! keyboard and mouse actions, including proper sequencing and timing.
 
-use aethermap_common::{Action, MacroEntry, KeyCombo};
+use aethermap_common::{Action, KeyCombo, MacroEntry};
 use aethermapd::macro_engine::MacroEngine;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -38,48 +38,79 @@ impl aethermapd::injector::Injector for MockInjector {
         Ok(())
     }
 
-    async fn key_press(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn key_press(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("key_press:{}", key_code)).await;
         Ok(())
     }
 
-    async fn key_release(&self, key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn key_release(
+        &self,
+        key_code: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("key_release:{}", key_code)).await;
         Ok(())
     }
 
-    async fn mouse_press(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_press(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("mouse_press:{}", button)).await;
         Ok(())
     }
 
-    async fn mouse_release(&self, button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_release(
+        &self,
+        button: u16,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("mouse_release:{}", button)).await;
         Ok(())
     }
 
-    async fn mouse_move(&self, x: i32, y: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_move(
+        &self,
+        x: i32,
+        y: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("mouse_move:{},{}", x, y)).await;
         Ok(())
     }
 
-    async fn mouse_scroll(&self, amount: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mouse_scroll(
+        &self,
+        amount: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("mouse_scroll:{}", amount)).await;
         Ok(())
     }
 
-    async fn type_string(&self, text: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn type_string(
+        &self,
+        text: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.log_action(&format!("type_string:{}", text)).await;
         Ok(())
     }
 
-    async fn execute_command(&self, command: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        self.log_action(&format!("execute_command:{}", command)).await;
+    async fn execute_command(
+        &self,
+        command: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.log_action(&format!("execute_command:{}", command))
+            .await;
         Ok(())
     }
 
-    async fn analog_move(&self, axis_code: u16, value: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        self.log_action(&format!("analog_move:{},{}", axis_code, value)).await;
+    async fn analog_move(
+        &self,
+        axis_code: u16,
+        value: i32,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.log_action(&format!("analog_move:{},{}", axis_code, value))
+            .await;
         Ok(())
     }
 }
@@ -98,11 +129,11 @@ async fn test_mixed_keyboard_mouse_macro() {
             modifiers: vec![],
         },
         actions: vec![
-            Action::KeyPress(30),  // A key press
-            Action::MousePress(1), // BTN_LEFT press (button 1 = code 272)
-            Action::Delay(10),     // Small delay for testing
+            Action::KeyPress(30),    // A key press
+            Action::MousePress(1),   // BTN_LEFT press (button 1 = code 272)
+            Action::Delay(10),       // Small delay for testing
             Action::MouseRelease(1), // BTN_LEFT release
-            Action::KeyRelease(30), // A key release
+            Action::KeyRelease(30),  // A key release
         ],
         device_id: None,
         enabled: true,
@@ -141,7 +172,7 @@ async fn test_mouse_movement_macro() {
             modifiers: vec![],
         },
         actions: vec![
-            Action::MouseMove(10, 0),  // Move right 10 units
+            Action::MouseMove(10, 0), // Move right 10 units
             Action::Delay(10),
             Action::MouseMove(-5, 0), // Move left 5 units
         ],
@@ -250,13 +281,13 @@ async fn test_action_sequence_order() {
             modifiers: vec![],
         },
         actions: vec![
-            Action::KeyPress(30),      // 1: Press A
-            Action::MousePress(1),     // 2: Press left mouse
-            Action::Delay(10),         // 3: Delay
-            Action::MouseScroll(1),    // 4: Scroll
-            Action::MouseMove(5, 5),   // 5: Move mouse
-            Action::MouseRelease(1),   // 6: Release mouse
-            Action::KeyRelease(30),    // 7: Release A
+            Action::KeyPress(30),    // 1: Press A
+            Action::MousePress(1),   // 2: Press left mouse
+            Action::Delay(10),       // 3: Delay
+            Action::MouseScroll(1),  // 4: Scroll
+            Action::MouseMove(5, 5), // 5: Move mouse
+            Action::MouseRelease(1), // 6: Release mouse
+            Action::KeyRelease(30),  // 7: Release A
         ],
         device_id: None,
         enabled: true,
@@ -302,8 +333,15 @@ async fn test_multiple_macros_concurrent() {
     // Create multiple different macros
     let macro1 = MacroEntry {
         name: "Macro 1".to_string(),
-        trigger: KeyCombo { keys: vec![30], modifiers: vec![] },
-        actions: vec![Action::KeyPress(30), Action::Delay(10), Action::KeyRelease(30)],
+        trigger: KeyCombo {
+            keys: vec![30],
+            modifiers: vec![],
+        },
+        actions: vec![
+            Action::KeyPress(30),
+            Action::Delay(10),
+            Action::KeyRelease(30),
+        ],
         device_id: None,
         enabled: true,
         humanize: false,
@@ -312,7 +350,10 @@ async fn test_multiple_macros_concurrent() {
 
     let macro2 = MacroEntry {
         name: "Macro 2".to_string(),
-        trigger: KeyCombo { keys: vec![31], modifiers: vec![] },
+        trigger: KeyCombo {
+            keys: vec![31],
+            modifiers: vec![],
+        },
         actions: vec![
             Action::MousePress(1),
             Action::Delay(10),

@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-05-15
+
+### Added
+- **Modular Theme System:** New design palette with a structured theme module (`theme/palette`, `theme/styles`) for consistent, maintainable styling.
+- **Keypad Remapping View:** Dedicated keypad view with key-by-key remapping interface.
+- **Hotkey Binding Management:** Dedicated hotkey view for creating and managing global hotkey bindings.
+- **LED Configuration UI:** LED view with per-zone color and pattern configuration.
+- **Analog Calibration UI:** Analog view with live visualizer, deadzone tuning, response curve selection, and D-pad emulation settings.
+- **Auto-Switch Rules View:** UI for configuring automatic profile switching based on focused application.
+- **Profile Management View:** Dedicated profiles view for creating, switching, and organizing remap profiles.
+- **Device & Layer Views:** Separated device management and layer configuration into focused views.
+- **Sidebar & Status Bar:** Extracted sidebar navigation and status bar into standalone components.
+
+### Changed
+- **GUI Architecture Refactor:** Monolithic `gui.rs` decomposed into modular `views/`, `handlers/`, `widgets/`, and `theme/` modules.
+- Improved code formatting and clippy compliance across all workspace members.
+- IPC protocol types now derive `Default` where appropriate for cleaner serialization.
+
+### Fixed
+- Fixed macro engine cleanup task not aborting on drop, which could cause resource leaks.
+- Fixed macro combo update race condition by passing macro map directly to `update_active_combos_from`.
+
+## [1.4.3] - 2026-05-04
+
+### Changed
+- Changed license to GPL-2.0-only.
+
+## [1.4.2] - 2026-05-04
+
+### Changed
+- Included README.md in all crate manifests for crates.io display.
+- Updated crate metadata for crates.io publishing.
+
 ## [1.4.1] - 2026-04-19
 
 ### Added

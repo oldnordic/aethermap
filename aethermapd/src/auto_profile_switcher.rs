@@ -351,8 +351,8 @@ impl AutoProfileSwitcher {
             );
 
             // Get device path from device manager (if available)
-            let device_path = {
-                let state_guard = self.config_manager.device_profiles.read().await;
+            let _device_path = {
+                let _state_guard = self.config_manager.device_profiles.read().await;
                 // We need the actual device path - for now, we'll use a placeholder
                 // In real implementation, this would come from DeviceManager
                 None::<String>
@@ -387,16 +387,15 @@ impl AutoProfileSwitcher {
                                 }
                             }
                             crate::layer_manager::LayerMode::Toggle => {
-                                if let Err(e) = layer_manager.toggle_layer(&device_id, layer_id).await {
+                                if let Err(e) =
+                                    layer_manager.toggle_layer(&device_id, layer_id).await
+                                {
                                     warn!("Failed to toggle layer {}: {}", layer_id, e);
                                 }
                             }
                         }
                     } else {
-                        warn!(
-                            "Layer {} not configured for device {}",
-                            layer_id, device_id
-                        );
+                        warn!("Layer {} not configured for device {}", layer_id, device_id);
                     }
                 }
             }

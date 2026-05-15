@@ -1,10 +1,10 @@
+use crate::gui::{Message, State};
+use crate::theme;
+use aethermap_common::{DeviceInfo, RemapProfileInfo};
 use iced::{
     widget::{button, column, container, pick_list, row, scrollable, text, text_input, Space},
-    Element, Length, Alignment,
+    Alignment, Element, Length,
 };
-use aethermap_common::{DeviceInfo, RemapProfileInfo};
-use crate::gui::{State, Message};
-use crate::theme;
 
 pub fn view_profiles_tab(state: &State) -> Element<'_, Message> {
     let header = text("PROFILES").size(24);
@@ -20,7 +20,7 @@ pub fn view_profiles_tab(state: &State) -> Element<'_, Message> {
             Space::with_width(8),
             text("Save Profile").size(14),
         ]
-        .align_items(Alignment::Center)
+        .align_items(Alignment::Center),
     )
     .on_press(Message::SaveProfile)
     .style(iced::theme::Button::Primary)
@@ -32,7 +32,7 @@ pub fn view_profiles_tab(state: &State) -> Element<'_, Message> {
             Space::with_width(8),
             text("Load Profile").size(14),
         ]
-        .align_items(Alignment::Center)
+        .align_items(Alignment::Center),
     )
     .on_press(Message::LoadProfile)
     .style(iced::theme::Button::Secondary)
@@ -52,11 +52,7 @@ pub fn view_profiles_tab(state: &State) -> Element<'_, Message> {
         Space::with_height(16),
         profile_input,
         Space::with_height(16),
-        row![
-            save_button,
-            Space::with_width(10),
-            load_button,
-        ],
+        row![save_button, Space::with_width(10), load_button,],
         Space::with_height(20),
         profile_info,
     ];
@@ -92,24 +88,23 @@ pub fn view_profile_selector<'a>(state: &'a State, device: &'a DeviceInfo) -> El
             let picker = pick_list(
                 profiles.clone(),
                 active_profile.cloned(),
-                move |profile_name| Message::ActivateProfile(device_id_for_closure.clone(), profile_name),
+                move |profile_name| {
+                    Message::ActivateProfile(device_id_for_closure.clone(), profile_name)
+                },
             )
             .placeholder("Select profile")
             .width(Length::Fixed(150.0));
 
-            let mut row_content = row![
-                text("Profile: ").size(12),
-                picker,
-            ]
-            .spacing(10)
-            .align_items(Alignment::Center);
+            let mut row_content = row![text("Profile: ").size(12), picker,]
+                .spacing(10)
+                .align_items(Alignment::Center);
 
             if let Some(_active) = active_profile {
                 row_content = row_content.push(
                     button(text("Deactivate").size(11))
                         .on_press(Message::DeactivateProfile(device_id.clone()))
                         .padding(5)
-                        .style(iced::theme::Button::Text)
+                        .style(iced::theme::Button::Text),
                 );
             }
 
@@ -128,48 +123,48 @@ pub fn view_profile_selector<'a>(state: &'a State, device: &'a DeviceInfo) -> El
         .into()
     };
 
-    container(profile_row)
-        .padding([4, 0])
-        .into()
+    container(profile_row).padding([4, 0]).into()
 }
 
-pub fn view_remap_profile_switcher<'a>(state: &'a State, device_path: &str) -> Element<'a, Message> {
+pub fn view_remap_profile_switcher<'a>(
+    state: &'a State,
+    device_path: &str,
+) -> Element<'a, Message> {
     let profiles = state.remap_profiles.get(device_path);
     let active_profile = state.active_remap_profiles.get(device_path);
 
     let profile_row: Element<'_, Message> = if let Some(profiles) = profiles {
         if profiles.is_empty() {
-            row![
-                text("Remap: ").size(12),
-                text("No remap profiles").size(12),
-            ]
-            .spacing(10)
-            .align_items(Alignment::Center)
-            .into()
+            row![text("Remap: ").size(12), text("No remap profiles").size(12),]
+                .spacing(10)
+                .align_items(Alignment::Center)
+                .into()
         } else {
-            let profile_names: Vec<String> = profiles.iter().map(|p: &RemapProfileInfo| p.name.clone()).collect();
+            let profile_names: Vec<String> = profiles
+                .iter()
+                .map(|p: &RemapProfileInfo| p.name.clone())
+                .collect();
             let device_path_for_closure = device_path.to_string();
             let picker = pick_list(
                 profile_names,
                 active_profile.cloned(),
-                move |profile_name| Message::ActivateRemapProfile(device_path_for_closure.clone(), profile_name),
+                move |profile_name| {
+                    Message::ActivateRemapProfile(device_path_for_closure.clone(), profile_name)
+                },
             )
             .placeholder("Select remap profile")
             .width(Length::Fixed(150.0));
 
-            let mut row_content = row![
-                text("Remap: ").size(12),
-                picker,
-            ]
-            .spacing(10)
-            .align_items(Alignment::Center);
+            let mut row_content = row![text("Remap: ").size(12), picker,]
+                .spacing(10)
+                .align_items(Alignment::Center);
 
             if let Some(_active) = active_profile {
                 row_content = row_content.push(
                     button(text("Off").size(11))
                         .on_press(Message::DeactivateRemapProfile(device_path.to_string()))
                         .padding(5)
-                        .style(iced::theme::Button::Text)
+                        .style(iced::theme::Button::Text),
                 );
             }
 
@@ -177,7 +172,7 @@ pub fn view_remap_profile_switcher<'a>(state: &'a State, device_path: &str) -> E
                 button(text("↻").size(11))
                     .on_press(Message::LoadRemapProfiles(device_path.to_string()))
                     .padding(5)
-                    .style(iced::theme::Button::Text)
+                    .style(iced::theme::Button::Text),
             );
 
             row_content.into()
@@ -195,15 +190,10 @@ pub fn view_remap_profile_switcher<'a>(state: &'a State, device_path: &str) -> E
         .into()
     };
 
-    let remap_content = column![
-        profile_row,
-        view_active_remaps_display(state, device_path),
-    ]
-    .spacing(4);
+    let remap_content =
+        column![profile_row, view_active_remaps_display(state, device_path),].spacing(4);
 
-    container(remap_content)
-        .padding([4, 0])
-        .into()
+    container(remap_content).padding([4, 0]).into()
 }
 
 fn view_active_remaps_display<'a>(state: &'a State, device_path: &str) -> Element<'a, Message> {
@@ -214,21 +204,22 @@ fn view_active_remaps_display<'a>(state: &'a State, device_path: &str) -> Elemen
                 .into();
         }
 
-        let remap_rows: Vec<Element<'_, Message>> = remaps.iter().map(|remap| {
-            row![
-                text(format!("{} → {}", remap.from_key, remap.to_key))
-                    .size(10)
-            ]
-            .into()
-        }).collect();
+        let remap_rows: Vec<Element<'_, Message>> = remaps
+            .iter()
+            .map(|remap| {
+                row![text(format!("{} → {}", remap.from_key, remap.to_key)).size(10)].into()
+            })
+            .collect();
 
-        let remap_list = scrollable(
-            column(remap_rows).spacing(2)
-        )
-        .height(Length::Fixed(60.0));
+        let remap_list = scrollable(column(remap_rows).spacing(2)).height(Length::Fixed(60.0));
 
         column![
-            text(format!("Active: {} ({} remaps)", profile_name, remaps.len())).size(10),
+            text(format!(
+                "Active: {} ({} remaps)",
+                profile_name,
+                remaps.len()
+            ))
+            .size(10),
             remap_list,
         ]
         .spacing(2)

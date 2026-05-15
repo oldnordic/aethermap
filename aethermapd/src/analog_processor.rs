@@ -37,12 +37,12 @@
 //! processor.set_sensitivity("1532:0220", 1.5).await;
 //! ```
 
+use evdev::Key;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{debug, info};
-use evdev::Key;
 
 // Import analog calibration types for 2D processing
 use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
@@ -57,9 +57,10 @@ const DEFAULT_DEADZONE: u16 = 14000;
 pub const MAX_ABS_VALUE: i32 = 32767;
 
 /// Response curve type for analog processing
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
 pub enum ResponseCurve {
     /// Linear response (no transformation)
+    #[default]
     Linear,
     /// Exponential response (f(x) = sign(x) * |x|^exponent)
     Exponential { exponent: f32 },
@@ -68,8 +69,10 @@ pub enum ResponseCurve {
 /// D-pad emulation mode for analog sticks
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum DpadMode {
     /// D-pad emulation disabled (analog passes through normally)
+    #[default]
     Disabled,
     /// 8-way D-pad (N, NE, E, SE, S, SW, W, NW)
     EightWay,
@@ -77,40 +80,30 @@ pub enum DpadMode {
     FourWay,
 }
 
-impl Default for DpadMode {
-    fn default() -> Self {
-        Self::Disabled
-    }
-}
-
 /// Direction for D-pad emulation
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Direction {
+    #[default]
     Up,
     Down,
     Left,
     Right,
 }
 
-impl Default for Direction {
-    fn default() -> Self {
-        Self::Up
-    }
-}
-
 /// Arrow key codes for D-pad emulation
-const DPAD_UP: u16 = 103;    // KEY_UP
-const DPAD_DOWN: u16 = 108;  // KEY_DOWN
-const DPAD_LEFT: u16 = 105;  // KEY_LEFT
+const DPAD_UP: u16 = 103; // KEY_UP
+const DPAD_DOWN: u16 = 108; // KEY_DOWN
+const DPAD_LEFT: u16 = 105; // KEY_LEFT
 const DPAD_RIGHT: u16 = 106; // KEY_RIGHT
 
 /// 8-way D-pad direction for analog stick to D-pad conversion
 ///
 /// Represents all possible directions from an analog stick converted to D-pad output.
 /// Diagonal directions return two key codes (e.g., UpRight = Up + Right).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum DpadDirection {
     /// No direction (stick centered or within deadzone)
+    #[default]
     None,
     /// Up (Y axis negative)
     Up,
@@ -130,12 +123,6 @@ pub enum DpadDirection {
     UpLeft,
 }
 
-impl Default for DpadDirection {
-    fn default() -> Self {
-        Self::None
-    }
-}
-
 /// Analog output mode determines how processed stick values are emitted
 ///
 /// - Disabled: No output (pass-through only)
@@ -146,8 +133,10 @@ impl Default for DpadDirection {
 /// - WASD: Directional key output (Phase 15)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum AnalogMode {
     /// No output (pass-through only)
+    #[default]
     Disabled,
     /// D-pad mode - 8-way directional keys
     Dpad,
@@ -159,12 +148,6 @@ pub enum AnalogMode {
     Mouse,
     /// WASD mode - directional keys (Phase 15)
     Wasd,
-}
-
-impl Default for AnalogMode {
-    fn default() -> Self {
-        Self::Disabled
-    }
 }
 
 /// Convert direction to arrow key code
@@ -277,17 +260,13 @@ pub fn camera_direction_to_keys(direction: DpadDirection) -> Vec<Key> {
 /// - Keys: Emits key repeat events (PageUp/PageDown/arrow keys) for 3D camera rotation
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum CameraOutputMode {
     /// Emit REL_WHEEL events (Y-axis scroll only)
+    #[default]
     Scroll,
     /// Emit key repeat events (PageUp/PageDown for vertical, arrow keys for horizontal)
     Keys,
-}
-
-impl Default for CameraOutputMode {
-    fn default() -> Self {
-        Self::Scroll  // Default to scroll for broader compatibility
-    }
 }
 
 /// Camera mode output value
@@ -300,12 +279,6 @@ pub enum CameraOutput {
     Scroll(i32),
     /// Keys to emit for key repeat mode (PageUp/PageDown/arrow combinations)
     Keys(Vec<Key>),
-}
-
-impl Default for ResponseCurve {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 /// Per-device analog configuration
@@ -339,7 +312,6 @@ pub struct DeviceAnalogConfig {
     pub mode: AnalogMode,
 
     // Per-axis deadzone fields (plan 11-06)
-
     /// Inner deadzone for X-axis (noise filtering near center)
     #[serde(default = "default_deadzone")]
     pub inner_deadzone_x: u16,
@@ -366,7 +338,7 @@ fn default_sensitivity() -> f32 {
 }
 
 fn default_outer_deadzone() -> u16 {
-    MAX_ABS_VALUE as u16  // No clamping by default
+    MAX_ABS_VALUE as u16 // No clamping by default
 }
 
 /// Mouse velocity configuration for analog-to-mouse processing
@@ -384,7 +356,7 @@ pub struct MouseVelocityConfig {
 }
 
 fn default_mouse_multiplier() -> f32 {
-    10.0  // 10 pixels per 1.0 analog value
+    10.0 // 10 pixels per 1.0 analog value
 }
 
 impl Default for MouseVelocityConfig {
@@ -401,7 +373,7 @@ impl Default for MouseVelocityConfig {
 /// Returns a MouseVelocityConfig with multiplier 10.0 (10 pixels per unit deflection).
 pub fn default_mouse_velocity_config() -> MouseVelocityConfig {
     MouseVelocityConfig {
-        multiplier: 10.0,  // 10 pixels per unit deflection
+        multiplier: 10.0, // 10 pixels per unit deflection
     }
 }
 
@@ -491,8 +463,14 @@ impl AnalogProcessor {
 
         // Determine axis-specific deadzone (61000 = ABS_X, 61001 = ABS_Y)
         let (inner_deadzone, outer_deadzone) = match axis_code {
-            61000 => (config.inner_deadzone_x as i32, config.outer_deadzone_x as i32), // X-axis
-            61001 => (config.inner_deadzone_y as i32, config.outer_deadzone_y as i32), // Y-axis
+            61000 => (
+                config.inner_deadzone_x as i32,
+                config.outer_deadzone_x as i32,
+            ), // X-axis
+            61001 => (
+                config.inner_deadzone_y as i32,
+                config.outer_deadzone_y as i32,
+            ), // Y-axis
             _ => (config.deadzone as i32, MAX_ABS_VALUE), // Other axes use average/default
         };
 
@@ -513,7 +491,8 @@ impl AnalogProcessor {
         // Step 3: Normalization
         // Map (inner_deadzone, outer_deadzone) to (0, max)
         let sign = raw_value.signum();
-        let normalized = ((abs_value - inner_deadzone) as f32 / (outer_deadzone - inner_deadzone) as f32)
+        let normalized = ((abs_value - inner_deadzone) as f32
+            / (outer_deadzone - inner_deadzone) as f32)
             .clamp(0.0, 1.0);
 
         // Step 4: Sensitivity multiplier
@@ -554,9 +533,9 @@ impl AnalogProcessor {
     /// * `value` - Deadzone threshold (0-32767)
     pub async fn set_deadzone(&self, device_id: &str, value: u16) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.deadzone = value;
         config.inner_deadzone_x = value;
         config.inner_deadzone_y = value;
@@ -574,9 +553,9 @@ impl AnalogProcessor {
     /// * `value` - Deadzone threshold (0-32767)
     pub async fn set_deadzone_x(&self, device_id: &str, value: u16) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.inner_deadzone_x = value;
         info!(
             "X-axis deadzone updated: device={}, deadzone_x={}",
@@ -592,16 +571,15 @@ impl AnalogProcessor {
     /// * `value` - Deadzone threshold (0-32767)
     pub async fn set_deadzone_y(&self, device_id: &str, value: u16) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.inner_deadzone_y = value;
         info!(
             "Y-axis deadzone updated: device={}, deadzone_y={}",
             device_id, value
         );
     }
-
 
     /// Set deadzone percentage for a device (both X and Y axes)
     ///
@@ -617,7 +595,11 @@ impl AnalogProcessor {
     ///
     /// * `Ok(())` - Deadzone set successfully
     /// * `Err(String)` - Invalid percentage (must be 0-100)
-    pub async fn set_deadzone_percentage(&self, device_id: &str, percentage: u8) -> Result<(), String> {
+    pub async fn set_deadzone_percentage(
+        &self,
+        device_id: &str,
+        percentage: u8,
+    ) -> Result<(), String> {
         if percentage > 100 {
             return Err(format!(
                 "Invalid deadzone percentage: {} (must be 0-100)",
@@ -629,9 +611,9 @@ impl AnalogProcessor {
         let raw_value = (percentage as u32 * MAX_ABS_VALUE as u32 / 100) as u16;
 
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.deadzone = raw_value;
         config.inner_deadzone_x = raw_value;
         config.inner_deadzone_y = raw_value;
@@ -650,19 +632,26 @@ impl AnalogProcessor {
     ///
     /// * `device_id` - Device identifier
     /// * `percentage` - Deadzone percentage (0-100)
-    pub async fn set_deadzone_percentage_x(&self, device_id: &str, percentage: u8) -> Result<(), String> {
+    pub async fn set_deadzone_percentage_x(
+        &self,
+        device_id: &str,
+        percentage: u8,
+    ) -> Result<(), String> {
         if percentage > 100 {
             return Err(format!("Invalid deadzone percentage: {}", percentage));
         }
 
         let raw_value = (percentage as u32 * MAX_ABS_VALUE as u32 / 100) as u16;
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.inner_deadzone_x = raw_value;
 
-        info!("X-axis deadzone updated: device={}, {}% = {} raw", device_id, percentage, raw_value);
+        info!(
+            "X-axis deadzone updated: device={}, {}% = {} raw",
+            device_id, percentage, raw_value
+        );
         Ok(())
     }
 
@@ -672,19 +661,26 @@ impl AnalogProcessor {
     ///
     /// * `device_id` - Device identifier
     /// * `percentage` - Deadzone percentage (0-100)
-    pub async fn set_deadzone_percentage_y(&self, device_id: &str, percentage: u8) -> Result<(), String> {
+    pub async fn set_deadzone_percentage_y(
+        &self,
+        device_id: &str,
+        percentage: u8,
+    ) -> Result<(), String> {
         if percentage > 100 {
             return Err(format!("Invalid deadzone percentage: {}", percentage));
         }
 
         let raw_value = (percentage as u32 * MAX_ABS_VALUE as u32 / 100) as u16;
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.inner_deadzone_y = raw_value;
 
-        info!("Y-axis deadzone updated: device={}, {}% = {} raw", device_id, percentage, raw_value);
+        info!(
+            "Y-axis deadzone updated: device={}, {}% = {} raw",
+            device_id, percentage, raw_value
+        );
         Ok(())
     }
 
@@ -732,9 +728,9 @@ impl AnalogProcessor {
     /// * `value` - Outer deadzone threshold (0-32767, default 32767 = no clamp)
     pub async fn set_outer_deadzone_x(&self, device_id: &str, value: u16) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.outer_deadzone_x = value;
         info!(
             "X-axis outer deadzone updated: device={}, outer_deadzone_x={}",
@@ -750,9 +746,9 @@ impl AnalogProcessor {
     /// * `value` - Outer deadzone threshold (0-32767, default 32767 = no clamp)
     pub async fn set_outer_deadzone_y(&self, device_id: &str, value: u16) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.outer_deadzone_y = value;
         info!(
             "Y-axis outer deadzone updated: device={}, outer_deadzone_y={}",
@@ -766,7 +762,7 @@ impl AnalogProcessor {
         if let Some(config) = devices.get(device_id) {
             (config.outer_deadzone_x as u32 * 100 / MAX_ABS_VALUE as u32) as u8
         } else {
-            100  // Default: no clamp (100% of max range)
+            100 // Default: no clamp (100% of max range)
         }
     }
 
@@ -776,7 +772,7 @@ impl AnalogProcessor {
         if let Some(config) = devices.get(device_id) {
             (config.outer_deadzone_y as u32 * 100 / MAX_ABS_VALUE as u32) as u8
         } else {
-            100  // Default: no clamp (100% of max range)
+            100 // Default: no clamp (100% of max range)
         }
     }
     /// Set sensitivity for a device
@@ -788,9 +784,9 @@ impl AnalogProcessor {
     pub async fn set_sensitivity(&self, device_id: &str, value: f32) {
         let clamped = value.clamp(0.1, 5.0);
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.sensitivity = clamped;
         info!(
             "Sensitivity updated: device={}, sensitivity={:.2}",
@@ -806,9 +802,9 @@ impl AnalogProcessor {
     /// * `curve` - Response curve type
     pub async fn set_response_curve(&self, device_id: &str, curve: ResponseCurve) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.response_curve = curve;
         info!(
             "Response curve updated: device={}, curve={:?}",
@@ -827,11 +823,16 @@ impl AnalogProcessor {
     /// * `device_id` - Device identifier (vendor:product format)
     /// * `layer_id` - Layer ID (0=base, 1, 2, ...)
     /// * `calibration` - Calibration settings to apply
-    pub async fn set_calibration(&self, device_id: &str, layer_id: usize, calibration: AnalogCalibration) {
+    pub async fn set_calibration(
+        &self,
+        device_id: &str,
+        layer_id: usize,
+        calibration: AnalogCalibration,
+    ) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
 
         // For now, we only support base layer (layer 0) calibration
         // In the future, per-layer calibration will be supported
@@ -841,14 +842,19 @@ impl AnalogProcessor {
             config.response_curve = match calibration.sensitivity {
                 SensitivityCurve::Linear => ResponseCurve::Linear,
                 SensitivityCurve::Quadratic => ResponseCurve::Exponential { exponent: 2.0 },
-                SensitivityCurve::Exponential { exponent } => ResponseCurve::Exponential { exponent },
+                SensitivityCurve::Exponential { exponent } => {
+                    ResponseCurve::Exponential { exponent }
+                }
             };
 
             // TODO: Store layer-specific calibrations for future per-layer support
             // For now, only base layer is applied
             info!(
                 "Calibration updated: device={}, deadzone={:.2}, sensitivity={:.2}, curve={:?}",
-                device_id, calibration.deadzone, calibration.sensitivity_multiplier, calibration.sensitivity
+                device_id,
+                calibration.deadzone,
+                calibration.sensitivity_multiplier,
+                calibration.sensitivity
             );
         } else {
             debug!(
@@ -931,14 +937,11 @@ impl AnalogProcessor {
     /// * `mode` - D-pad mode (Disabled, EightWay, FourWay)
     pub async fn set_dpad_mode(&self, device_id: &str, mode: DpadMode) {
         let mut devices = self.devices.write().await;
-        let config = devices.entry(device_id.to_string()).or_insert_with(|| {
-            DeviceAnalogConfig::new(device_id.to_string())
-        });
+        let config = devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| DeviceAnalogConfig::new(device_id.to_string()));
         config.dpad_mode = mode;
-        info!(
-            "D-pad mode updated: device={}, mode={:?}",
-            device_id, mode
-        );
+        info!("D-pad mode updated: device={}, mode={:?}", device_id, mode);
     }
 
     /// Get D-pad mode for a device
@@ -1155,14 +1158,14 @@ impl AnalogProcessor {
         // 8 sectors of 45 degrees each, centered on cardinal and diagonal directions
         // After center(), atan2 gives: 90=up, 0=right, -90/270=down, 180=left
         match normalized_angle {
-            a if a >= 337.5 || a < 22.5 => DpadDirection::Right,
-            a if a >= 22.5 && a < 67.5 => DpadDirection::UpRight,
-            a if a >= 67.5 && a < 112.5 => DpadDirection::Up,
-            a if a >= 112.5 && a < 157.5 => DpadDirection::UpLeft,
-            a if a >= 157.5 && a < 202.5 => DpadDirection::Left,
-            a if a >= 202.5 && a < 247.5 => DpadDirection::DownLeft,
-            a if a >= 247.5 && a < 292.5 => DpadDirection::Down,
-            a if a >= 292.5 && a < 337.5 => DpadDirection::DownRight,
+            a if !(22.5..337.5).contains(&a) => DpadDirection::Right,
+            a if (22.5..67.5).contains(&a) => DpadDirection::UpRight,
+            a if (67.5..112.5).contains(&a) => DpadDirection::Up,
+            a if (112.5..157.5).contains(&a) => DpadDirection::UpLeft,
+            a if (157.5..202.5).contains(&a) => DpadDirection::Left,
+            a if (202.5..247.5).contains(&a) => DpadDirection::DownLeft,
+            a if (247.5..292.5).contains(&a) => DpadDirection::Down,
+            a if (292.5..337.5).contains(&a) => DpadDirection::DownRight,
             _ => DpadDirection::None,
         }
     }
@@ -1207,7 +1210,12 @@ impl AnalogProcessor {
     /// This method returns only the current frame's state with pressed=true.
     /// The caller (device.rs event loop) is responsible for tracking previous state
     /// and sending release events when direction changes (matching Phase 09-04 hat switch pattern).
-    pub fn process_as_dpad(&self, calibration: &AnalogCalibration, x: i32, y: i32) -> Vec<(Key, bool)> {
+    pub fn process_as_dpad(
+        &self,
+        calibration: &AnalogCalibration,
+        x: i32,
+        y: i32,
+    ) -> Vec<(Key, bool)> {
         // Step 1: Normalize to 0.0-1.0 range
         let (nx, ny) = self.normalize(x, y);
 
@@ -1471,7 +1479,7 @@ impl AnalogProcessor {
             range_min: -32768,
             range_max: 32767,
             invert_x: false,
-            invert_y: true,  // Invert Y for gamepad coordinates (up = negative)
+            invert_y: true, // Invert Y for gamepad coordinates (up = negative)
         };
 
         // Process 2D coordinates (plan 14-05 will integrate full calibration)
@@ -1554,7 +1562,7 @@ impl AnalogProcessor {
     /// Static version of apply_deadzone for use in process_2d
     fn apply_deadzone_static(x: f32, y: f32, calibration: &AnalogCalibration) -> (f32, f32) {
         // Max magnitude in centered coordinate system (-0.5 to 0.5)
-        const MAX_MAGNITUDE: f32 = 0.70710678; // sqrt(0.5)
+        const MAX_MAGNITUDE: f32 = std::f32::consts::FRAC_1_SQRT_2;
         const MAX_AXIS: f32 = 0.5;
 
         match calibration.deadzone_shape {
@@ -1578,13 +1586,15 @@ impl AnalogProcessor {
                 let dx = if x.abs() < calibration.deadzone {
                     0.0
                 } else {
-                    let scale = (x.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
+                    let scale =
+                        (x.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
                     x.signum() * scale.min(1.0)
                 };
                 let dy = if y.abs() < calibration.deadzone {
                     0.0
                 } else {
-                    let scale = (y.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
+                    let scale =
+                        (y.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
                     y.signum() * scale.min(1.0)
                 };
                 (dx, dy)
@@ -1604,9 +1614,7 @@ impl AnalogProcessor {
         let scaled = match calibration.sensitivity {
             SensitivityCurve::Linear => magnitude,
             SensitivityCurve::Quadratic => magnitude * magnitude,
-            SensitivityCurve::Exponential { exponent } => {
-                magnitude.powf(exponent.clamp(0.1, 10.0))
-            }
+            SensitivityCurve::Exponential { exponent } => magnitude.powf(exponent.clamp(0.1, 10.0)),
         };
 
         let result = (scaled * calibration.sensitivity_multiplier).min(1.0);
@@ -1643,7 +1651,7 @@ impl AnalogProcessor {
     fn apply_deadzone(&self, x: f32, y: f32, calibration: &AnalogCalibration) -> (f32, f32) {
         // Max magnitude in centered coordinate system (-0.5 to 0.5)
         // At corner (0.5, 0.5), magnitude = sqrt(0.25 + 0.25) = sqrt(0.5) ≈ 0.707
-        const MAX_MAGNITUDE: f32 = 0.70710678; // sqrt(0.5)
+        const MAX_MAGNITUDE: f32 = std::f32::consts::FRAC_1_SQRT_2;
 
         match calibration.deadzone_shape {
             DeadzoneShape::Circular => {
@@ -1674,13 +1682,15 @@ impl AnalogProcessor {
                 let dx = if x.abs() < calibration.deadzone {
                     0.0
                 } else {
-                    let scale = (x.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
+                    let scale =
+                        (x.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
                     x.signum() * scale.min(1.0)
                 };
                 let dy = if y.abs() < calibration.deadzone {
                     0.0
                 } else {
-                    let scale = (y.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
+                    let scale =
+                        (y.abs() - calibration.deadzone) / (MAX_AXIS - calibration.deadzone);
                     y.signum() * scale.min(1.0)
                 };
                 (dx, dy)
@@ -1704,7 +1714,7 @@ impl AnalogProcessor {
         let scaled = match calibration.sensitivity {
             SensitivityCurve::Linear => magnitude,
             SensitivityCurve::Quadratic => magnitude * magnitude,
-            SensitivityCurve::Exponential { exponent } => {
+            SensitivityCurve::Exponential { exponent: _ } => {
                 // Default to 2.0 if no exponent specified for backward compatibility
                 let exp = match calibration.sensitivity {
                     SensitivityCurve::Exponential { exponent } => exponent,
@@ -1901,6 +1911,7 @@ impl Default for AnalogProcessor {
 }
 
 #[cfg(test)]
+#[allow(clippy::field_reassign_with_default, unused_variables)]
 mod tests {
     use super::*;
 
@@ -1926,7 +1937,10 @@ mod tests {
 
         // Negative value within deadzone should return None
         let result = processor.process_event(device_id, 61000, -10000).await;
-        assert!(result.is_none(), "Negative value within deadzone should be filtered");
+        assert!(
+            result.is_none(),
+            "Negative value within deadzone should be filtered"
+        );
 
         // Center value should return None
         let result = processor.process_event(device_id, 61000, 0).await;
@@ -1940,11 +1954,17 @@ mod tests {
 
         // Value outside deadzone should be processed
         let result = processor.process_event(device_id, 61000, 25000).await;
-        assert!(result.is_some(), "Value outside deadzone should pass through");
+        assert!(
+            result.is_some(),
+            "Value outside deadzone should pass through"
+        );
 
         // Negative value outside deadzone should be processed
         let result = processor.process_event(device_id, 61000, -25000).await;
-        assert!(result.is_some(), "Negative value outside deadzone should pass through");
+        assert!(
+            result.is_some(),
+            "Negative value outside deadzone should pass through"
+        );
 
         // Max value should be processed
         let result = processor.process_event(device_id, 61000, 32767).await;
@@ -2128,7 +2148,10 @@ mod tests {
             .await;
 
         let result = processor.process_event(device_id, 61000, 25000).await;
-        assert!(result.is_some(), "Exponential with high exponent should work");
+        assert!(
+            result.is_some(),
+            "Exponential with high exponent should work"
+        );
 
         // Test with very low exponent (should clamp)
         processor
@@ -2136,7 +2159,10 @@ mod tests {
             .await;
 
         let result = processor.process_event(device_id, 61000, 25000).await;
-        assert!(result.is_some(), "Exponential with low exponent should work");
+        assert!(
+            result.is_some(),
+            "Exponential with low exponent should work"
+        );
     }
 
     #[tokio::test]
@@ -2167,11 +2193,7 @@ mod tests {
 
         for axis in axis_codes {
             let result = processor.process_event(device_id, axis, 25000).await;
-            assert!(
-                result.is_some(),
-                "Axis code {} should be supported",
-                axis
-            );
+            assert!(result.is_some(), "Axis code {} should be supported", axis);
         }
     }
 
@@ -2351,10 +2373,18 @@ mod tests {
         let device_id = "test_device";
 
         // Configure device with non-default values
-        processor.set_deadzone_percentage_x(device_id, 30).await.unwrap();
-        processor.set_deadzone_percentage_y(device_id, 60).await.unwrap();
+        processor
+            .set_deadzone_percentage_x(device_id, 30)
+            .await
+            .unwrap();
+        processor
+            .set_deadzone_percentage_y(device_id, 60)
+            .await
+            .unwrap();
         processor.set_sensitivity(device_id, 2.0).await;
-        processor.set_response_curve(device_id, ResponseCurve::Exponential { exponent: 3.0 }).await;
+        processor
+            .set_response_curve(device_id, ResponseCurve::Exponential { exponent: 3.0 })
+            .await;
         processor.set_dpad_mode(device_id, DpadMode::EightWay).await;
 
         // Save config
@@ -2375,7 +2405,10 @@ mod tests {
         assert!((raw_to_percentage(loaded_config.inner_deadzone_x) as i32 - 30i32).abs() <= 2);
         assert!((raw_to_percentage(loaded_config.inner_deadzone_y) as i32 - 60i32).abs() <= 2);
         assert_eq!(loaded_config.sensitivity, 2.0);
-        assert_eq!(loaded_config.response_curve, ResponseCurve::Exponential { exponent: 3.0 });
+        assert_eq!(
+            loaded_config.response_curve,
+            ResponseCurve::Exponential { exponent: 3.0 }
+        );
         assert_eq!(loaded_config.dpad_mode, DpadMode::EightWay);
     }
 
@@ -2398,7 +2431,10 @@ mod tests {
             dpad_mode: "disabled".to_string(),
         };
 
-        processor.load_config(device_id, &minimal_config).await.unwrap();
+        processor
+            .load_config(device_id, &minimal_config)
+            .await
+            .unwrap();
 
         // Verify values were applied
         let config = processor.get_device_config(device_id).await.unwrap();
@@ -2422,7 +2458,9 @@ mod tests {
             assert!(
                 (converted as i32 - *percentage as i32).abs() <= 1,
                 "Percentage conversion failed: {}% -> {} raw -> {}%",
-                percentage, raw, converted
+                percentage,
+                raw,
+                converted
             );
         }
     }
@@ -2454,7 +2492,10 @@ mod tests {
         assert!((raw_to_percentage(device_config.outer_deadzone_x) as i32 - 90i32).abs() <= 1);
         assert!((raw_to_percentage(device_config.outer_deadzone_y) as i32 - 95i32).abs() <= 1);
         assert_eq!(device_config.sensitivity, 1.8);
-        assert_eq!(device_config.response_curve, ResponseCurve::Exponential { exponent: 2.5 });
+        assert_eq!(
+            device_config.response_curve,
+            ResponseCurve::Exponential { exponent: 2.5 }
+        );
         assert_eq!(device_config.dpad_mode, DpadMode::FourWay);
     }
 
@@ -2465,12 +2506,24 @@ mod tests {
         let device_id = "test_device";
 
         // Set all fields
-        processor.set_deadzone_percentage_x(device_id, 40).await.unwrap();
-        processor.set_deadzone_percentage_y(device_id, 75).await.unwrap();
-        processor.set_outer_deadzone_x(device_id, (90f32 * 32767.0 / 100.0) as u16).await;
-        processor.set_outer_deadzone_y(device_id, (85f32 * 32767.0 / 100.0) as u16).await;
+        processor
+            .set_deadzone_percentage_x(device_id, 40)
+            .await
+            .unwrap();
+        processor
+            .set_deadzone_percentage_y(device_id, 75)
+            .await
+            .unwrap();
+        processor
+            .set_outer_deadzone_x(device_id, (90f32 * 32767.0 / 100.0) as u16)
+            .await;
+        processor
+            .set_outer_deadzone_y(device_id, (85f32 * 32767.0 / 100.0) as u16)
+            .await;
         processor.set_sensitivity(device_id, 2.2).await;
-        processor.set_response_curve(device_id, ResponseCurve::Exponential { exponent: 4.0 }).await;
+        processor
+            .set_response_curve(device_id, ResponseCurve::Exponential { exponent: 4.0 })
+            .await;
         processor.set_dpad_mode(device_id, DpadMode::EightWay).await;
 
         // Save config
@@ -2494,11 +2547,17 @@ mod tests {
         let device2 = "device2";
 
         // Configure device1
-        processor.set_deadzone_percentage_x(device1, 20).await.unwrap();
+        processor
+            .set_deadzone_percentage_x(device1, 20)
+            .await
+            .unwrap();
         processor.set_sensitivity(device1, 0.5).await;
 
         // Configure device2 differently
-        processor.set_deadzone_percentage_x(device2, 80).await.unwrap();
+        processor
+            .set_deadzone_percentage_x(device2, 80)
+            .await
+            .unwrap();
         processor.set_sensitivity(device2, 3.0).await;
 
         // Verify configs are independent (with rounding tolerance)
@@ -2557,7 +2616,10 @@ mod tests {
 
         // Large diagonal movement (200, 200) should pass through
         let (x, y) = processor.process(&calibration, 200, 200);
-        assert!(x != 0 || y != 0, "Large diagonal movement should not be filtered");
+        assert!(
+            x != 0 || y != 0,
+            "Large diagonal movement should not be filtered"
+        );
     }
 
     #[test]
@@ -2589,7 +2651,11 @@ mod tests {
 
         // Should be near max range (allow some tolerance)
         assert!(x > 30000, "Full X should give large output, got {}", x);
-        assert!(y > 30000 || y < -30000, "Full Y should give large output, got {}", y);
+        assert!(
+            !(-30000..=30000).contains(&y),
+            "Full Y should give large output, got {}",
+            y
+        );
     }
 
     #[test]
@@ -2605,7 +2671,10 @@ mod tests {
 
         // Quadratic should reduce medium values compared to linear
         // (because x^2 < x for 0 < x < 1)
-        assert!(qx.abs() < lx.abs(), "Quadratic should reduce medium X values");
+        assert!(
+            qx.abs() < lx.abs(),
+            "Quadratic should reduce medium X values"
+        );
     }
 
     #[test]
@@ -2621,7 +2690,10 @@ mod tests {
         let (lx, ly) = processor.process(&calibration, 200, 128);
 
         // Exponential should reduce values more than linear at medium inputs
-        assert!(ex.abs() < lx.abs(), "Exponential should reduce medium X values");
+        assert!(
+            ex.abs() < lx.abs(),
+            "Exponential should reduce medium X values"
+        );
     }
 
     #[test]
@@ -2653,7 +2725,10 @@ mod tests {
         let (x2, y2) = processor.process(&calibration, 255, 128);
 
         // X should be flipped
-        assert!((x1 + x2).abs() < 1000, "Inverted X should be opposite direction");
+        assert!(
+            (x1 + x2).abs() < 1000,
+            "Inverted X should be opposite direction"
+        );
 
         // With Y inversion
         calibration.invert_x = false;
@@ -2664,7 +2739,10 @@ mod tests {
         let (x4, y4) = processor.process(&calibration, 128, 0);
 
         // Y should be flipped
-        assert!((y3 + y4).abs() < 1000, "Inverted Y should be opposite direction");
+        assert!(
+            (y3 + y4).abs() < 1000,
+            "Inverted Y should be opposite direction"
+        );
     }
 
     #[test]
@@ -2714,7 +2792,10 @@ mod tests {
         let (x2, y2) = processor.process(&calibration, 200, 128);
 
         // Higher multiplier should give larger output
-        assert!(x1.abs() > x2.abs(), "Higher multiplier should give larger output");
+        assert!(
+            x1.abs() > x2.abs(),
+            "Higher multiplier should give larger output"
+        );
     }
 
     // Tests for process_as_dpad() method
@@ -2797,7 +2878,10 @@ mod tests {
         assert!(keys.contains(&Key::KEY_RIGHT), "Should contain KEY_RIGHT");
 
         // All keys should be pressed
-        assert!(result.iter().all(|(_, pressed)| *pressed), "All keys should be pressed");
+        assert!(
+            result.iter().all(|(_, pressed)| *pressed),
+            "All keys should be pressed"
+        );
     }
 
     #[test]
@@ -2829,7 +2913,7 @@ mod tests {
 
         // Down-Right (45 degrees): (255, 200)
         let result = processor.process_as_dpad(&calibration, 255, 200);
-        assert!(result.len() >= 1);
+        assert!(!result.is_empty());
 
         // Down (90 degrees): (128, 255)
         let result = processor.process_as_dpad(&calibration, 128, 255);
@@ -2838,7 +2922,7 @@ mod tests {
 
         // Down-Left (135 degrees): (0, 200)
         let result = processor.process_as_dpad(&calibration, 0, 200);
-        assert!(result.len() >= 1);
+        assert!(!result.is_empty());
 
         // Left (180 degrees): (0, 128)
         let result = processor.process_as_dpad(&calibration, 0, 128);
@@ -2847,7 +2931,7 @@ mod tests {
 
         // Up-Left (225 degrees): (0, 50)
         let result = processor.process_as_dpad(&calibration, 0, 50);
-        assert!(result.len() >= 1);
+        assert!(!result.is_empty());
 
         // Up (270 degrees): (128, 0)
         let result = processor.process_as_dpad(&calibration, 128, 0);
@@ -2856,7 +2940,7 @@ mod tests {
 
         // Up-Right (315 degrees): (255, 50)
         let result = processor.process_as_dpad(&calibration, 255, 50);
-        assert!(result.len() >= 1);
+        assert!(!result.is_empty());
     }
 
     #[test]
@@ -2868,10 +2952,16 @@ mod tests {
 
         // Small movements within deadzone should be filtered
         let result = processor.process_as_dpad(&calibration, 135, 128);
-        assert!(result.is_empty(), "Small X movement should be filtered by deadzone");
+        assert!(
+            result.is_empty(),
+            "Small X movement should be filtered by deadzone"
+        );
 
         let result = processor.process_as_dpad(&calibration, 128, 135);
-        assert!(result.is_empty(), "Small Y movement should be filtered by deadzone");
+        assert!(
+            result.is_empty(),
+            "Small Y movement should be filtered by deadzone"
+        );
     }
 
     #[test]
@@ -2901,13 +2991,21 @@ mod tests {
         // With X inversion: X=255 should be left
         calibration.invert_x = true;
         let result = processor.process_as_dpad(&calibration, 255, 128);
-        assert_eq!(result[0].0, Key::KEY_LEFT, "X inversion should flip direction");
+        assert_eq!(
+            result[0].0,
+            Key::KEY_LEFT,
+            "X inversion should flip direction"
+        );
 
         // With Y inversion: Y=0 should be down
         calibration.invert_x = false;
         calibration.invert_y = true;
         let result = processor.process_as_dpad(&calibration, 128, 0);
-        assert_eq!(result[0].0, Key::KEY_DOWN, "Y inversion should flip direction");
+        assert_eq!(
+            result[0].0,
+            Key::KEY_DOWN,
+            "Y inversion should flip direction"
+        );
     }
 
     #[test]
@@ -2918,12 +3016,12 @@ mod tests {
 
         // All returned keys should have pressed=true
         let test_cases = [
-            (255, 128),  // Right
-            (0, 128),    // Left
-            (128, 0),    // Up
-            (128, 255),  // Down
-            (255, 0),    // Up-Right
-            (0, 255),    // Down-Left
+            (255, 128), // Right
+            (0, 128),   // Left
+            (128, 0),   // Up
+            (128, 255), // Down
+            (255, 0),   // Up-Right
+            (0, 255),   // Down-Left
         ];
 
         for (x, y) in test_cases {
@@ -2932,7 +3030,8 @@ mod tests {
                 assert!(
                     result.iter().all(|(_, pressed)| *pressed),
                     "All keys should be pressed=true for ({}, {})",
-                    x, y
+                    x,
+                    y
                 );
             }
         }
@@ -2981,7 +3080,10 @@ mod tests {
 
         // Center position (127, 127) should be filtered by deadzone
         let result = processor.process_as_gamepad(device_id, 127, 127).await;
-        assert!(result.is_none(), "Center position should be filtered by deadzone");
+        assert!(
+            result.is_none(),
+            "Center position should be filtered by deadzone"
+        );
     }
 
     #[tokio::test]
@@ -3086,7 +3188,10 @@ mod tests {
 
         // Center position should be filtered by deadzone
         let result = AnalogProcessor::process_2d(127, 127, &calibration);
-        assert!(result.is_none(), "Center position should be filtered by deadzone");
+        assert!(
+            result.is_none(),
+            "Center position should be filtered by deadzone"
+        );
     }
 
     #[test]
@@ -3172,10 +3277,14 @@ mod tests {
         };
 
         // Quadratic should reduce small values more than linear
-        let (x1, _) = AnalogProcessor::apply_sensitivity_static(0.3, 0.0, &AnalogCalibration::default());
+        let (x1, _) =
+            AnalogProcessor::apply_sensitivity_static(0.3, 0.0, &AnalogCalibration::default());
         let (x2, _) = AnalogProcessor::apply_sensitivity_static(0.3, 0.0, &calibration);
 
-        assert!(x2 < x1, "Quadratic should produce smaller output for same input");
+        assert!(
+            x2 < x1,
+            "Quadratic should produce smaller output for same input"
+        );
     }
 
     #[test]
@@ -3222,7 +3331,10 @@ mod tests {
         // Add device config first
         {
             let mut devices = processor.devices.write().await;
-            devices.insert(device_id.to_string(), DeviceAnalogConfig::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceAnalogConfig::new(device_id.to_string()),
+            );
         }
 
         // Center position (127, 127) - within deadzone
@@ -3238,7 +3350,10 @@ mod tests {
         // Add device config first
         {
             let mut devices = processor.devices.write().await;
-            devices.insert(device_id.to_string(), DeviceAnalogConfig::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceAnalogConfig::new(device_id.to_string()),
+            );
         }
 
         // Full right (255, 127)
@@ -3258,7 +3373,10 @@ mod tests {
         // Add device config first
         {
             let mut devices = processor.devices.write().await;
-            devices.insert(device_id.to_string(), DeviceAnalogConfig::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceAnalogConfig::new(device_id.to_string()),
+            );
         }
 
         let result = processor.process_as_gamepad(device_id, 0, 127).await;
@@ -3277,7 +3395,10 @@ mod tests {
         // Add device config first
         {
             let mut devices = processor.devices.write().await;
-            devices.insert(device_id.to_string(), DeviceAnalogConfig::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceAnalogConfig::new(device_id.to_string()),
+            );
         }
 
         let result = processor.process_as_gamepad(device_id, 127, 0).await;
@@ -3296,7 +3417,10 @@ mod tests {
         // Add device config first
         {
             let mut devices = processor.devices.write().await;
-            devices.insert(device_id.to_string(), DeviceAnalogConfig::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceAnalogConfig::new(device_id.to_string()),
+            );
         }
 
         let result = processor.process_as_gamepad(device_id, 127, 255).await;
@@ -3315,7 +3439,10 @@ mod tests {
         // Add device config first
         {
             let mut devices = processor.devices.write().await;
-            devices.insert(device_id.to_string(), DeviceAnalogConfig::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceAnalogConfig::new(device_id.to_string()),
+            );
         }
 
         let result = processor.process_as_gamepad(device_id, 255, 0).await;
@@ -3335,7 +3462,7 @@ mod tests {
         {
             let mut devices = processor.devices.write().await;
             let mut config = DeviceAnalogConfig::new(device_id.to_string());
-            config.sensitivity = 2.0;  // 2x sensitivity
+            config.sensitivity = 2.0; // 2x sensitivity
             devices.insert(device_id.to_string(), config);
         }
 
@@ -3355,7 +3482,7 @@ mod tests {
 
         let calibration = AnalogCalibration {
             deadzone_shape: DeadzoneShape::Circular,
-            deadzone: 0.2,  // Larger deadzone
+            deadzone: 0.2, // Larger deadzone
             sensitivity: SensitivityCurve::Quadratic,
             sensitivity_multiplier: 1.5,
             range_min: -32768,
@@ -3365,7 +3492,9 @@ mod tests {
         };
 
         // Use process_as_gamepad_with_calibration
-        let result = processor.process_as_gamepad_with_calibration(200, 127, &calibration).await;
+        let result = processor
+            .process_as_gamepad_with_calibration(200, 127, &calibration)
+            .await;
         assert!(result.is_some(), "Should produce output outside deadzone");
     }
 
@@ -3428,7 +3557,7 @@ mod tests {
     fn test_process_as_wasd_cardinal_directions() {
         let processor = AnalogProcessor::new();
         let mut calibration = AnalogCalibration::default();
-        calibration.deadzone = 0.0;  // Disable deadzone for testing
+        calibration.deadzone = 0.0; // Disable deadzone for testing
 
         // North (up) = W
         let result = processor.process_as_wasd(&calibration, 128, 0);
@@ -3513,8 +3642,14 @@ mod tests {
         calibration.invert_y = true;
         let result = processor.process_as_wasd(&calibration, 255, 0);
         let keys: Vec<Key> = result.iter().map(|(k, _)| *k).collect();
-        assert!(keys.contains(&Key::KEY_A), "Double-inverted X should be left (A)");
-        assert!(keys.contains(&Key::KEY_S), "Double-inverted Y should be down (S)");
+        assert!(
+            keys.contains(&Key::KEY_A),
+            "Double-inverted X should be left (A)"
+        );
+        assert!(
+            keys.contains(&Key::KEY_S),
+            "Double-inverted Y should be down (S)"
+        );
     }
 
     #[test]
@@ -3525,12 +3660,12 @@ mod tests {
 
         // All returned keys should have pressed=true
         let test_cases = [
-            (255, 128),  // Right
-            (0, 128),    // Left
-            (128, 0),    // Up
-            (128, 255),  // Down
-            (255, 0),    // Up-Right
-            (0, 255),    // Down-Left
+            (255, 128), // Right
+            (0, 128),   // Left
+            (128, 0),   // Up
+            (128, 255), // Down
+            (255, 0),   // Up-Right
+            (0, 255),   // Down-Left
         ];
 
         for (x, y) in test_cases {
@@ -3539,7 +3674,8 @@ mod tests {
                 assert!(
                     result.iter().all(|(_, pressed)| *pressed),
                     "All keys should be pressed=true for ({}, {})",
-                    x, y
+                    x,
+                    y
                 );
             }
         }
@@ -3554,10 +3690,16 @@ mod tests {
 
         // Small movements within deadzone should be filtered
         let result = processor.process_as_wasd(&calibration, 135, 128);
-        assert!(result.is_empty(), "Small X movement should be filtered by deadzone");
+        assert!(
+            result.is_empty(),
+            "Small X movement should be filtered by deadzone"
+        );
 
         let result = processor.process_as_wasd(&calibration, 128, 135);
-        assert!(result.is_empty(), "Small Y movement should be filtered by deadzone");
+        assert!(
+            result.is_empty(),
+            "Small Y movement should be filtered by deadzone"
+        );
 
         // Center position definitely filtered
         let result = processor.process_as_wasd(&calibration, 128, 128);
@@ -3588,7 +3730,11 @@ mod tests {
         assert!(result.is_some(), "Full right should return velocity");
 
         let (vel_x, vel_y) = result.unwrap();
-        assert!(vel_x > 0, "Full right should have positive X velocity, got {}", vel_x);
+        assert!(
+            vel_x > 0,
+            "Full right should have positive X velocity, got {}",
+            vel_x
+        );
         assert_eq!(vel_y, 0, "Full right should have zero Y velocity");
     }
 
@@ -3603,7 +3749,11 @@ mod tests {
         assert!(result.is_some(), "Full left should return velocity");
 
         let (vel_x, vel_y) = result.unwrap();
-        assert!(vel_x < 0, "Full left should have negative X velocity, got {}", vel_x);
+        assert!(
+            vel_x < 0,
+            "Full left should have negative X velocity, got {}",
+            vel_x
+        );
         assert_eq!(vel_y, 0, "Full left should have zero Y velocity");
     }
 
@@ -3620,7 +3770,11 @@ mod tests {
 
         let (vel_x, vel_y) = result.unwrap();
         assert_eq!(vel_x, 0, "Full up should have zero X velocity");
-        assert!(vel_y > 0, "Full up should have positive Y velocity, got {}", vel_y);
+        assert!(
+            vel_y > 0,
+            "Full up should have positive Y velocity, got {}",
+            vel_y
+        );
     }
 
     #[test]
@@ -3636,7 +3790,11 @@ mod tests {
 
         let (vel_x, vel_y) = result.unwrap();
         assert_eq!(vel_x, 0, "Full down should have zero X velocity");
-        assert!(vel_y < 0, "Full down should have negative Y velocity, got {}", vel_y);
+        assert!(
+            vel_y < 0,
+            "Full down should have negative Y velocity, got {}",
+            vel_y
+        );
     }
 
     #[test]
@@ -3657,7 +3815,12 @@ mod tests {
         let (vel_x2, _) = result2.unwrap();
 
         // Higher multiplier should give higher velocity
-        assert!(vel_x2 > vel_x1, "Higher multiplier should give higher velocity: {} > {}", vel_x2, vel_x1);
+        assert!(
+            vel_x2 > vel_x1,
+            "Higher multiplier should give higher velocity: {} > {}",
+            vel_x2,
+            vel_x1
+        );
 
         // Test with lower multiplier (5.0)
         let config_low = MouseVelocityConfig { multiplier: 5.0 };
@@ -3666,7 +3829,12 @@ mod tests {
         let (vel_x3, _) = result3.unwrap();
 
         // Lower multiplier should give lower velocity
-        assert!(vel_x3 < vel_x1, "Lower multiplier should give lower velocity: {} < {}", vel_x3, vel_x1);
+        assert!(
+            vel_x3 < vel_x1,
+            "Lower multiplier should give lower velocity: {} < {}",
+            vel_x3,
+            vel_x1
+        );
     }
 
     #[test]
@@ -3680,31 +3848,49 @@ mod tests {
         assert!(result.is_some(), "Diagonal should return velocity");
 
         let (vel_x, vel_y) = result.unwrap();
-        assert!(vel_x > 0, "Diagonal up-right should have positive X velocity");
-        assert!(vel_y > 0, "Diagonal up-right should have positive Y velocity");
+        assert!(
+            vel_x > 0,
+            "Diagonal up-right should have positive X velocity"
+        );
+        assert!(
+            vel_y > 0,
+            "Diagonal up-right should have positive Y velocity"
+        );
 
         // Diagonal down-left (0, 255)
         let result = processor.process_as_mouse(&calibration, 0, 255, &config);
         assert!(result.is_some(), "Diagonal should return velocity");
 
         let (vel_x, vel_y) = result.unwrap();
-        assert!(vel_x < 0, "Diagonal down-left should have negative X velocity");
-        assert!(vel_y < 0, "Diagonal down-left should have negative Y velocity");
+        assert!(
+            vel_x < 0,
+            "Diagonal down-left should have negative X velocity"
+        );
+        assert!(
+            vel_y < 0,
+            "Diagonal down-left should have negative Y velocity"
+        );
     }
 
     #[test]
     fn test_process_as_mouse_deadzone_filters_small_movements() {
         let processor = AnalogProcessor::new();
         let mut calibration = AnalogCalibration::default();
-        calibration.deadzone = 0.2;  // Larger deadzone
+        calibration.deadzone = 0.2; // Larger deadzone
         let config = MouseVelocityConfig::default();
 
         // Small movements within deadzone should be filtered
         let result = processor.process_as_mouse(&calibration, 135, 128, &config);
-        assert!(result.is_none(), "Small X movement should be filtered by deadzone");
+        assert!(
+            result.is_none(),
+            "Small X movement should be filtered by deadzone"
+        );
 
         let result = processor.process_as_mouse(&calibration, 128, 135, &config);
-        assert!(result.is_none(), "Small Y movement should be filtered by deadzone");
+        assert!(
+            result.is_none(),
+            "Small Y movement should be filtered by deadzone"
+        );
     }
 
     #[test]
@@ -3757,7 +3943,10 @@ mod tests {
 
         // Center position (128, 128) should return None
         let result = processor.process_as_camera(&calibration, 128, 128, CameraOutputMode::Scroll);
-        assert!(result.is_none(), "Center position should return None in Scroll mode");
+        assert!(
+            result.is_none(),
+            "Center position should return None in Scroll mode"
+        );
     }
 
     #[test]
@@ -3772,7 +3961,11 @@ mod tests {
         match result.unwrap() {
             CameraOutput::Scroll(amount) => {
                 // Positive Y after centering = positive scroll (scroll up)
-                assert!(amount > 0, "Full up should have positive scroll amount, got {}", amount);
+                assert!(
+                    amount > 0,
+                    "Full up should have positive scroll amount, got {}",
+                    amount
+                );
             }
             _ => panic!("Should return Scroll variant"),
         }
@@ -3790,7 +3983,11 @@ mod tests {
         match result.unwrap() {
             CameraOutput::Scroll(amount) => {
                 // Negative Y after centering = negative scroll (scroll down)
-                assert!(amount < 0, "Full down should have negative scroll amount, got {}", amount);
+                assert!(
+                    amount < 0,
+                    "Full down should have negative scroll amount, got {}",
+                    amount
+                );
             }
             _ => panic!("Should return Scroll variant"),
         }
@@ -3800,7 +3997,7 @@ mod tests {
     fn test_process_as_camera_key_mode_all_directions() {
         let processor = AnalogProcessor::new();
         let mut calibration = AnalogCalibration::default();
-        calibration.deadzone = 0.0;  // Disable deadzone for testing
+        calibration.deadzone = 0.0; // Disable deadzone for testing
 
         // Test all 8 directions return correct keys
 
@@ -3883,7 +4080,8 @@ mod tests {
         calibration_high.sensitivity_multiplier = 2.0;
 
         // Test with low sensitivity
-        let result_low = processor.process_as_camera(&calibration_low, 128, 0, CameraOutputMode::Scroll);
+        let result_low =
+            processor.process_as_camera(&calibration_low, 128, 0, CameraOutputMode::Scroll);
         assert!(result_low.is_some());
         let amount_low = match result_low.unwrap() {
             CameraOutput::Scroll(amount) => amount,
@@ -3891,7 +4089,8 @@ mod tests {
         };
 
         // Test with high sensitivity
-        let result_high = processor.process_as_camera(&calibration_high, 128, 0, CameraOutputMode::Scroll);
+        let result_high =
+            processor.process_as_camera(&calibration_high, 128, 0, CameraOutputMode::Scroll);
         assert!(result_high.is_some());
         let amount_high = match result_high.unwrap() {
             CameraOutput::Scroll(amount) => amount,
@@ -3899,9 +4098,12 @@ mod tests {
         };
 
         // Higher sensitivity should give larger scroll amount
-        assert!(amount_high.abs() > amount_low.abs(),
+        assert!(
+            amount_high.abs() > amount_low.abs(),
             "Higher sensitivity should give larger scroll: {} > {}",
-            amount_high.abs(), amount_low.abs());
+            amount_high.abs(),
+            amount_low.abs()
+        );
     }
 
     #[test]
@@ -3929,13 +4131,25 @@ mod tests {
         // Diagonals return 2 keys
         let keys = camera_direction_to_keys(DpadDirection::UpRight);
         assert_eq!(keys.len(), 2);
-        assert!(keys.contains(&Key::KEY_PAGEUP), "UpRight should contain PageUp");
-        assert!(keys.contains(&Key::KEY_RIGHT), "UpRight should contain Right");
+        assert!(
+            keys.contains(&Key::KEY_PAGEUP),
+            "UpRight should contain PageUp"
+        );
+        assert!(
+            keys.contains(&Key::KEY_RIGHT),
+            "UpRight should contain Right"
+        );
 
         let keys = camera_direction_to_keys(DpadDirection::DownLeft);
         assert_eq!(keys.len(), 2);
-        assert!(keys.contains(&Key::KEY_PAGEDOWN), "DownLeft should contain PageDown");
-        assert!(keys.contains(&Key::KEY_LEFT), "DownLeft should contain Left");
+        assert!(
+            keys.contains(&Key::KEY_PAGEDOWN),
+            "DownLeft should contain PageDown"
+        );
+        assert!(
+            keys.contains(&Key::KEY_LEFT),
+            "DownLeft should contain Left"
+        );
     }
 
     #[test]
@@ -3945,25 +4159,37 @@ mod tests {
 
         // Center position should be filtered
         let result = processor.process_as_camera(&calibration, 128, 128, CameraOutputMode::Keys);
-        assert!(result.is_none(), "Center should be filtered by deadzone in Keys mode");
+        assert!(
+            result.is_none(),
+            "Center should be filtered by deadzone in Keys mode"
+        );
 
         // Small movement should also be filtered
         let result = processor.process_as_camera(&calibration, 135, 128, CameraOutputMode::Keys);
-        assert!(result.is_none(), "Small movement should be filtered by deadzone");
+        assert!(
+            result.is_none(),
+            "Small movement should be filtered by deadzone"
+        );
     }
 
     #[test]
     fn test_process_as_camera_deadzone_filters_small_movements() {
         let processor = AnalogProcessor::new();
         let mut calibration = AnalogCalibration::default();
-        calibration.deadzone = 0.2;  // Larger deadzone
+        calibration.deadzone = 0.2; // Larger deadzone
 
         // Small movements within deadzone should be filtered (Scroll mode)
         let result = processor.process_as_camera(&calibration, 135, 128, CameraOutputMode::Scroll);
-        assert!(result.is_none(), "Small X movement should be filtered in Scroll mode");
+        assert!(
+            result.is_none(),
+            "Small X movement should be filtered in Scroll mode"
+        );
 
         // Small movements within deadzone should be filtered (Keys mode)
         let result = processor.process_as_camera(&calibration, 128, 135, CameraOutputMode::Keys);
-        assert!(result.is_none(), "Small Y movement should be filtered in Keys mode");
+        assert!(
+            result.is_none(),
+            "Small Y movement should be filtered in Keys mode"
+        );
     }
 }

@@ -1,12 +1,12 @@
-use std::collections::HashMap;
+use crate::gui::{Message, State};
+use crate::theme;
+use aethermap_common::LedPattern;
+use aethermap_common::LedZone;
 use iced::{
     widget::{button, column, container, horizontal_rule, row, slider, text, Column, Space},
-    Element, Length, Alignment, Color, Theme,
+    Alignment, Color, Element, Length, Theme,
 };
-use aethermap_common::LedZone;
-use aethermap_common::LedPattern;
-use crate::gui::{State, Message};
-use crate::theme;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct LedState {
@@ -38,13 +38,20 @@ fn get_zone_color(state: &State, zone: LedZone) -> (u8, u8, u8) {
     (255, 255, 255)
 }
 
-fn led_color_style(zone: Option<LedZone>, zone_colors: &HashMap<LedZone, (u8, u8, u8)>) -> iced::theme::Container {
+fn led_color_style(
+    zone: Option<LedZone>,
+    zone_colors: &HashMap<LedZone, (u8, u8, u8)>,
+) -> iced::theme::Container {
     let (r, g, b) = zone
         .and_then(|z| zone_colors.get(&z))
         .copied()
         .unwrap_or((255, 255, 255));
 
-    struct LedColorStyle { r: u8, g: u8, b: u8 }
+    struct LedColorStyle {
+        r: u8,
+        g: u8,
+        b: u8,
+    }
 
     impl iced::widget::container::StyleSheet for LedColorStyle {
         type Style = Theme;
@@ -61,7 +68,9 @@ fn led_color_style(zone: Option<LedZone>, zone_colors: &HashMap<LedZone, (u8, u8
 
 fn view_led_rgb_sliders(state: &State) -> Element<'_, Message> {
     let zone = state.selected_led_zone.unwrap_or(LedZone::Logo);
-    let (r, g, b) = state.pending_led_color.unwrap_or_else(|| get_zone_color(state, zone));
+    let (r, g, b) = state
+        .pending_led_color
+        .unwrap_or_else(|| get_zone_color(state, zone));
 
     Column::new()
         .spacing(8)
@@ -69,37 +78,31 @@ fn view_led_rgb_sliders(state: &State) -> Element<'_, Message> {
             row![
                 text("Red:").size(12).width(Length::Fixed(40.0)),
                 text(format!("{}", r)).size(12).width(Length::Fixed(30.0)),
-                slider(0..=255, r, move |v| {
-                    Message::LedSliderChanged(v as u8, g, b)
-                })
-                .width(Length::Fill)
+                slider(0..=255, r, move |v| { Message::LedSliderChanged(v, g, b) })
+                    .width(Length::Fill)
             ]
             .spacing(8)
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .push(
             row![
                 text("Green:").size(12).width(Length::Fixed(40.0)),
                 text(format!("{}", g)).size(12).width(Length::Fixed(30.0)),
-                slider(0..=255, g, move |v| {
-                    Message::LedSliderChanged(r, v as u8, b)
-                })
-                .width(Length::Fill)
+                slider(0..=255, g, move |v| { Message::LedSliderChanged(r, v, b) })
+                    .width(Length::Fill)
             ]
             .spacing(8)
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .push(
             row![
                 text("Blue:").size(12).width(Length::Fixed(40.0)),
                 text(format!("{}", b)).size(12).width(Length::Fixed(30.0)),
-                slider(0..=255, b, move |v| {
-                    Message::LedSliderChanged(r, g, v as u8)
-                })
-                .width(Length::Fill)
+                slider(0..=255, b, move |v| { Message::LedSliderChanged(r, g, v) })
+                    .width(Length::Fill)
             ]
             .spacing(8)
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .into()
 }
@@ -135,14 +138,17 @@ pub fn view(state: &State) -> Option<Element<'_, Message>> {
 
         let preview = container(
             container(
-                text(format!("RGB({}, {}, {})", current_color.0, current_color.1, current_color.2))
-                    .size(11)
-                    .horizontal_alignment(iced::alignment::Horizontal::Center)
+                text(format!(
+                    "RGB({}, {}, {})",
+                    current_color.0, current_color.1, current_color.2
+                ))
+                .size(11)
+                .horizontal_alignment(iced::alignment::Horizontal::Center),
             )
             .width(Length::Fill)
             .height(Length::Fill)
             .align_x(iced::alignment::Horizontal::Center)
-            .align_y(iced::alignment::Vertical::Center)
+            .align_y(iced::alignment::Vertical::Center),
         )
         .width(Length::Fixed(120.0))
         .height(Length::Fixed(60.0))
@@ -158,7 +164,9 @@ pub fn view(state: &State) -> Option<Element<'_, Message>> {
             (LedPattern::Rainbow, "Rainbow"),
         ];
 
-        let current_pattern = led_state.map(|s| s.active_pattern).unwrap_or(LedPattern::Static);
+        let current_pattern = led_state
+            .map(|s| s.active_pattern)
+            .unwrap_or(LedPattern::Static);
 
         let pattern_buttons: Vec<Element<'_, Message>> = patterns
             .into_iter()
@@ -176,7 +184,9 @@ pub fn view(state: &State) -> Option<Element<'_, Message>> {
             })
             .collect();
 
-        let brightness = led_state.map(|s| s.global_brightness as f32).unwrap_or(100.0);
+        let brightness = led_state
+            .map(|s| s.global_brightness as f32)
+            .unwrap_or(100.0);
 
         let dialog = container(
             column![
@@ -227,7 +237,7 @@ pub fn view(state: &State) -> Option<Element<'_, Message>> {
                 .spacing(8)
             ]
             .spacing(12)
-            .padding(20)
+            .padding(20),
         )
         .max_width(500)
         .style(theme::styles::card);

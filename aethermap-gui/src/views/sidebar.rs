@@ -1,8 +1,8 @@
+use crate::gui::{Message, State, Tab};
 use iced::{
     widget::{button, column, container, horizontal_rule, row, text, Space},
-    Element, Length, Alignment,
+    Alignment, Element, Length,
 };
-use crate::gui::{State, Message, Tab};
 
 pub fn view(state: &State) -> Element<'_, Message> {
     let logo = column![
@@ -28,7 +28,7 @@ pub fn view(state: &State) -> Element<'_, Message> {
                 Space::with_width(10),
                 text(label).size(14),
             ]
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .on_press(Message::SwitchTab(tab))
         .style(btn_style)

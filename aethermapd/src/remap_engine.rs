@@ -57,8 +57,16 @@ pub enum RemapError {
 impl fmt::Display for RemapError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            RemapError::InvalidKey { key, source, parse_error } => {
-                write!(f, "Invalid key name '{}' in {}: {}", key, source, parse_error)
+            RemapError::InvalidKey {
+                key,
+                source,
+                parse_error,
+            } => {
+                write!(
+                    f,
+                    "Invalid key name '{}' in {}: {}",
+                    key, source, parse_error
+                )
             }
             RemapError::Config(msg) => write!(f, "Configuration error: {}", msg),
             RemapError::ParseError(e) => write!(f, "Parse error: {}", e),
@@ -121,10 +129,7 @@ impl RemapProfile {
     /// config.insert("capslock".to_string(), "leftctrl".to_string());
     /// let profile = RemapProfile::new("work", &config)?;
     /// ```
-    pub fn new(
-        name: String,
-        config: &HashMap<String, String>,
-    ) -> Result<Self, RemapError> {
+    pub fn new(name: String, config: &HashMap<String, String>) -> Result<Self, RemapError> {
         let key_parser = Arc::new(KeyParser::new());
         Self::with_key_parser(name, config, key_parser)
     }
@@ -148,21 +153,21 @@ impl RemapProfile {
         let mut remaps = HashMap::new();
 
         for (input_name, output_name) in config.iter() {
-            let input_key = key_parser.parse(input_name).map_err(|e| {
-                RemapError::InvalidKey {
+            let input_key = key_parser
+                .parse(input_name)
+                .map_err(|e| RemapError::InvalidKey {
                     key: input_name.clone(),
                     source: "input".to_string(),
                     parse_error: e.to_string(),
-                }
-            })?;
+                })?;
 
-            let output_key = key_parser.parse(output_name).map_err(|e| {
-                RemapError::InvalidKey {
+            let output_key = key_parser
+                .parse(output_name)
+                .map_err(|e| RemapError::InvalidKey {
                     key: output_name.clone(),
                     source: "output".to_string(),
                     parse_error: e.to_string(),
-                }
-            })?;
+                })?;
 
             remaps.insert(input_key, output_key);
         }
@@ -360,27 +365,32 @@ impl RemapEngine {
 
         for (input_name, output_name) in config.iter() {
             // Parse input key
-            let input_key = self.key_parser.parse(input_name).map_err(|e| {
-                RemapError::InvalidKey {
-                    key: input_name.clone(),
-                    source: "input".to_string(),
-                    parse_error: e.to_string(),
-                }
-            })?;
+            let input_key =
+                self.key_parser
+                    .parse(input_name)
+                    .map_err(|e| RemapError::InvalidKey {
+                        key: input_name.clone(),
+                        source: "input".to_string(),
+                        parse_error: e.to_string(),
+                    })?;
 
             // Parse output key
-            let output_key = self.key_parser.parse(output_name).map_err(|e| {
-                RemapError::InvalidKey {
-                    key: output_name.clone(),
-                    source: "output".to_string(),
-                    parse_error: e.to_string(),
-                }
-            })?;
+            let output_key =
+                self.key_parser
+                    .parse(output_name)
+                    .map_err(|e| RemapError::InvalidKey {
+                        key: output_name.clone(),
+                        source: "output".to_string(),
+                        parse_error: e.to_string(),
+                    })?;
 
             // Store the parsed mapping
             parsed_remaps.insert(input_key, output_key);
 
-            debug!("Layer {} remap: {} -> {}", layer_id, input_name, output_name);
+            debug!(
+                "Layer {} remap: {} -> {}",
+                layer_id, input_name, output_name
+            );
         }
 
         // All keys validated successfully - now update the layer remappings
@@ -437,10 +447,7 @@ impl RemapEngine {
     ///
     /// engine.load_config(&config).await?;
     /// ```
-    pub async fn load_config(
-        &self,
-        config: &HashMap<String, String>,
-    ) -> Result<(), RemapError> {
+    pub async fn load_config(&self, config: &HashMap<String, String>) -> Result<(), RemapError> {
         info!("Loading key remap configuration");
 
         // Eager validation: Parse ALL keys first before storing any
@@ -448,22 +455,24 @@ impl RemapEngine {
 
         for (input_name, output_name) in config.iter() {
             // Parse input key
-            let input_key = self.key_parser.parse(input_name).map_err(|e| {
-                RemapError::InvalidKey {
-                    key: input_name.clone(),
-                    source: "input".to_string(),
-                    parse_error: e.to_string(),
-                }
-            })?;
+            let input_key =
+                self.key_parser
+                    .parse(input_name)
+                    .map_err(|e| RemapError::InvalidKey {
+                        key: input_name.clone(),
+                        source: "input".to_string(),
+                        parse_error: e.to_string(),
+                    })?;
 
             // Parse output key
-            let output_key = self.key_parser.parse(output_name).map_err(|e| {
-                RemapError::InvalidKey {
-                    key: output_name.clone(),
-                    source: "output".to_string(),
-                    parse_error: e.to_string(),
-                }
-            })?;
+            let output_key =
+                self.key_parser
+                    .parse(output_name)
+                    .map_err(|e| RemapError::InvalidKey {
+                        key: output_name.clone(),
+                        source: "output".to_string(),
+                        parse_error: e.to_string(),
+                    })?;
 
             // Store the parsed mapping
             parsed_remaps.insert(input_key, output_key);
@@ -475,10 +484,7 @@ impl RemapEngine {
         let mut remaps = self.remaps.write().await;
         *remaps = parsed_remaps;
 
-        info!(
-            "Loaded {} key remappings successfully",
-            remaps.len()
-        );
+        info!("Loaded {} key remappings successfully", remaps.len());
 
         Ok(())
     }
@@ -641,7 +647,12 @@ impl RemapEngine {
     /// ```
     pub async fn remap_layer_aware(&self, device_id: &str, key_code: Key) -> Option<Key> {
         // Get the effective layer from layer_manager
-        let effective_layer = self.layer_manager.read().await.get_effective_layer(device_id).await;
+        let effective_layer = self
+            .layer_manager
+            .read()
+            .await
+            .get_effective_layer(device_id)
+            .await;
 
         // Cascade from effective layer down to base layer
         for layer_id in (0..=effective_layer).rev() {
@@ -703,7 +714,12 @@ impl RemapEngine {
         value: i32,
     ) -> Option<(Key, i32)> {
         // Get the effective layer from layer_manager
-        let effective_layer = self.layer_manager.read().await.get_effective_layer(device_id).await;
+        let effective_layer = self
+            .layer_manager
+            .read()
+            .await
+            .get_effective_layer(device_id)
+            .await;
 
         // Cascade from effective layer down to base layer
         for layer_id in (0..=effective_layer).rev() {
@@ -883,7 +899,10 @@ mod tests {
 
         // Verify the remappings work
         assert_eq!(engine.remap(Key::KEY_A).await, Some(Key::KEY_B));
-        assert_eq!(engine.remap(Key::KEY_CAPSLOCK).await, Some(Key::KEY_LEFTCTRL));
+        assert_eq!(
+            engine.remap(Key::KEY_CAPSLOCK).await,
+            Some(Key::KEY_LEFTCTRL)
+        );
     }
 
     #[tokio::test]
@@ -927,7 +946,10 @@ mod tests {
         engine.load_config(&config).await.unwrap();
 
         // Test CapsLock -> LeftCtrl
-        assert_eq!(engine.remap(Key::KEY_CAPSLOCK).await, Some(Key::KEY_LEFTCTRL));
+        assert_eq!(
+            engine.remap(Key::KEY_CAPSLOCK).await,
+            Some(Key::KEY_LEFTCTRL)
+        );
         // Test ESC -> Grave
         assert_eq!(engine.remap(Key::KEY_ESC).await, Some(Key::KEY_GRAVE));
     }
@@ -1115,7 +1137,13 @@ mod tests {
         engine.load_layer_remap(1, &layer1_config).await.unwrap();
 
         // Activate layer 1 using hold mode
-        engine.layer_manager.write().await.activate_hold_layer("test_device", 1).await.unwrap();
+        engine
+            .layer_manager
+            .write()
+            .await
+            .activate_hold_layer("test_device", 1)
+            .await
+            .unwrap();
 
         // A should be remapped to X (layer 1 override)
         let result = engine.remap_layer_aware("test_device", Key::KEY_A).await;
@@ -1156,12 +1184,24 @@ mod tests {
         assert_eq!(result, Some(Key::KEY_Y));
 
         // Deactivate layer 2, should fall back to layer 1
-        engine.layer_manager.write().await.deactivate_hold_layer("test_device", 2).await.unwrap();
+        engine
+            .layer_manager
+            .write()
+            .await
+            .deactivate_hold_layer("test_device", 2)
+            .await
+            .unwrap();
         let result = engine.remap_layer_aware("test_device", Key::KEY_A).await;
         assert_eq!(result, Some(Key::KEY_X));
 
         // Deactivate layer 1, should fall back to base
-        engine.layer_manager.write().await.deactivate_hold_layer("test_device", 1).await.unwrap();
+        engine
+            .layer_manager
+            .write()
+            .await
+            .deactivate_hold_layer("test_device", 1)
+            .await
+            .unwrap();
         let result = engine.remap_layer_aware("test_device", Key::KEY_A).await;
         assert_eq!(result, Some(Key::KEY_B));
     }
@@ -1176,7 +1216,12 @@ mod tests {
         engine.load_layer_remap(0, &config).await.unwrap();
 
         // Activate layer 1 (which is empty)
-        engine.layer_manager.write().await.activate_layer("test_device", 1).await;
+        engine
+            .layer_manager
+            .write()
+            .await
+            .activate_layer("test_device", 1)
+            .await;
 
         // Key not in any layer should return None (cascades through all layers)
         let result = engine.remap_layer_aware("test_device", Key::KEY_Z).await;
@@ -1193,22 +1238,36 @@ mod tests {
         engine.load_layer_remap(1, &config).await.unwrap();
 
         // Activate layer 1 using hold mode
-        engine.layer_manager.write().await.activate_hold_layer("test_device", 1).await.unwrap();
+        engine
+            .layer_manager
+            .write()
+            .await
+            .activate_hold_layer("test_device", 1)
+            .await
+            .unwrap();
 
         // Test press event (value = 1)
-        let result = engine.process_event_layer_aware("test_device", Key::KEY_A, 1).await;
+        let result = engine
+            .process_event_layer_aware("test_device", Key::KEY_A, 1)
+            .await;
         assert_eq!(result, Some((Key::KEY_X, 1)));
 
         // Test release event (value = 0)
-        let result = engine.process_event_layer_aware("test_device", Key::KEY_A, 0).await;
+        let result = engine
+            .process_event_layer_aware("test_device", Key::KEY_A, 0)
+            .await;
         assert_eq!(result, Some((Key::KEY_X, 0)));
 
         // Test repeat event (value = 2)
-        let result = engine.process_event_layer_aware("test_device", Key::KEY_A, 2).await;
+        let result = engine
+            .process_event_layer_aware("test_device", Key::KEY_A, 2)
+            .await;
         assert_eq!(result, Some((Key::KEY_X, 2)));
 
         // Unmapped key should return None
-        let result = engine.process_event_layer_aware("test_device", Key::KEY_Z, 1).await;
+        let result = engine
+            .process_event_layer_aware("test_device", Key::KEY_Z, 1)
+            .await;
         assert_eq!(result, None);
     }
 
@@ -1220,10 +1279,18 @@ mod tests {
         let layer_manager = engine.layer_manager();
 
         // Activate a layer through the accessor
-        layer_manager.write().await.activate_layer("test_device", 1).await;
+        layer_manager
+            .write()
+            .await
+            .activate_layer("test_device", 1)
+            .await;
 
         // Verify layer is active
-        let effective = layer_manager.read().await.get_effective_layer("test_device").await;
+        let effective = layer_manager
+            .read()
+            .await
+            .get_effective_layer("test_device")
+            .await;
         assert_eq!(effective, 1);
     }
 

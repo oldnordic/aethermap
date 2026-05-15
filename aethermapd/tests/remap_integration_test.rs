@@ -7,9 +7,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use evdev::AttributeSet;
-use evdev::Key;
 use evdev::EventType;
 use evdev::InputEvent;
+use evdev::Key;
 
 use aethermapd::remap_engine::RemapEngine;
 
@@ -74,15 +74,26 @@ async fn test_end_to_end_key_remapping() {
 
     let mut config = HashMap::new();
     config.insert("KEY_A".to_string(), "KEY_B".to_string());
-    engine.load_config(&config).await.expect("Config load failed");
+    engine
+        .load_config(&config)
+        .await
+        .expect("Config load failed");
 
     // Test 1: Verify KEY_A press remaps to KEY_B
     let result = engine.process_event(Key::KEY_A, 1).await;
-    assert_eq!(result, Some((Key::KEY_B, 1)), "KEY_A press should remap to KEY_B");
+    assert_eq!(
+        result,
+        Some((Key::KEY_B, 1)),
+        "KEY_A press should remap to KEY_B"
+    );
 
     // Test 2: Verify KEY_A release also remaps to KEY_B release
     let result = engine.process_event(Key::KEY_A, 0).await;
-    assert_eq!(result, Some((Key::KEY_B, 0)), "KEY_A release should remap to KEY_B release");
+    assert_eq!(
+        result,
+        Some((Key::KEY_B, 0)),
+        "KEY_A release should remap to KEY_B release"
+    );
 
     // Test 3: Verify unmapped keys return None (pass through unchanged)
     let result = engine.process_event(Key::KEY_C, 1).await;
@@ -246,23 +257,75 @@ async fn test_virtual_device_full_keyboard() {
     // Create a more complete key set
     let keys = key_set![
         // Letters
-        Key::KEY_A, Key::KEY_B, Key::KEY_C, Key::KEY_D, Key::KEY_E, Key::KEY_F, Key::KEY_G,
-        Key::KEY_H, Key::KEY_I, Key::KEY_J, Key::KEY_K, Key::KEY_L, Key::KEY_M, Key::KEY_N,
-        Key::KEY_O, Key::KEY_P, Key::KEY_Q, Key::KEY_R, Key::KEY_S, Key::KEY_T, Key::KEY_U,
-        Key::KEY_V, Key::KEY_W, Key::KEY_X, Key::KEY_Y, Key::KEY_Z,
+        Key::KEY_A,
+        Key::KEY_B,
+        Key::KEY_C,
+        Key::KEY_D,
+        Key::KEY_E,
+        Key::KEY_F,
+        Key::KEY_G,
+        Key::KEY_H,
+        Key::KEY_I,
+        Key::KEY_J,
+        Key::KEY_K,
+        Key::KEY_L,
+        Key::KEY_M,
+        Key::KEY_N,
+        Key::KEY_O,
+        Key::KEY_P,
+        Key::KEY_Q,
+        Key::KEY_R,
+        Key::KEY_S,
+        Key::KEY_T,
+        Key::KEY_U,
+        Key::KEY_V,
+        Key::KEY_W,
+        Key::KEY_X,
+        Key::KEY_Y,
+        Key::KEY_Z,
         // Numbers
-        Key::KEY_1, Key::KEY_2, Key::KEY_3, Key::KEY_4, Key::KEY_5, Key::KEY_6, Key::KEY_7,
-        Key::KEY_8, Key::KEY_9, Key::KEY_0,
+        Key::KEY_1,
+        Key::KEY_2,
+        Key::KEY_3,
+        Key::KEY_4,
+        Key::KEY_5,
+        Key::KEY_6,
+        Key::KEY_7,
+        Key::KEY_8,
+        Key::KEY_9,
+        Key::KEY_0,
         // Modifiers
-        Key::KEY_LEFTCTRL, Key::KEY_LEFTSHIFT, Key::KEY_LEFTALT, Key::KEY_LEFTMETA,
-        Key::KEY_RIGHTCTRL, Key::KEY_RIGHTSHIFT, Key::KEY_RIGHTALT, Key::KEY_RIGHTMETA,
+        Key::KEY_LEFTCTRL,
+        Key::KEY_LEFTSHIFT,
+        Key::KEY_LEFTALT,
+        Key::KEY_LEFTMETA,
+        Key::KEY_RIGHTCTRL,
+        Key::KEY_RIGHTSHIFT,
+        Key::KEY_RIGHTALT,
+        Key::KEY_RIGHTMETA,
         // Special keys
-        Key::KEY_ENTER, Key::KEY_SPACE, Key::KEY_TAB, Key::KEY_BACKSPACE, Key::KEY_ESC,
+        Key::KEY_ENTER,
+        Key::KEY_SPACE,
+        Key::KEY_TAB,
+        Key::KEY_BACKSPACE,
+        Key::KEY_ESC,
         // Lock keys
-        Key::KEY_CAPSLOCK, Key::KEY_NUMLOCK, Key::KEY_SCROLLLOCK,
+        Key::KEY_CAPSLOCK,
+        Key::KEY_NUMLOCK,
+        Key::KEY_SCROLLLOCK,
         // Function keys
-        Key::KEY_F1, Key::KEY_F2, Key::KEY_F3, Key::KEY_F4, Key::KEY_F5, Key::KEY_F6,
-        Key::KEY_F7, Key::KEY_F8, Key::KEY_F9, Key::KEY_F10, Key::KEY_F11, Key::KEY_F12,
+        Key::KEY_F1,
+        Key::KEY_F2,
+        Key::KEY_F3,
+        Key::KEY_F4,
+        Key::KEY_F5,
+        Key::KEY_F6,
+        Key::KEY_F7,
+        Key::KEY_F8,
+        Key::KEY_F9,
+        Key::KEY_F10,
+        Key::KEY_F11,
+        Key::KEY_F12,
     ];
 
     let mut device = VirtualDeviceBuilder::new()

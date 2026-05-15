@@ -17,9 +17,9 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
+use crate::config::ConfigManager;
 use crate::config::HotkeyBinding;
 use crate::layer_manager::LayerManager;
-use crate::config::ConfigManager;
 
 /// Linux key codes for modifier keys (evdev)
 ///
@@ -44,10 +44,14 @@ pub mod key_codes {
 
     /// Modifier key codes (for checking if a key is a modifier)
     pub const MODIFIER_KEYS: &[u16] = &[
-        KEY_LEFTCTRL, KEY_RIGHTCTRL,
-        KEY_LEFTALT, KEY_RIGHTALT,
-        KEY_LEFTSHIFT, KEY_RIGHTSHIFT,
-        KEY_LEFTMETA, KEY_RIGHTMETA,
+        KEY_LEFTCTRL,
+        KEY_RIGHTCTRL,
+        KEY_LEFTALT,
+        KEY_RIGHTALT,
+        KEY_LEFTSHIFT,
+        KEY_RIGHTSHIFT,
+        KEY_LEFTMETA,
+        KEY_RIGHTMETA,
     ];
 
     /// Number key codes 1-9 (top row, not numpad)
@@ -135,19 +139,21 @@ impl GlobalHotkeyManager {
             crate::config::default_hotkey_bindings()
         } else {
             // Normalize modifier names for case-insensitive matching
-            all_bindings.into_iter().map(|mut binding| {
-                binding.modifiers = binding.modifiers.iter()
-                    .filter_map(|m| normalize_modifier_name(m))
-                    .map(|s| s.to_string())
-                    .collect();
-                binding
-            }).collect()
+            all_bindings
+                .into_iter()
+                .map(|mut binding| {
+                    binding.modifiers = binding
+                        .modifiers
+                        .iter()
+                        .filter_map(|m| normalize_modifier_name(m))
+                        .map(|s| s.to_string())
+                        .collect();
+                    binding
+                })
+                .collect()
         };
 
-        aethermap_common::tracing::info!(
-            "Loaded {} hotkey bindings",
-            self.bindings.len()
-        );
+        aethermap_common::tracing::info!("Loaded {} hotkey bindings", self.bindings.len());
 
         Ok(())
     }
@@ -221,10 +227,8 @@ impl GlobalHotkeyManager {
         active_modifiers: &HashSet<String>,
     ) -> bool {
         // Normalize binding modifiers
-        let binding_modifiers: HashSet<String> = binding
-            .normalize_modifiers()
-            .into_iter()
-            .collect();
+        let binding_modifiers: HashSet<String> =
+            binding.normalize_modifiers().into_iter().collect();
 
         // Check if modifiers match exactly
         if binding_modifiers != *active_modifiers {
@@ -243,6 +247,7 @@ impl GlobalHotkeyManager {
     /// - "1"-"9" for number keys
     /// - "f1"-"f12" for function keys
     /// - Key names from key_parser module
+    #[allow(unexpected_cfgs)]
     fn parse_binding_key(&self, key: &str) -> Option<u16> {
         let key_lower = key.to_lowercase();
 
@@ -301,8 +306,10 @@ impl GlobalHotkeyManager {
         // Activate layer for each target device
         for device_id in device_ids {
             // Check if profile exists for this device
-            if let Some(_profile) = self.config_manager
-                .get_device_profile(&device_id, &binding.profile_name).await
+            if let Some(_profile) = self
+                .config_manager
+                .get_device_profile(&device_id, &binding.profile_name)
+                .await
             {
                 // Update layer manager with layer activation
                 let layer_manager = self.layer_manager.read().await;
@@ -334,7 +341,10 @@ impl GlobalHotkeyManager {
             );
         }
 
-        Err(format!("Profile '{}' not found for any device", binding.profile_name))
+        Err(format!(
+            "Profile '{}' not found for any device",
+            binding.profile_name
+        ))
     }
 
     /// Get the number of loaded bindings
@@ -376,11 +386,26 @@ mod tests {
 
     #[test]
     fn test_key_code_to_modifier_name() {
-        assert_eq!(key_code_to_modifier_name(key_codes::KEY_LEFTCTRL), Some("ctrl"));
-        assert_eq!(key_code_to_modifier_name(key_codes::KEY_RIGHTCTRL), Some("ctrl"));
-        assert_eq!(key_code_to_modifier_name(key_codes::KEY_LEFTALT), Some("alt"));
-        assert_eq!(key_code_to_modifier_name(key_codes::KEY_LEFTSHIFT), Some("shift"));
-        assert_eq!(key_code_to_modifier_name(key_codes::KEY_LEFTMETA), Some("super"));
+        assert_eq!(
+            key_code_to_modifier_name(key_codes::KEY_LEFTCTRL),
+            Some("ctrl")
+        );
+        assert_eq!(
+            key_code_to_modifier_name(key_codes::KEY_RIGHTCTRL),
+            Some("ctrl")
+        );
+        assert_eq!(
+            key_code_to_modifier_name(key_codes::KEY_LEFTALT),
+            Some("alt")
+        );
+        assert_eq!(
+            key_code_to_modifier_name(key_codes::KEY_LEFTSHIFT),
+            Some("shift")
+        );
+        assert_eq!(
+            key_code_to_modifier_name(key_codes::KEY_LEFTMETA),
+            Some("super")
+        );
         assert_eq!(key_code_to_modifier_name(key_codes::KEY_1), None);
     }
 

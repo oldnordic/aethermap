@@ -1,16 +1,15 @@
-use iced::Command;
+use crate::gui::{Message, State};
 use aethermap_common::LedZone;
-use crate::gui::{State, Message};
+use iced::Command;
 
 pub fn open(state: &mut State, device_id: String) -> Command<Message> {
     state.led_config_device = Some(device_id.clone());
     state.selected_led_zone = Some(LedZone::Logo);
     Command::batch([
         Command::none(),
-        Command::perform(
-            async move { device_id },
-            |device_id| Message::RefreshLedState(device_id)
-        ),
+        Command::perform(async move { device_id }, |device_id| {
+            Message::RefreshLedState(device_id)
+        }),
     ])
 }
 
@@ -41,7 +40,11 @@ pub fn refresh(state: &State, device_id: String) -> Command<Message> {
     )
 }
 
-pub fn state_loaded(state: &mut State, device_id: String, result: Result<std::collections::HashMap<LedZone, (u8, u8, u8)>, String>) -> Command<Message> {
+pub fn state_loaded(
+    state: &mut State,
+    device_id: String,
+    result: Result<std::collections::HashMap<LedZone, (u8, u8, u8)>, String>,
+) -> Command<Message> {
     match result {
         Ok(colors) => {
             let led_state = state.led_states.entry(device_id).or_default();
@@ -55,13 +58,22 @@ pub fn state_loaded(state: &mut State, device_id: String, result: Result<std::co
     }
 }
 
-pub fn set_color(state: &State, device_id: String, zone: LedZone, red: u8, green: u8, blue: u8) -> Command<Message> {
+pub fn set_color(
+    state: &State,
+    device_id: String,
+    zone: LedZone,
+    red: u8,
+    green: u8,
+    blue: u8,
+) -> Command<Message> {
     let socket_path = state.socket_path.clone();
     let device_id_clone = device_id.clone();
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.set_led_color(&device_id_clone, zone, red, green, blue).await
+            client
+                .set_led_color(&device_id_clone, zone, red, green, blue)
+                .await
         },
         move |result| match result {
             Ok(_) => Message::LedColorSet(Ok(())),
@@ -78,12 +90,19 @@ pub fn color_set(state: &mut State, result: Result<(), String>) -> Command<Messa
     Command::none()
 }
 
-pub fn set_brightness(state: &State, device_id: String, zone: Option<LedZone>, brightness: u8) -> Command<Message> {
+pub fn set_brightness(
+    state: &State,
+    device_id: String,
+    zone: Option<LedZone>,
+    brightness: u8,
+) -> Command<Message> {
     let socket_path = state.socket_path.clone();
     Command::perform(
         async move {
             let client = crate::ipc::IpcClient::new(socket_path);
-            client.set_led_brightness(&device_id, zone, brightness).await
+            client
+                .set_led_brightness(&device_id, zone, brightness)
+                .await
         },
         |result| match result {
             Ok(_) => Message::LedBrightnessSet(Ok(())),
@@ -100,7 +119,11 @@ pub fn brightness_set(state: &mut State, result: Result<(), String>) -> Command<
     Command::none()
 }
 
-pub fn set_pattern(state: &State, device_id: String, pattern: aethermap_common::LedPattern) -> Command<Message> {
+pub fn set_pattern(
+    state: &State,
+    device_id: String,
+    pattern: aethermap_common::LedPattern,
+) -> Command<Message> {
     let socket_path = state.socket_path.clone();
     Command::perform(
         async move {

@@ -3,7 +3,7 @@
 
 use aethermap_common::tracing;
 use aethermapd::device::DeviceManager;
-use tracing::{info, error};
+use tracing::{error, info};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -46,12 +46,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let devices = device_manager.get_devices();
     info!("Found {} devices:", devices.len());
     for device in &devices {
-        info!("  - {} at {} (VID:{:04x} PID:{:04x})",
-              device.name, device.path.display(), device.vendor_id, device.product_id);
+        info!(
+            "  - {} at {} (VID:{:04x} PID:{:04x})",
+            device.name,
+            device.path.display(),
+            device.vendor_id,
+            device.product_id
+        );
     }
 
     // Check if target device exists
-    if !devices.iter().any(|d| d.path.to_string_lossy() == device_path.as_str()) {
+    if !devices
+        .iter()
+        .any(|d| d.path.to_string_lossy() == device_path.as_str())
+    {
         error!("Device {} not found in discovered devices", device_path);
         error!("Available devices:");
         for device in &devices {

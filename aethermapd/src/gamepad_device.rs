@@ -25,6 +25,7 @@ pub const ABS_RY: u16 = 0x04;
 pub const ABS_RZ: u16 = 0x05;
 
 // uinput ioctl constants
+#[allow(dead_code)]
 const UINPUT_IOCTL_BASE: u8 = b'U';
 const UI_SET_EVBIT: u64 = 0x40045564; // _IOW('U', 100, int)
 const UI_SET_ABSBIT: u64 = 0x40045567; // _IOW('U', 103, int)
@@ -95,6 +96,7 @@ struct InputId {
 /// These map to standard Linux input axis codes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u16)]
+#[allow(non_camel_case_types)]
 pub enum GamepadAxis {
     /// Left stick X axis
     ABS_X = 0,
@@ -303,7 +305,12 @@ impl GamepadVirtualDevice {
             let dev_ptr = &dev as *const UinputUserDev as *const u8;
             let dev_slice = std::slice::from_raw_parts(dev_ptr, mem::size_of::<UinputUserDev>());
 
-            if libc::write(fd, dev_slice.as_ptr() as *const libc::c_void, dev_slice.len()) < 0 {
+            if libc::write(
+                fd,
+                dev_slice.as_ptr() as *const libc::c_void,
+                dev_slice.len(),
+            ) < 0
+            {
                 return Err("Failed to write uinput device structure".into());
             }
 
@@ -320,7 +327,9 @@ impl GamepadVirtualDevice {
 
         // Store the file descriptor
         {
-            let mut uinput_fd = self.uinput_fd.try_write()
+            let mut uinput_fd = self
+                .uinput_fd
+                .try_write()
                 .map_err(|_| "Lock poisoned on uinput_fd write")?;
             *uinput_fd = Some(fd);
         }
@@ -377,9 +386,17 @@ impl GamepadVirtualDevice {
             let event_ptr = &event as *const InputEvent as *const u8;
             let event_slice = std::slice::from_raw_parts(event_ptr, mem::size_of::<InputEvent>());
 
-            let written = libc::write(fd, event_slice.as_ptr() as *const libc::c_void, event_slice.len());
+            let written = libc::write(
+                fd,
+                event_slice.as_ptr() as *const libc::c_void,
+                event_slice.len(),
+            );
             if written < 0 {
-                return Err(format!("Failed to write axis event: {}", std::io::Error::last_os_error()).into());
+                return Err(format!(
+                    "Failed to write axis event: {}",
+                    std::io::Error::last_os_error()
+                )
+                .into());
             }
         }
 
@@ -419,9 +436,17 @@ impl GamepadVirtualDevice {
             let event_ptr = &event as *const InputEvent as *const u8;
             let event_slice = std::slice::from_raw_parts(event_ptr, mem::size_of::<InputEvent>());
 
-            let written = libc::write(fd, event_slice.as_ptr() as *const libc::c_void, event_slice.len());
+            let written = libc::write(
+                fd,
+                event_slice.as_ptr() as *const libc::c_void,
+                event_slice.len(),
+            );
             if written < 0 {
-                return Err(format!("Failed to write sync event: {}", std::io::Error::last_os_error()).into());
+                return Err(format!(
+                    "Failed to write sync event: {}",
+                    std::io::Error::last_os_error()
+                )
+                .into());
             }
         }
 
@@ -461,7 +486,9 @@ impl GamepadVirtualDevice {
     /// Ok(()) if successful or device wasn't created, Err on failure
     pub fn destroy(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let fd = {
-            let mut uinput_fd = self.uinput_fd.try_write()
+            let mut uinput_fd = self
+                .uinput_fd
+                .try_write()
                 .map_err(|_| "Lock poisoned on uinput_fd write")?;
             uinput_fd.take()
         };
@@ -483,7 +510,10 @@ impl Drop for GamepadVirtualDevice {
         // Clean up the uinput device if still active
         if let Ok(fd_guard) = self.uinput_fd.try_read() {
             if let Some(fd) = *fd_guard {
-                info!("Auto-destroying virtual gamepad device: {}", self.device_name);
+                info!(
+                    "Auto-destroying virtual gamepad device: {}",
+                    self.device_name
+                );
                 unsafe {
                     libc::ioctl(fd, UI_DEV_DESTROY);
                     libc::close(fd);
@@ -572,8 +602,14 @@ mod tests {
     #[test]
     fn test_device_name() {
         let device = GamepadVirtualDevice::new();
-        assert!(!device.device_name().is_empty(), "Device name should not be empty");
-        assert!(device.device_name().contains("Gamepad"), "Name should contain 'Gamepad'");
+        assert!(
+            !device.device_name().is_empty(),
+            "Device name should not be empty"
+        );
+        assert!(
+            device.device_name().contains("Gamepad"),
+            "Name should contain 'Gamepad'"
+        );
     }
 
     // Note: Full uinput integration tests require root and /dev/uinput access

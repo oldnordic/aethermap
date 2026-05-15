@@ -19,7 +19,7 @@
 //! focus on verifying the event structure and device ID formatting that are
 //! critical for correct hotplug behavior.
 
-use aethermapd::hotplug::{DeviceEvent, format_device_id};
+use aethermapd::hotplug::{format_device_id, DeviceEvent};
 
 /// Test that format_device_id produces correct vendor:product format
 ///
@@ -152,7 +152,10 @@ fn test_device_event_completeness() {
         DeviceEvent::Add { devnode, device_id } => {
             assert!(!devnode.is_empty(), "devnode must not be empty");
             assert!(!device_id.is_empty(), "device_id must not be empty");
-            assert!(devnode.starts_with("/dev/"), "devnode must be absolute path");
+            assert!(
+                devnode.starts_with("/dev/"),
+                "devnode must be absolute path"
+            );
             assert!(device_id.contains(":"), "device_id must contain separator");
         }
         _ => panic!("Expected Add event"),
@@ -163,7 +166,10 @@ fn test_device_event_completeness() {
         DeviceEvent::Remove { devnode, device_id } => {
             assert!(!devnode.is_empty(), "devnode must not be empty");
             assert!(!device_id.is_empty(), "device_id must not be empty");
-            assert!(devnode.starts_with("/dev/"), "devnode must be absolute path");
+            assert!(
+                devnode.starts_with("/dev/"),
+                "devnode must be absolute path"
+            );
             assert!(device_id.contains(":"), "device_id must contain separator");
         }
         _ => panic!("Expected Remove event"),
@@ -181,7 +187,16 @@ fn test_device_event_debug() {
     };
 
     let debug_str = format!("{:?}", event);
-    assert!(debug_str.contains("Add"), "Debug output should show event type");
-    assert!(debug_str.contains("/dev/input/event0"), "Debug output should show devnode");
-    assert!(debug_str.contains("1532:0220"), "Debug output should show device_id");
+    assert!(
+        debug_str.contains("Add"),
+        "Debug output should show event type"
+    );
+    assert!(
+        debug_str.contains("/dev/input/event0"),
+        "Debug output should show devnode"
+    );
+    assert!(
+        debug_str.contains("1532:0220"),
+        "Debug output should show device_id"
+    );
 }

@@ -3,12 +3,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use tokio::fs;
+use tokio::sync::RwLock;
 use tracing::{debug, info, warn};
 
-use crate::remap_engine::RemapProfile;
 use crate::analog_calibration::AnalogCalibration;
+use crate::remap_engine::RemapProfile;
 
 /// A single key remapping entry
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -67,11 +67,7 @@ pub struct HotkeyBinding {
 
 impl HotkeyBinding {
     /// Create a new hotkey binding
-    pub fn new(
-        modifiers: Vec<String>,
-        key: String,
-        profile_name: String,
-    ) -> Self {
+    pub fn new(modifiers: Vec<String>, key: String, profile_name: String) -> Self {
         Self {
             modifiers,
             key,
@@ -115,9 +111,7 @@ impl HotkeyBinding {
 
     /// Normalize modifier names to lowercase for consistent matching
     pub fn normalize_modifiers(&self) -> Vec<String> {
-        self.modifiers.iter()
-            .map(|m| m.to_lowercase())
-            .collect()
+        self.modifiers.iter().map(|m| m.to_lowercase()).collect()
     }
 }
 
@@ -127,18 +121,15 @@ impl HotkeyBinding {
 pub fn default_hotkey_bindings() -> Vec<HotkeyBinding> {
     let modifiers = vec!["ctrl".to_string(), "alt".to_string(), "shift".to_string()];
     let profile_names = vec![
-        "profile1", "profile2", "profile3", "profile4", "profile5",
-        "profile6", "profile7", "profile8", "profile9",
+        "profile1", "profile2", "profile3", "profile4", "profile5", "profile6", "profile7",
+        "profile8", "profile9",
     ];
 
-    profile_names.iter()
+    profile_names
+        .iter()
         .enumerate()
         .map(|(i, name)| {
-            HotkeyBinding::new(
-                modifiers.clone(),
-                (i + 1).to_string(),
-                name.to_string(),
-            )
+            HotkeyBinding::new(modifiers.clone(), (i + 1).to_string(), name.to_string())
         })
         .collect()
 }
@@ -440,7 +431,7 @@ pub struct AnalogDeviceConfig {
 }
 
 fn default_deadzone() -> u8 {
-    43  // ~43% of 32767 = ~14000 raw value
+    43 // ~43% of 32767 = ~14000 raw value
 }
 
 fn default_sensitivity() -> f32 {
@@ -452,7 +443,7 @@ fn default_response_curve() -> String {
 }
 
 fn default_outer_deadzone() -> u8 {
-    100  // 100% = no clamping
+    100 // 100% = no clamping
 }
 
 fn default_dpad_mode() -> String {
@@ -580,7 +571,7 @@ pub struct ExtendedDeviceRemapConfig {
 /// ```
 ///
 /// If analog_calibration is not specified for a layer, AnalogCalibration::default() is used.
-
+///
 /// LED configuration for devices with configurable RGB lighting
 ///
 /// Stores LED-specific settings like per-zone brightness and colors.
@@ -603,7 +594,7 @@ pub struct LedConfig {
 
     /// Active LED pattern
     #[serde(default = "default_active_pattern")]
-    pub active_pattern: String,  // "static", "breathing", "rainbow", "rainbow_wave"
+    pub active_pattern: String, // "static", "breathing", "rainbow", "rainbow_wave"
 
     /// Pattern animation speed (1-10)
     #[serde(default = "default_pattern_speed")]
@@ -611,7 +602,7 @@ pub struct LedConfig {
 }
 
 fn default_global_brightness() -> u8 {
-    100  // Default to 100% brightness
+    100 // Default to 100% brightness
 }
 
 fn default_active_pattern() -> String {
@@ -619,7 +610,7 @@ fn default_active_pattern() -> String {
 }
 
 fn default_pattern_speed() -> u8 {
-    5  // Default to medium speed
+    5 // Default to medium speed
 }
 
 impl Default for LedConfig {
@@ -716,22 +707,33 @@ pub enum RemapConfigError {
     },
 
     /// Validation error for configuration values
-    Validation {
-        field: String,
-        message: String,
-    },
+    Validation { field: String, message: String },
 }
 
 impl std::fmt::Display for RemapConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             RemapConfigError::ReadError { path, source } => {
-                write!(f, "Failed to read remaps file {}: {}", path.display(), source)
+                write!(
+                    f,
+                    "Failed to read remaps file {}: {}",
+                    path.display(),
+                    source
+                )
             }
             RemapConfigError::ParseError { path, source } => {
-                write!(f, "Failed to parse remaps file {}: {}", path.display(), source)
+                write!(
+                    f,
+                    "Failed to parse remaps file {}: {}",
+                    path.display(),
+                    source
+                )
             }
-            RemapConfigError::InvalidKey { path, key, expected } => {
+            RemapConfigError::InvalidKey {
+                path,
+                key,
+                expected,
+            } => {
                 write!(
                     f,
                     "Invalid key name '{}' in {}: expected {}",
@@ -741,7 +743,12 @@ impl std::fmt::Display for RemapConfigError {
                 )
             }
             RemapConfigError::WriteError { path, source } => {
-                write!(f, "Failed to write remaps file {}: {}", path.display(), source)
+                write!(
+                    f,
+                    "Failed to write remaps file {}: {}",
+                    path.display(),
+                    source
+                )
             }
             RemapConfigError::Validation { field, message } => {
                 write!(f, "Validation error for '{}': {}", field, message)
@@ -1040,8 +1047,8 @@ impl ConfigManager {
 
         // Serialize the full config and write to config.yaml
         let config = self.config.read().await;
-        let content = serde_yaml::to_string(&*config)
-            .map_err(|e| RemapConfigError::WriteError {
+        let content =
+            serde_yaml::to_string(&*config).map_err(|e| RemapConfigError::WriteError {
                 path: self.config_path.clone(),
                 source: std::io::Error::new(std::io::ErrorKind::InvalidData, e),
             })?;
@@ -1054,7 +1061,11 @@ impl ConfigManager {
                 source: e,
             })?;
 
-        info!("Saved {} auto-switch rules to {}", rules.len(), self.config_path.display());
+        info!(
+            "Saved {} auto-switch rules to {}",
+            rules.len(),
+            self.config_path.display()
+        );
         Ok(())
     }
 
@@ -1131,7 +1142,10 @@ impl ConfigManager {
     }
 
     /// Save macros to binary cache
-    async fn save_macros_to_cache(&self, macros: &HashMap<String, MacroEntry>) -> Result<(), Box<dyn std::error::Error>> {
+    async fn save_macros_to_cache(
+        &self,
+        macros: &HashMap<String, MacroEntry>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let mut data = Vec::new();
 
         // Add magic number
@@ -1147,7 +1161,10 @@ impl ConfigManager {
     }
 
     /// Save macros to YAML file
-    async fn save_macros_to_yaml(&self, macros: &HashMap<String, MacroEntry>) -> Result<(), Box<dyn std::error::Error>> {
+    async fn save_macros_to_yaml(
+        &self,
+        macros: &HashMap<String, MacroEntry>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let content = serde_yaml::to_string(macros)?;
         fs::write(&self.macros_path, content).await?;
         debug!("Saved macros to YAML");
@@ -1199,7 +1216,9 @@ impl ConfigManager {
         let config: RemapDevicesConfig = serde_yaml::from_str(&content).ok()?;
 
         // Find the device configuration
-        config.devices.get(device_id)
+        config
+            .devices
+            .get(device_id)
             .and_then(|device_config| device_config.analog_calibration.get(&layer_id))
             .cloned()
     }
@@ -1291,15 +1310,19 @@ impl ConfigManager {
                     analog_calibration: HashMap::new(),
                     led_config: None,
                     hotkey_bindings: Vec::new(),
-                }
+                },
             );
         }
 
         // Update calibration for the layer
-        let device_config = config.devices.get_mut(device_id)
+        let device_config = config
+            .devices
+            .get_mut(device_id)
             .ok_or_else(|| format!("Device not found: {}", device_id))?;
 
-        device_config.analog_calibration.insert(layer_id, calibration);
+        device_config
+            .analog_calibration
+            .insert(layer_id, calibration);
 
         // Write back to file
         let yaml = serde_yaml::to_string(&config)
@@ -1392,7 +1415,11 @@ impl ConfigManager {
         let mut profiles = self.profiles.write().await;
         profiles.insert(profile.name.clone(), profile.clone());
 
-        info!("Profile {} saved to {}", profile.name, profile_path.display());
+        info!(
+            "Profile {} saved to {}",
+            profile.name,
+            profile_path.display()
+        );
         Ok(())
     }
 
@@ -1459,7 +1486,10 @@ impl ConfigManager {
     }
 
     /// Save current macros as a new profile
-    pub async fn save_current_macros_as_profile(&self, name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn save_current_macros_as_profile(
+        &self,
+        name: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let macros = self.macros.read().await;
         let profile = Profile {
             name: name.to_string(),
@@ -1480,7 +1510,11 @@ impl ConfigManager {
     ///
     /// * `Some(RemapProfile)` - Profile if found
     /// * `None` - Profile not found
-    pub async fn get_device_profile(&self, device_id: &str, profile_name: &str) -> Option<RemapProfile> {
+    pub async fn get_device_profile(
+        &self,
+        device_id: &str,
+        profile_name: &str,
+    ) -> Option<RemapProfile> {
         let profiles = self.device_profiles.read().await;
         profiles.get(device_id)?.get(profile_name).cloned()
     }
@@ -1536,7 +1570,7 @@ impl ConfigManager {
             let empty = HashMap::<String, String>::new();
             let yaml = serde_yaml::to_string(&empty).map_err(|e| RemapConfigError::WriteError {
                 path: self.remaps_path.clone(),
-                source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+                source: std::io::Error::other(e.to_string()),
             })?;
             fs::write(&self.remaps_path, yaml)
                 .await
@@ -1548,12 +1582,12 @@ impl ConfigManager {
         }
 
         // Read the file
-        let content = fs::read_to_string(&self.remaps_path)
-            .await
-            .map_err(|e| RemapConfigError::ReadError {
+        let content = fs::read_to_string(&self.remaps_path).await.map_err(|e| {
+            RemapConfigError::ReadError {
                 path: self.remaps_path.clone(),
                 source: e,
-            })?;
+            }
+        })?;
 
         // Parse flat YAML key:value pairs
         let remap_hash: HashMap<String, String> =
@@ -1647,8 +1681,8 @@ impl ConfigManager {
             })?;
 
         // Parse YAML
-        let config: DeviceProfilesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let config: DeviceProfilesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
@@ -1665,7 +1699,9 @@ impl ConfigManager {
             // Process each profile for this device
             for (profile_name, profile) in &device_config.profiles {
                 // Convert remap entries to HashMap for RemapProfile
-                let remap_config: HashMap<String, String> = profile.remaps.iter()
+                let remap_config: HashMap<String, String> = profile
+                    .remaps
+                    .iter()
                     .map(|r| (r.from.clone(), r.to.clone()))
                     .collect();
 
@@ -1811,7 +1847,7 @@ impl ConfigManager {
             };
             let yaml = serde_yaml::to_string(&empty).map_err(|e| RemapConfigError::WriteError {
                 path: self.device_profiles_path.clone(),
-                source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+                source: std::io::Error::other(e.to_string()),
             })?;
             fs::write(&self.device_profiles_path, yaml)
                 .await
@@ -1831,8 +1867,8 @@ impl ConfigManager {
             })?;
 
         // Parse YAML
-        let config: DeviceProfilesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let config: DeviceProfilesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
@@ -1848,7 +1884,9 @@ impl ConfigManager {
             // Process each profile for this device
             for (profile_name, profile) in &device_config.profiles {
                 // Convert remap entries to HashMap for RemapProfile
-                let remap_config: HashMap<String, String> = profile.remaps.iter()
+                let remap_config: HashMap<String, String> = profile
+                    .remaps
+                    .iter()
                     .map(|r| (r.from.clone(), r.to.clone()))
                     .collect();
 
@@ -1942,7 +1980,7 @@ impl ConfigManager {
             };
             let yaml = serde_yaml::to_string(&empty).map_err(|e| RemapConfigError::WriteError {
                 path: self.device_profiles_path.clone(),
-                source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+                source: std::io::Error::other(e.to_string()),
             })?;
             fs::write(&self.device_profiles_path, yaml)
                 .await
@@ -1962,8 +2000,8 @@ impl ConfigManager {
             })?;
 
         // Parse YAML
-        let config: RemapDevicesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let config: RemapDevicesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
@@ -2050,8 +2088,8 @@ impl ConfigManager {
             })?;
 
         // Parse YAML
-        let config: RemapDevicesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let config: RemapDevicesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
@@ -2129,8 +2167,10 @@ impl ConfigManager {
         };
 
         // Update or insert device config with analog_config
-        let device_entry = config.devices.entry(device_id.to_string()).or_insert_with(|| {
-            ExtendedDeviceRemapConfig {
+        let device_entry = config
+            .devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| ExtendedDeviceRemapConfig {
                 match_pattern: Some(device_id.to_string()),
                 profiles: HashMap::new(),
                 capabilities: None,
@@ -2138,8 +2178,7 @@ impl ConfigManager {
                 analog_calibration: HashMap::new(),
                 led_config: None,
                 hotkey_bindings: Vec::new(),
-            }
-        });
+            });
 
         // Update analog_config
         device_entry.analog_config = Some(analog_config.clone());
@@ -2147,7 +2186,7 @@ impl ConfigManager {
         // Write back to file
         let yaml = serde_yaml::to_string(&config).map_err(|e| RemapConfigError::WriteError {
             path: self.device_profiles_path.clone(),
-            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+            source: std::io::Error::other(e.to_string()),
         })?;
 
         fs::write(&self.device_profiles_path, yaml)
@@ -2186,9 +2225,7 @@ impl ConfigManager {
     ) -> Result<(), RemapConfigError> {
         info!(
             "Saving LED config for device {}: global_brightness={}%, zone_brightness={:?}",
-            device_id,
-            led_config.global_brightness,
-            led_config.zone_brightness
+            device_id, led_config.global_brightness, led_config.zone_brightness
         );
 
         // Read existing config or create new one
@@ -2212,8 +2249,10 @@ impl ConfigManager {
         };
 
         // Update or insert device config with led_config
-        let device_entry = config.devices.entry(device_id.to_string()).or_insert_with(|| {
-            ExtendedDeviceRemapConfig {
+        let device_entry = config
+            .devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| ExtendedDeviceRemapConfig {
                 match_pattern: Some(device_id.to_string()),
                 profiles: HashMap::new(),
                 capabilities: None,
@@ -2221,8 +2260,7 @@ impl ConfigManager {
                 analog_calibration: HashMap::new(),
                 led_config: None,
                 hotkey_bindings: Vec::new(),
-            }
-        });
+            });
 
         // Update led_config
         device_entry.led_config = Some(led_config.clone());
@@ -2230,7 +2268,7 @@ impl ConfigManager {
         // Write back to file
         let yaml = serde_yaml::to_string(&config).map_err(|e| RemapConfigError::WriteError {
             path: self.device_profiles_path.clone(),
-            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+            source: std::io::Error::other(e.to_string()),
         })?;
 
         fs::write(&self.device_profiles_path, yaml)
@@ -2258,9 +2296,7 @@ impl ConfigManager {
     ///
     /// * `Ok(HashMap)` - Map of device_id to LED configuration
     /// * `Err(RemapConfigError)` - Error reading or parsing the file
-    pub async fn load_led_configs(
-        &self,
-    ) -> Result<HashMap<String, LedConfig>, RemapConfigError> {
+    pub async fn load_led_configs(&self) -> Result<HashMap<String, LedConfig>, RemapConfigError> {
         // Create empty file if it doesn't exist
         if !self.device_profiles_path.exists() {
             return Ok(HashMap::new());
@@ -2275,8 +2311,8 @@ impl ConfigManager {
             })?;
 
         // Parse YAML
-        let config: RemapDevicesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let config: RemapDevicesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
@@ -2420,17 +2456,17 @@ impl ConfigManager {
     /// RGB color tuple (red, green, blue) with values 0-255
     pub fn get_default_layer_color(layer_id: usize) -> (u8, u8, u8) {
         match layer_id {
-            0 => (255, 255, 255),  // Base layer: white
-            1 => (0, 0, 255),      // Layer 1: blue
-            2 => (0, 255, 0),      // Layer 2: green
-            3 => (255, 0, 0),      // Layer 3: red
-            4 => (255, 255, 0),    // Layer 4: yellow
-            5 => (255, 0, 255),    // Layer 5: magenta
-            6 => (0, 255, 255),    // Layer 6: cyan
-            7 => (255, 128, 0),    // Layer 7: orange
-            8 => (128, 0, 255),    // Layer 8: purple
-            9 => (0, 128, 255),    // Layer 9: light blue
-            _ => (128, 128, 128),  // Others: gray
+            0 => (255, 255, 255), // Base layer: white
+            1 => (0, 0, 255),     // Layer 1: blue
+            2 => (0, 255, 0),     // Layer 2: green
+            3 => (255, 0, 0),     // Layer 3: red
+            4 => (255, 255, 0),   // Layer 4: yellow
+            5 => (255, 0, 255),   // Layer 5: magenta
+            6 => (0, 255, 255),   // Layer 6: cyan
+            7 => (255, 128, 0),   // Layer 7: orange
+            8 => (128, 0, 255),   // Layer 8: purple
+            9 => (0, 128, 255),   // Layer 9: light blue
+            _ => (128, 128, 128), // Others: gray
         }
     }
 
@@ -2480,8 +2516,10 @@ impl ConfigManager {
         };
 
         // Get or create device entry with full ExtendedDeviceRemapConfig default
-        let device_entry = config.devices.entry(device_id.to_string()).or_insert_with(|| {
-            ExtendedDeviceRemapConfig {
+        let device_entry = config
+            .devices
+            .entry(device_id.to_string())
+            .or_insert_with(|| ExtendedDeviceRemapConfig {
                 match_pattern: Some(device_id.to_string()),
                 profiles: HashMap::new(),
                 capabilities: None,
@@ -2489,16 +2527,16 @@ impl ConfigManager {
                 analog_calibration: HashMap::new(),
                 led_config: None,
                 hotkey_bindings: Vec::new(),
-            }
-        });
+            });
 
         // Check for duplicate (same key + modifiers)
-        let normalized_binding_modifiers: Vec<String> = binding.modifiers.iter()
-            .map(|m| m.to_lowercase())
-            .collect();
+        let normalized_binding_modifiers: Vec<String> =
+            binding.modifiers.iter().map(|m| m.to_lowercase()).collect();
 
         let is_duplicate = device_entry.hotkey_bindings.iter().any(|existing| {
-            let normalized_existing: Vec<String> = existing.modifiers.iter()
+            let normalized_existing: Vec<String> = existing
+                .modifiers
+                .iter()
                 .map(|m| m.to_lowercase())
                 .collect();
             existing.key == binding.key && normalized_existing == normalized_binding_modifiers
@@ -2517,7 +2555,7 @@ impl ConfigManager {
         // Serialize to YAML
         let yaml = serde_yaml::to_string(&config).map_err(|e| RemapConfigError::WriteError {
             path: self.device_profiles_path.clone(),
-            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+            source: std::io::Error::other(e.to_string()),
         })?;
 
         // Write to device_profiles_path
@@ -2579,32 +2617,33 @@ impl ConfigManager {
                 source: e,
             })?;
 
-        let mut config: RemapDevicesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let mut config: RemapDevicesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
 
         // Get device entry, return error if device_id not found
-        let device_entry = config.devices.get_mut(device_id)
-            .ok_or_else(|| RemapConfigError::Validation {
-                field: "hotkey".to_string(),
-                message: "Hotkey not found".to_string(),
-            })?;
+        let device_entry =
+            config
+                .devices
+                .get_mut(device_id)
+                .ok_or_else(|| RemapConfigError::Validation {
+                    field: "hotkey".to_string(),
+                    message: "Hotkey not found".to_string(),
+                })?;
 
         // Get original length of hotkey_bindings
         let original_len = device_entry.hotkey_bindings.len();
 
         // Normalize input modifiers for comparison
-        let normalized_modifiers: Vec<String> = modifiers.iter()
-            .map(|m| m.to_lowercase())
-            .collect();
+        let normalized_modifiers: Vec<String> =
+            modifiers.iter().map(|m| m.to_lowercase()).collect();
 
         // Use retain() to keep bindings that DON'T match
         device_entry.hotkey_bindings.retain(|binding| {
-            let normalized_binding: Vec<String> = binding.modifiers.iter()
-                .map(|m| m.to_lowercase())
-                .collect();
+            let normalized_binding: Vec<String> =
+                binding.modifiers.iter().map(|m| m.to_lowercase()).collect();
             !(binding.key == key && normalized_binding == normalized_modifiers)
         });
 
@@ -2619,7 +2658,7 @@ impl ConfigManager {
         // Serialize to YAML
         let yaml = serde_yaml::to_string(&config).map_err(|e| RemapConfigError::WriteError {
             path: self.device_profiles_path.clone(),
-            source: std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+            source: std::io::Error::other(e.to_string()),
         })?;
 
         // Write to device_profiles_path
@@ -2630,10 +2669,7 @@ impl ConfigManager {
                 source: e,
             })?;
 
-        info!(
-            "Removed hotkey binding for device {}",
-            device_id
-        );
+        info!("Removed hotkey binding for device {}", device_id);
         Ok(())
     }
 
@@ -2667,8 +2703,8 @@ impl ConfigManager {
             })?;
 
         // Parse YAML
-        let config: RemapDevicesConfig = serde_yaml::from_str(&content)
-            .map_err(|e| RemapConfigError::ParseError {
+        let config: RemapDevicesConfig =
+            serde_yaml::from_str(&content).map_err(|e| RemapConfigError::ParseError {
                 path: self.device_profiles_path.clone(),
                 source: e,
             })?;
@@ -2791,7 +2827,7 @@ mod tests {
         let test_macro = MacroEntry {
             name: "Test Macro".to_string(),
             trigger: aethermap_common::KeyCombo {
-                keys: vec![30, 40], // A and D keys
+                keys: vec![30, 40],  // A and D keys
                 modifiers: vec![29], // Ctrl key
             },
             actions: vec![
@@ -2805,7 +2841,11 @@ mod tests {
             capture_mouse: false,
         };
 
-        manager.macros.write().await.insert("test_macro".to_string(), test_macro.clone());
+        manager
+            .macros
+            .write()
+            .await
+            .insert("test_macro".to_string(), test_macro.clone());
 
         // Save and reload
         manager.save_macros().await.unwrap();
@@ -3365,15 +3405,13 @@ devices:
 
         let config = &configs["1532:0220"];
         // Should use default values for fields not specified
-        assert_eq!(config.deadzone_percentage, 43);  // Default
-        assert_eq!(config.sensitivity, 1.0);  // Default
-        assert_eq!(config.response_curve, "exponential(2.5)");  // Specified
+        assert_eq!(config.deadzone_percentage, 43); // Default
+        assert_eq!(config.sensitivity, 1.0); // Default
+        assert_eq!(config.response_curve, "exponential(2.5)"); // Specified
     }
 
     #[tokio::test]
     async fn test_analog_calibration_loading() {
-        use std::io::Write;
-
         let temp_dir = TempDir::new().unwrap();
         let device_profiles_path = temp_dir.path().join("test_analog_calibration.yaml");
 
@@ -3424,8 +3462,6 @@ devices:
 
     #[tokio::test]
     async fn test_get_all_analog_calibrations() {
-        use std::io::Write;
-
         let temp_dir = TempDir::new().unwrap();
         let device_profiles_path = temp_dir.path().join("test_all_analog_calibrations.yaml");
 
@@ -3506,7 +3542,10 @@ devices:
             layer_id: Some(1),
         };
 
-        config.add_hotkey_binding("32b6:12f7", binding).await.unwrap();
+        config
+            .add_hotkey_binding("32b6:12f7", binding)
+            .await
+            .unwrap();
 
         // Verify YAML was written
         let content = fs::read_to_string(&device_profiles_path).await.unwrap();
@@ -3549,7 +3588,10 @@ devices:
             layer_id: None,
         };
 
-        config.add_hotkey_binding("32b6:12f7", binding.clone()).await.unwrap();
+        config
+            .add_hotkey_binding("32b6:12f7", binding.clone())
+            .await
+            .unwrap();
 
         // Try to add duplicate
         let result = config.add_hotkey_binding("32b6:12f7", binding).await;
@@ -3601,15 +3643,24 @@ devices:
             layer_id: None,
         };
 
-        config.add_hotkey_binding("32b6:12f7", binding1).await.unwrap();
-        config.add_hotkey_binding("32b6:12f7", binding2).await.unwrap();
+        config
+            .add_hotkey_binding("32b6:12f7", binding1)
+            .await
+            .unwrap();
+        config
+            .add_hotkey_binding("32b6:12f7", binding2)
+            .await
+            .unwrap();
 
         // Verify both exist
         let bindings = config.get_hotkey_bindings("32b6:12f7").await.unwrap();
         assert_eq!(bindings.len(), 2);
 
         // Remove first
-        config.remove_hotkey_binding("32b6:12f7", "1", &["ctrl".to_string()]).await.unwrap();
+        config
+            .remove_hotkey_binding("32b6:12f7", "1", &["ctrl".to_string()])
+            .await
+            .unwrap();
 
         // Verify only second remains
         let bindings = config.get_hotkey_bindings("32b6:12f7").await.unwrap();
@@ -3728,8 +3779,14 @@ devices:
             layer_id: None,
         };
 
-        config.add_hotkey_binding("32b6:12f7", binding1).await.unwrap();
-        config.add_hotkey_binding("1532:0220", binding2).await.unwrap();
+        config
+            .add_hotkey_binding("32b6:12f7", binding1)
+            .await
+            .unwrap();
+        config
+            .add_hotkey_binding("1532:0220", binding2)
+            .await
+            .unwrap();
 
         let all = config.get_all_hotkey_bindings().await;
         assert_eq!(all.len(), 2);

@@ -1,7 +1,7 @@
 [Unit]
 Description=Aethermap Input Remapping Daemon
-After=network.target openrazer-daemon.service
-Wants=openrazer-daemon.service
+After=network.target
+Wants=udev-settle.target
 
 [Service]
 Type=simple
@@ -13,8 +13,17 @@ RestartSec=5
 RuntimeDirectory=aethermap
 RuntimeDirectoryMode=0755
 
-# Required for uinput and evdev access - no sandboxing for now
-# This service needs full access to /dev/uinput and /dev/input/*
+# Ensure config directory exists
+ExecStartPre=/usr/bin/mkdir -p /etc/aethermap
+
+# Environment
+Environment=RUST_LOG=info
+
+# Hardening
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/etc/aethermap /run/aethermap
+PrivateTmp=true
 NoNewPrivileges=false
 
 [Install]

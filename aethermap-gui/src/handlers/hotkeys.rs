@@ -1,10 +1,10 @@
-use iced::Command;
-use aethermap_common::{Request, Response};
-use aethermap_common::HotkeyBinding as CommonHotkeyBinding;
-use aethermap_common::ipc_client::IpcClient;
-use crate::gui::{State, Message};
+use crate::gui::{Message, State};
 use crate::views::hotkeys::HotkeyBinding;
 use crate::views::hotkeys::HotkeyBindingsView;
+use aethermap_common::ipc_client::IpcClient;
+use aethermap_common::HotkeyBinding as CommonHotkeyBinding;
+use aethermap_common::{Request, Response};
+use iced::Command;
 
 pub fn show(state: &mut State, device_id: String) -> Command<Message> {
     state.hotkey_view = Some(HotkeyBindingsView {
@@ -17,10 +17,9 @@ pub fn show(state: &mut State, device_id: String) -> Command<Message> {
         new_layer_id: String::new(),
     });
     let device_id_clone = device_id.clone();
-    Command::perform(
-        async move { device_id_clone },
-        |id| Message::LoadHotkeyBindings(id)
-    )
+    Command::perform(async move { device_id_clone }, |id| {
+        Message::LoadHotkeyBindings(id)
+    })
 }
 
 pub fn close(state: &mut State) -> Command<Message> {
@@ -35,15 +34,16 @@ pub fn load(state: &State, device_id: String) -> Command<Message> {
             let client = IpcClient::with_socket_path(&socket_path);
             let request = Request::ListHotkeys { device_id };
             match client.send(&request).await {
-                Ok(Response::HotkeyList { bindings, .. }) => {
-                    Ok(bindings.into_iter().map(|b| HotkeyBinding {
+                Ok(Response::HotkeyList { bindings, .. }) => Ok(bindings
+                    .into_iter()
+                    .map(|b| HotkeyBinding {
                         modifiers: b.modifiers,
                         key: b.key,
                         profile_name: b.profile_name,
                         device_id: b.device_id,
                         layer_id: b.layer_id,
-                    }).collect())
-                }
+                    })
+                    .collect()),
                 Ok(Response::Error(msg)) => Err(msg),
                 Err(e) => Err(format!("IPC error: {}", e)),
                 _ => Err("Unexpected response".to_string()),
@@ -75,7 +75,10 @@ pub fn edit(state: &mut State, index: usize) -> Command<Message> {
                 new_modifiers: binding.modifiers.clone(),
                 new_key: binding.key.clone(),
                 new_profile_name: binding.profile_name.clone(),
-                new_layer_id: binding.layer_id.map(|id| id.to_string()).unwrap_or_default(),
+                new_layer_id: binding
+                    .layer_id
+                    .map(|id| id.to_string())
+                    .unwrap_or_default(),
             });
         }
     }
@@ -83,34 +86,34 @@ pub fn edit(state: &mut State, index: usize) -> Command<Message> {
 }
 
 pub fn toggle_modifier(state: &mut State, modifier: String) -> Command<Message> {
-    state.hotkey_view.as_mut().map(|view| {
+    if let Some(view) = state.hotkey_view.as_mut() {
         if view.new_modifiers.contains(&modifier) {
             view.new_modifiers.retain(|m| m != &modifier);
         } else {
             view.new_modifiers.push(modifier);
         }
-    });
+    }
     Command::none()
 }
 
 pub fn key_changed(state: &mut State, value: String) -> Command<Message> {
-    state.hotkey_view.as_mut().map(|view| {
+    if let Some(view) = state.hotkey_view.as_mut() {
         view.new_key = value;
-    });
+    }
     Command::none()
 }
 
 pub fn profile_name_changed(state: &mut State, value: String) -> Command<Message> {
-    state.hotkey_view.as_mut().map(|view| {
+    if let Some(view) = state.hotkey_view.as_mut() {
         view.new_profile_name = value;
-    });
+    }
     Command::none()
 }
 
 pub fn layer_id_changed(state: &mut State, value: String) -> Command<Message> {
-    state.hotkey_view.as_mut().map(|view| {
+    if let Some(view) = state.hotkey_view.as_mut() {
         view.new_layer_id = value;
-    });
+    }
     Command::none()
 }
 
@@ -122,7 +125,11 @@ pub fn save(state: &mut State) -> Command<Message> {
             key: view.new_key.clone(),
             profile_name: view.new_profile_name.clone(),
             device_id: Some(view.device_id.clone()),
-            layer_id: if view.new_layer_id.is_empty() { None } else { view.new_layer_id.parse().ok() },
+            layer_id: if view.new_layer_id.is_empty() {
+                None
+            } else {
+                view.new_layer_id.parse().ok()
+            },
         };
         let socket_path = state.socket_path.clone();
 
@@ -164,7 +171,7 @@ pub fn save(state: &mut State) -> Command<Message> {
             |result| match result {
                 Ok(()) => Message::ShowNotification("Hotkey saved".to_string(), false),
                 Err(e) => Message::ShowNotification(format!("Failed to save hotkey: {}", e), true),
-            }
+            },
         );
     }
     Command::none()
@@ -177,7 +184,9 @@ pub fn delete(state: &mut State, index: usize) -> Command<Message> {
             let binding = view.bindings[index].clone();
             let socket_path = state.socket_path.clone();
 
-            let updated_bindings = view.bindings.iter()
+            let updated_bindings = view
+                .bindings
+                .iter()
                 .enumerate()
                 .filter(|(i, _)| *i != index)
                 .map(|(_, b)| b.clone())
@@ -198,14 +207,13 @@ pub fn delete(state: &mut State, index: usize) -> Command<Message> {
                         _ => Err("Unexpected response".to_string()),
                     }
                 },
-                move |result| {
-                    if result.is_ok() {
-                        Message::HotkeyBindingsUpdated(updated_bindings)
-                    } else {
-                        let err_msg = result.unwrap_err();
-                        Message::ShowNotification(format!("Failed to delete hotkey: {}", err_msg), true)
-                    }
-                }
+                move |result| match result {
+                    Ok(_) => Message::HotkeyBindingsUpdated(updated_bindings),
+                    Err(err_msg) => Message::ShowNotification(
+                        format!("Failed to delete hotkey: {}", err_msg),
+                        true,
+                    ),
+                },
             );
         }
     }

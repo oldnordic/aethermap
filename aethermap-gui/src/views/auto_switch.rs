@@ -1,10 +1,10 @@
+use crate::gui::{Message, State};
+use crate::theme;
 use iced::{
     widget::{button, column, container, row, scrollable, text, text_input, Space},
-    Element, Length, Alignment,
+    Alignment, Element, Length,
 };
 use serde::{Deserialize, Serialize};
-use crate::gui::{State, Message};
-use crate::theme;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AutoSwitchRule {
@@ -35,8 +35,10 @@ pub fn view(state: &State) -> Element<'_, Message> {
                 .padding([4, 12])
                 .style(theme::styles::card)
         } else {
-            container(text("Unknown").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb(0.6, 0.6, 0.6))))
-                .padding([4, 12])
+            container(text("Unknown").size(14).style(iced::theme::Text::Color(
+                iced::Color::from_rgb(0.6, 0.6, 0.6),
+            )))
+            .padding([4, 12])
         },
     ]
     .spacing(4)
@@ -60,9 +62,17 @@ pub fn view(state: &State) -> Element<'_, Message> {
     let rules_list = if view.rules.is_empty() {
         column![
             Space::with_height(20),
-            text("No rules configured").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb(0.6, 0.6, 0.6))),
+            text("No rules configured")
+                .size(14)
+                .style(iced::theme::Text::Color(iced::Color::from_rgb(
+                    0.6, 0.6, 0.6
+                ))),
             Space::with_height(8),
-            text("Add a rule to automatically switch profiles when windows gain focus").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb(0.5, 0.5, 0.5))),
+            text("Add a rule to automatically switch profiles when windows gain focus")
+                .size(12)
+                .style(iced::theme::Text::Color(iced::Color::from_rgb(
+                    0.5, 0.5, 0.5
+                ))),
         ]
         .align_items(Alignment::Center)
     } else {
@@ -78,8 +88,14 @@ pub fn view(state: &State) -> Element<'_, Message> {
                 indicator,
                 column![
                     text(format!("App: {}", rule.app_id)).size(14),
-                    text(format!("Profile: {}{}", rule.profile_name,
-                        rule.layer_id.map(|l| format!(" + Layer {}", l)).unwrap_or_default())).size(12),
+                    text(format!(
+                        "Profile: {}{}",
+                        rule.profile_name,
+                        rule.layer_id
+                            .map(|l| format!(" + Layer {}", l))
+                            .unwrap_or_default()
+                    ))
+                    .size(12),
                 ]
                 .spacing(2),
                 Space::with_width(Length::Fill),
@@ -98,60 +114,63 @@ pub fn view(state: &State) -> Element<'_, Message> {
     };
 
     let edit_form = if view.editing_rule.is_some() {
-        Some(column![
-            Space::with_height(20),
-            text(if view.editing_rule.unwrap_or(0) < view.rules.len() {
-                "Edit Rule"
-            } else {
-                "Add New Rule"
-            }).size(16),
-            Space::with_height(12),
-            row![
-                text("App ID:").size(14),
-                Space::with_width(8),
-                text_input("org.alacritty", &view.new_app_id)
-                    .on_input(Message::AutoSwitchAppIdChanged)
-                    .padding(8)
-                    .size(14),
-                Space::with_width(8),
-                button("Use Current")
-                    .on_press(Message::AutoSwitchUseCurrentApp)
-                    .style(iced::theme::Button::Secondary),
+        Some(
+            column![
+                Space::with_height(20),
+                text(if view.editing_rule.unwrap_or(0) < view.rules.len() {
+                    "Edit Rule"
+                } else {
+                    "Add New Rule"
+                })
+                .size(16),
+                Space::with_height(12),
+                row![
+                    text("App ID:").size(14),
+                    Space::with_width(8),
+                    text_input("org.alacritty", &view.new_app_id)
+                        .on_input(Message::AutoSwitchAppIdChanged)
+                        .padding(8)
+                        .size(14),
+                    Space::with_width(8),
+                    button("Use Current")
+                        .on_press(Message::AutoSwitchUseCurrentApp)
+                        .style(iced::theme::Button::Secondary),
+                ]
+                .spacing(4)
+                .align_items(Alignment::Center),
+                Space::with_height(8),
+                row![
+                    text("Profile:").size(14),
+                    Space::with_width(8),
+                    text_input("default", &view.new_profile_name)
+                        .on_input(Message::AutoSwitchProfileNameChanged)
+                        .padding(8)
+                        .size(14),
+                ]
+                .spacing(4)
+                .align_items(Alignment::Center),
+                Space::with_height(8),
+                row![
+                    text("Layer (optional):").size(14),
+                    Space::with_width(8),
+                    text_input("0", &view.new_layer_id)
+                        .on_input(Message::AutoSwitchLayerIdChanged)
+                        .padding(8)
+                        .size(14),
+                ]
+                .spacing(4)
+                .align_items(Alignment::Center),
+                Space::with_height(12),
+                row![
+                    Space::with_width(Length::Fill),
+                    button("Save Rule")
+                        .on_press(Message::SaveAutoSwitchRule)
+                        .style(iced::theme::Button::Primary),
+                ]
+                .align_items(Alignment::Center),
             ]
-            .spacing(4)
-            .align_items(Alignment::Center),
-            Space::with_height(8),
-            row![
-                text("Profile:").size(14),
-                Space::with_width(8),
-                text_input("default", &view.new_profile_name)
-                    .on_input(Message::AutoSwitchProfileNameChanged)
-                    .padding(8)
-                    .size(14),
-            ]
-            .spacing(4)
-            .align_items(Alignment::Center),
-            Space::with_height(8),
-            row![
-                text("Layer (optional):").size(14),
-                Space::with_width(8),
-                text_input("0", &view.new_layer_id)
-                    .on_input(Message::AutoSwitchLayerIdChanged)
-                    .padding(8)
-                    .size(14),
-            ]
-            .spacing(4)
-            .align_items(Alignment::Center),
-            Space::with_height(12),
-            row![
-                Space::with_width(Length::Fill),
-                button("Save Rule")
-                    .on_press(Message::SaveAutoSwitchRule)
-                    .style(iced::theme::Button::Primary),
-            ]
-            .align_items(Alignment::Center),
-        ]
-        .spacing(4))
+            .spacing(4),
+        )
     } else {
         None
     };

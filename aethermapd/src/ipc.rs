@@ -1,4 +1,9 @@
-use aethermap_common::{tracing, serialize, deserialize, Request, Response, RemapProfileInfo, RemapEntry, DeviceCapabilities, LayerConfigInfo, LayerMode as CommonLayerMode, LedZone, LedPattern as CommonLedPattern, AnalogCalibrationConfig, AnalogMode as CommonAnalogMode, CameraOutputMode as CommonCameraOutputMode};
+use aethermap_common::{
+    deserialize, serialize, tracing, AnalogCalibrationConfig, AnalogMode as CommonAnalogMode,
+    CameraOutputMode as CommonCameraOutputMode, DeviceCapabilities, LayerConfigInfo,
+    LayerMode as CommonLayerMode, LedPattern as CommonLedPattern, LedZone, RemapEntry,
+    RemapProfileInfo, Request, Response,
+};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -7,15 +12,15 @@ use tokio::sync::RwLock;
 use tokio::task;
 use tracing::{debug, error, info, warn};
 
-use crate::macro_engine;
-use crate::config;
-use crate::injector;
-use crate::security;
-use crate::layer_manager::{LayerConfig, LayerMode};
-use crate::led_controller::LedZone as InternalLedZone;
-use crate::auto_profile_switcher::AutoProfileSwitcher;
 use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
 use crate::analog_processor::{AnalogMode, CameraOutputMode};
+use crate::auto_profile_switcher::AutoProfileSwitcher;
+use crate::config;
+use crate::injector;
+use crate::layer_manager::{LayerConfig, LayerMode};
+use crate::led_controller::LedZone as InternalLedZone;
+use crate::macro_engine;
+use crate::security;
 
 /// Convert IPC config to internal AnalogCalibration
 fn config_to_calibration(config: AnalogCalibrationConfig) -> Result<AnalogCalibration, String> {
@@ -136,7 +141,6 @@ pub struct IpcServer {
     auto_profile_switcher: Option<Arc<AutoProfileSwitcher>>,
 }
 
-
 impl IpcServer {
     /// Create a new IPC server with the specified socket path
     pub fn new<P: AsRef<Path>>(socket_path: P) -> Result<Self, std::io::Error> {
@@ -158,14 +162,15 @@ impl IpcServer {
     }
 
     /// Start the IPC server with the provided daemon state
-    pub async fn start(&mut self,
-            state: Arc<RwLock<crate::DaemonState>>,
-            macro_engine: Arc<macro_engine::MacroEngine>,
-            injector: Arc<RwLock<dyn injector::Injector + Send + Sync>>,
-            config_manager: Arc<config::ConfigManager>,
-            security_manager: Arc<RwLock<security::SecurityManager>>,
-            auto_profile_switcher: Option<Arc<AutoProfileSwitcher>>
-        ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn start(
+        &mut self,
+        state: Arc<RwLock<crate::DaemonState>>,
+        macro_engine: Arc<macro_engine::MacroEngine>,
+        injector: Arc<RwLock<dyn injector::Injector + Send + Sync>>,
+        config_manager: Arc<config::ConfigManager>,
+        security_manager: Arc<RwLock<security::SecurityManager>>,
+        auto_profile_switcher: Option<Arc<AutoProfileSwitcher>>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         info!("Starting IPC server at {}", self.socket_path);
 
         // Store references to macro engine and injector
@@ -283,7 +288,8 @@ pub async fn handle_client(
     let msg_len = u32::from_le_bytes(len_buf) as usize;
 
     // Validate message length to prevent excessive memory usage
-    if msg_len > 1024 * 1024 { // 1MB max message size
+    if msg_len > 1024 * 1024 {
+        // 1MB max message size
         warn!("Received oversized message: {} bytes", msg_len);
         return Err("Message too large".into());
     }
@@ -359,8 +365,9 @@ pub async fn handle_client(
         Arc::clone(&injector),
         Arc::clone(&config_manager),
         Arc::clone(&security_manager),
-        auto_profile_switcher
-    ).await;
+        auto_profile_switcher,
+    )
+    .await;
     debug!("Sending response: {:?}", response);
 
     // Serialize the response
@@ -412,14 +419,19 @@ async fn handle_request(
         Request::ListMacros => {
             let state = state.read().await;
             let macros = state.macros.lock().unwrap().values().cloned().collect();
-            return Response::Macros(macros);
+            Response::Macros(macros)
         }
-        Request::SetMacro { device_path, macro_entry } => {
+        Request::SetMacro {
+            device_path,
+            macro_entry,
+        } => {
             let state = state.write().await;
 
             // Check if the device exists
             let devices = state.devices.lock().unwrap();
-            let device_exists = devices.iter().any(|d| d.path.to_string_lossy() == device_path);
+            let device_exists = devices
+                .iter()
+                .any(|d| d.path.to_string_lossy() == device_path);
             if !device_exists {
                 return Response::Error(format!("Device not found: {}", device_path));
             }
@@ -428,7 +440,7 @@ async fn handle_request(
             let mut macros = state.macros.lock().unwrap();
             macros.insert(macro_entry.name.clone(), macro_entry);
 
-            return Response::Ack;
+            Response::Ack
         }
         Request::DeleteMacro { name } => {
             let state = state.write().await;
@@ -439,42 +451,57 @@ async fn handle_request(
             macros.remove(&name);
 
             if macros.len() == original_len {
-                return Response::Error(format!("Macro not found: {}", name));
+                Response::Error(format!("Macro not found: {}", name))
             } else {
-                return Response::Ack;
+                Response::Ack
             }
         }
         Request::ReloadConfig => {
             // This would trigger a config reload in a real implementation
             info!("Config reload requested");
-            return Response::Ack;
+            Response::Ack
         }
         Request::LedSet { device_path, color } => {
             // This would set LED colors in a real implementation
             info!("LED set request for {}: {:?}", device_path, color);
-            return Response::Ack;
+            Response::Ack
         }
-        Request::RecordMacro { device_path, name, capture_mouse } => {
+        Request::RecordMacro {
+            device_path,
+            name,
+            capture_mouse,
+        } => {
             // Start macro recording
-            match macro_engine.start_recording(name.clone(), device_path.clone(), capture_mouse).await.map_err(|e| format!("Failed to start recording: {}", e)) {
+            match macro_engine
+                .start_recording(name.clone(), device_path.clone(), capture_mouse)
+                .await
+                .map_err(|e| format!("Failed to start recording: {}", e))
+            {
                 Ok(_) => {
-                    info!("Macro recording started for {} on {} (capture_mouse: {})", name, device_path, capture_mouse);
+                    info!(
+                        "Macro recording started for {} on {} (capture_mouse: {})",
+                        name, device_path, capture_mouse
+                    );
 
                     // Store the recording in the daemon state for access by input event handlers
                     let mut state = state.write().await;
                     state.active_recording = Some((name.clone(), device_path.clone()));
 
-                    return Response::RecordingStarted { device_path, name };
+                    Response::RecordingStarted { device_path, name }
                 }
                 Err(e) => {
                     error!("Failed to start recording: {}", e);
-                    return Response::Error(format!("Failed to start recording: {}", e));
+                    Response::Error(format!("Failed to start recording: {}", e))
                 }
             }
         }
         Request::StopRecording => {
             // Stop macro recording
-            match macro_engine.stop_recording().await.map_err(|e| format!("Failed to stop recording: {}", e)) {
+            match macro_engine
+                .stop_recording()
+                .await
+                .map_err(|e| format!("Failed to stop recording: {}", e))
+            {
                 Ok(Some(macro_entry)) => {
                     let macro_name = macro_entry.name.clone();
                     info!("Macro recording stopped: {}", macro_name);
@@ -488,18 +515,18 @@ async fn handle_request(
                     macros.insert(macro_entry.name.clone(), macro_entry.clone());
                     drop(macros);
 
-                    return Response::RecordingStopped { macro_entry };
+                    Response::RecordingStopped { macro_entry }
                 }
                 Ok(None) => {
                     // Update the daemon state to remove the active recording
                     let mut state = state.write().await;
                     state.active_recording = None;
 
-                    return Response::Error("Recording stopped but no macro was created".to_string());
+                    Response::Error("Recording stopped but no macro was created".to_string())
                 }
                 Err(e) => {
                     error!("Failed to stop recording: {}", e);
-                    return Response::Error(format!("Failed to stop recording: {}", e));
+                    Response::Error(format!("Failed to stop recording: {}", e))
                 }
             }
         }
@@ -523,7 +550,10 @@ async fn handle_request(
                         }
                         Err(e) => {
                             error!("Failed to execute macro '{}': {}", macro_entry.name, e);
-                            Response::Error(format!("Failed to execute macro '{}': {}", macro_entry.name, e))
+                            Response::Error(format!(
+                                "Failed to execute macro '{}': {}",
+                                macro_entry.name, e
+                            ))
                         }
                     }
                 }
@@ -552,7 +582,10 @@ async fn handle_request(
                         }
                         Err(e) => {
                             error!("Failed to execute macro '{}': {}", macro_entry.name, e);
-                            Response::Error(format!("Failed to execute macro '{}': {}", macro_entry.name, e))
+                            Response::Error(format!(
+                                "Failed to execute macro '{}': {}",
+                                macro_entry.name, e
+                            ))
                         }
                     }
                 }
@@ -566,12 +599,12 @@ async fn handle_request(
             let state = state.read().await;
             let devices_count = state.devices.lock().unwrap().len();
             let macros_count = state.macros.lock().unwrap().len();
-            return Response::Status {
+            Response::Status {
                 version: "0.1.0".to_string(),
                 uptime_seconds: 0, // Would be calculated in real implementation
                 devices_count,
                 macros_count,
-            };
+            }
         }
         Request::SaveProfile { name } => {
             // Save current macros as a profile
@@ -587,14 +620,11 @@ async fn handle_request(
             match config_manager.save_current_macros_as_profile(&name).await {
                 Ok(_) => {
                     info!("Profile {} saved", name);
-                    return Response::ProfileSaved {
-                        name,
-                        macros_count,
-                    };
+                    Response::ProfileSaved { name, macros_count }
                 }
                 Err(e) => {
                     error!("Failed to save profile: {}", e);
-                    return Response::Error(format!("Failed to save profile: {}", e));
+                    Response::Error(format!("Failed to save profile: {}", e))
                 }
             }
         }
@@ -603,24 +633,24 @@ async fn handle_request(
             match config_manager.load_profile(&name).await {
                 Ok(profile) => {
                     info!("Profile {} loaded", name);
-                    return Response::ProfileLoaded {
+                    Response::ProfileLoaded {
                         name,
-                        macros_count: profile.macros.len()
-                    };
+                        macros_count: profile.macros.len(),
+                    }
                 }
                 Err(e) => {
                     error!("Failed to load profile: {}", e);
-                    return Response::Error(format!("Failed to load profile: {}", e));
+                    Response::Error(format!("Failed to load profile: {}", e))
                 }
             }
         }
         Request::ListProfiles => {
             // List available profiles
             match config_manager.list_profiles().await {
-                Ok(profiles) => return Response::Profiles(profiles),
+                Ok(profiles) => Response::Profiles(profiles),
                 Err(e) => {
                     error!("Failed to list profiles: {}", e);
-                    return Response::Error(format!("Failed to list profiles: {}", e));
+                    Response::Error(format!("Failed to list profiles: {}", e))
                 }
             }
         }
@@ -629,11 +659,11 @@ async fn handle_request(
             match config_manager.delete_profile(&name).await {
                 Ok(_) => {
                     info!("Profile {} deleted", name);
-                    return Response::Ack;
+                    Response::Ack
                 }
                 Err(e) => {
                     error!("Failed to delete profile: {}", e);
-                    return Response::Error(format!("Failed to delete profile: {}", e));
+                    Response::Error(format!("Failed to delete profile: {}", e))
                 }
             }
         }
@@ -645,15 +675,15 @@ async fn handle_request(
                 match dm.grab_device(&device_path).await {
                     Ok(_) => {
                         info!("Device {} grabbed successfully", device_path);
-                        return Response::Ack;
+                        Response::Ack
                     }
                     Err(e) => {
                         error!("Failed to grab device {}: {}", device_path, e);
-                        return Response::Error(format!("Failed to grab device: {}", e));
+                        Response::Error(format!("Failed to grab device: {}", e))
                     }
                 }
             } else {
-                return Response::Error("Device manager not initialized".to_string());
+                Response::Error("Device manager not initialized".to_string())
             }
         }
         Request::UngrabDevice { device_path } => {
@@ -664,15 +694,15 @@ async fn handle_request(
                 match dm.ungrab_device(&device_path).await {
                     Ok(_) => {
                         info!("Device {} ungrabbed successfully", device_path);
-                        return Response::Ack;
+                        Response::Ack
                     }
                     Err(e) => {
                         error!("Failed to ungrab device {}: {}", device_path, e);
-                        return Response::Error(format!("Failed to ungrab device: {}", e));
+                        Response::Error(format!("Failed to ungrab device: {}", e))
                     }
                 }
             } else {
-                return Response::Error("Device manager not initialized".to_string());
+                Response::Error("Device manager not initialized".to_string())
             }
         }
         Request::GetDeviceProfiles { device_id } => {
@@ -684,17 +714,29 @@ async fn handle_request(
                 profiles,
             }
         }
-        Request::ActivateProfile { device_id, profile_name } => {
-            info!("ActivateProfile request: device={}, profile={}", device_id, profile_name);
+        Request::ActivateProfile {
+            device_id,
+            profile_name,
+        } => {
+            info!(
+                "ActivateProfile request: device={}, profile={}",
+                device_id, profile_name
+            );
 
             // Set manual override to prevent auto-switching until next focus change
             if let Some(switcher) = &auto_profile_switcher {
                 switcher.set_manual_override(&device_id).await;
-                debug!("Set manual override for device {} after manual profile activation", device_id);
+                debug!(
+                    "Set manual override for device {} after manual profile activation",
+                    device_id
+                );
             }
 
             // Get the profile from config
-            match config_manager.get_device_profile(&device_id, &profile_name).await {
+            match config_manager
+                .get_device_profile(&device_id, &profile_name)
+                .await
+            {
                 Some(profile) => {
                     // Clone the device_manager Arc to avoid holding state lock
                     let device_manager_opt = {
@@ -713,7 +755,10 @@ async fn handle_request(
                             let mut dm = device_manager.write().await;
                             match dm.activate_profile(&path, profile).await {
                                 Ok(()) => {
-                                    info!("Profile {} activated for device {}", profile_name, device_id);
+                                    info!(
+                                        "Profile {} activated for device {}",
+                                        profile_name, device_id
+                                    );
                                     Response::ProfileActivated {
                                         device_id,
                                         profile_name,
@@ -726,7 +771,10 @@ async fn handle_request(
                             }
                         } else {
                             // Device not grabbed, but profile is valid - store for when it is grabbed
-                            info!("Device {} not currently grabbed, profile will activate on grab", device_id);
+                            info!(
+                                "Device {} not currently grabbed, profile will activate on grab",
+                                device_id
+                            );
                             Response::ProfileActivated {
                                 device_id,
                                 profile_name,
@@ -737,7 +785,10 @@ async fn handle_request(
                     }
                 }
                 None => {
-                    warn!("Profile {} not found for device {}", profile_name, device_id);
+                    warn!(
+                        "Profile {} not found for device {}",
+                        profile_name, device_id
+                    );
                     Response::Error(format!(
                         "Profile '{}' not found for device '{}'. Available profiles: {:?}",
                         profile_name,
@@ -812,9 +863,11 @@ async fn handle_request(
                 Ok(Some((profile_name, remappings))) => {
                     // Read the remappings table
                     use crate::remap_engine::RemapTable;
-                    let remaps_guard: tokio::sync::RwLockReadGuard<'_, RemapTable> = remappings.read().await;
+                    let remaps_guard: tokio::sync::RwLockReadGuard<'_, RemapTable> =
+                        remappings.read().await;
                     // Convert remappings to Vec<RemapEntry>
-                    let entries: Vec<RemapEntry> = remaps_guard.iter()
+                    let entries: Vec<RemapEntry> = remaps_guard
+                        .iter()
                         .map(|(from, to)| RemapEntry {
                             from_key: format!("{:?}", from),
                             to_key: format!("{:?}", to),
@@ -828,13 +881,11 @@ async fn handle_request(
                         remaps: entries,
                     }
                 }
-                Ok(None) => {
-                    Response::ActiveRemaps {
-                        device_path,
-                        profile_name: None,
-                        remaps: vec![],
-                    }
-                }
+                Ok(None) => Response::ActiveRemaps {
+                    device_path,
+                    profile_name: None,
+                    remaps: vec![],
+                },
                 Err(e) => Response::Error(format!("Failed to get active remaps: {}", e)),
             }
         }
@@ -859,7 +910,7 @@ async fn handle_request(
 
             let device_id = crate::device::DeviceManager::format_device_id(
                 device_info.vendor_id,
-                device_info.product_id
+                device_info.product_id,
             );
 
             // Get profiles from DeviceManager's stored profiles
@@ -887,8 +938,14 @@ async fn handle_request(
                 },
             }
         }
-        Request::ActivateRemapProfile { device_path, profile_name } => {
-            info!("ActivateRemapProfile request: device={}, profile={}", device_path, profile_name);
+        Request::ActivateRemapProfile {
+            device_path,
+            profile_name,
+        } => {
+            info!(
+                "ActivateRemapProfile request: device={}, profile={}",
+                device_path, profile_name
+            );
 
             let state_guard = state.read().await;
             let device_manager = match state_guard.device_manager.as_ref() {
@@ -898,9 +955,15 @@ async fn handle_request(
 
             let mut dm = device_manager.write().await;
 
-            match dm.activate_profile_by_name(&device_path, &profile_name).await {
+            match dm
+                .activate_profile_by_name(&device_path, &profile_name)
+                .await
+            {
                 Ok(()) => {
-                    info!("Activated profile '{}' for device {}", profile_name, device_path);
+                    info!(
+                        "Activated profile '{}' for device {}",
+                        profile_name, device_path
+                    );
                     Response::RemapProfileActivated {
                         device_path,
                         profile_name,
@@ -926,9 +989,7 @@ async fn handle_request(
             match dm.deactivate_profile(&device_path).await {
                 Ok(()) => {
                     info!("Deactivated profile for device {}", device_path);
-                    Response::RemapProfileDeactivated {
-                        device_path,
-                    }
+                    Response::RemapProfileDeactivated { device_path }
                 }
                 Err(e) => {
                     error!("Failed to deactivate profile: {}", e);
@@ -948,7 +1009,10 @@ async fn handle_request(
             } else {
                 // Fallback: try from state.devices
                 let devices = state_guard.devices.lock().unwrap();
-                devices.iter().find(|d| d.path.to_string_lossy() == device_path).cloned()
+                devices
+                    .iter()
+                    .find(|d| d.path.to_string_lossy() == device_path)
+                    .cloned()
             };
 
             match device_info {
@@ -956,9 +1020,13 @@ async fn handle_request(
                     // Detect capabilities from device
                     let capabilities = detect_device_capabilities(&info);
 
-                    debug!("Device capabilities for {}: analog={}, hat={}, buttons={}",
-                           device_path, capabilities.has_analog_stick,
-                           capabilities.has_hat_switch, capabilities.joystick_button_count);
+                    debug!(
+                        "Device capabilities for {}: analog={}, hat={}, buttons={}",
+                        device_path,
+                        capabilities.has_analog_stick,
+                        capabilities.has_hat_switch,
+                        capabilities.joystick_button_count
+                    );
 
                     Response::DeviceCapabilities {
                         device_path,
@@ -979,14 +1047,17 @@ async fn handle_request(
             let effective_layer = layer_manager.get_effective_layer(&device_id).await;
 
             // Get layer name from DeviceLayerState
-            let layer_name = if let Some(device_state) = layer_manager.get_device_state(&device_id).await {
-                device_state.layer_configs.iter()
-                    .find(|c| c.layer_id == effective_layer)
-                    .map(|c| c.name.clone())
-                    .unwrap_or_else(|| format!("Layer {}", effective_layer))
-            } else {
-                format!("Layer {}", effective_layer)
-            };
+            let layer_name =
+                if let Some(device_state) = layer_manager.get_device_state(&device_id).await {
+                    device_state
+                        .layer_configs
+                        .iter()
+                        .find(|c| c.layer_id == effective_layer)
+                        .map(|c| c.name.clone())
+                        .unwrap_or_else(|| format!("Layer {}", effective_layer))
+                } else {
+                    format!("Layer {}", effective_layer)
+                };
 
             Response::ActiveLayer {
                 device_id,
@@ -994,11 +1065,18 @@ async fn handle_request(
                 layer_name,
             }
         }
-        Request::SetLayerConfig { device_id, layer_id, config } => {
-            info!("SetLayerConfig request: device={}, layer={}, name={}", device_id, layer_id, config.name);
+        Request::SetLayerConfig {
+            device_id,
+            layer_id,
+            config,
+        } => {
+            info!(
+                "SetLayerConfig request: device={}, layer={}, name={}",
+                device_id, layer_id, config.name
+            );
 
-            let mut state = state.write().await;
-            let mut layer_manager = state.layer_manager.write().await;
+            let state = state.write().await;
+            let layer_manager = state.layer_manager.write().await;
 
             // Convert LayerConfigInfo to LayerConfig for internal use
             let internal_mode = match config.mode {
@@ -1017,12 +1095,17 @@ async fn handle_request(
             });
 
             // Preserve existing analog_mode when updating layer config
-            let existing_mode = layer_manager.get_device_state(&device_id).await
-                .and_then(|state| {
-                    state.layer_configs.iter()
-                        .find(|lc| lc.layer_id == layer_id)
-                        .map(|lc| lc.analog_mode)
-                });
+            let existing_mode =
+                layer_manager
+                    .get_device_state(&device_id)
+                    .await
+                    .and_then(|state| {
+                        state
+                            .layer_configs
+                            .iter()
+                            .find(|lc| lc.layer_id == layer_id)
+                            .map(|lc| lc.analog_mode)
+                    });
 
             let layer_config = LayerConfig {
                 layer_id: config.layer_id,
@@ -1031,32 +1114,53 @@ async fn handle_request(
                 mode: internal_mode,
                 led_color: config.led_color,
                 led_zone: internal_led_zone,
-                analog_calibration: None,  // Calibrations set separately via config system
-                analog_mode: existing_mode.unwrap_or(AnalogMode::Disabled),  // Preserve existing or default
-                camera_output_mode: CameraOutputMode::Scroll,  // Default to scroll for camera mode
+                analog_calibration: None, // Calibrations set separately via config system
+                analog_mode: existing_mode.unwrap_or(AnalogMode::Disabled), // Preserve existing or default
+                camera_output_mode: CameraOutputMode::Scroll, // Default to scroll for camera mode
             };
 
             // Apply config to layer_manager
-            match layer_manager.set_layer_config(&device_id, layer_id, layer_config).await {
-                Ok(_) => Response::LayerConfigured { device_id, layer_id },
+            match layer_manager
+                .set_layer_config(&device_id, layer_id, layer_config)
+                .await
+            {
+                Ok(_) => Response::LayerConfigured {
+                    device_id,
+                    layer_id,
+                },
                 Err(e) => Response::Error(format!("Failed to set layer config: {}", e)),
             }
         }
-        Request::ActivateLayer { device_id, layer_id, mode } => {
-            info!("ActivateLayer request: device={}, layer={}, mode={:?}", device_id, layer_id, mode);
+        Request::ActivateLayer {
+            device_id,
+            layer_id,
+            mode,
+        } => {
+            info!(
+                "ActivateLayer request: device={}, layer={}, mode={:?}",
+                device_id, layer_id, mode
+            );
 
-            let mut state = state.write().await;
-            let mut layer_manager = state.layer_manager.write().await;
+            let state = state.write().await;
+            let layer_manager = state.layer_manager.write().await;
 
             let result = match mode {
-                CommonLayerMode::Hold => layer_manager.activate_hold_layer(&device_id, layer_id).await,
-                CommonLayerMode::Toggle => {
-                    layer_manager.toggle_layer(&device_id, layer_id).await.map(|_| ())
+                CommonLayerMode::Hold => {
+                    layer_manager
+                        .activate_hold_layer(&device_id, layer_id)
+                        .await
                 }
+                CommonLayerMode::Toggle => layer_manager
+                    .toggle_layer(&device_id, layer_id)
+                    .await
+                    .map(|_| ()),
             };
 
             match result {
-                Ok(_) => Response::LayerConfigured { device_id, layer_id },
+                Ok(_) => Response::LayerConfigured {
+                    device_id,
+                    layer_id,
+                },
                 Err(e) => Response::Error(format!("Failed to activate layer: {}", e)),
             }
         }
@@ -1066,43 +1170,71 @@ async fn handle_request(
             let state = state.read().await;
             let layer_manager = state.layer_manager.read().await;
 
-            let layers = layer_manager.get_device_state(&device_id).await
+            let layers = layer_manager
+                .get_device_state(&device_id)
+                .await
                 .map(|s| {
-                    s.layer_configs.iter().map(|c| {
-                        let ipc_mode = match c.mode {
-                            LayerMode::Hold => CommonLayerMode::Hold,
-                            LayerMode::Toggle => CommonLayerMode::Toggle,
-                        };
-                        // Convert internal LedZone to common LedZone
-                        let ipc_led_zone = c.led_zone.map(|zone| match zone {
-                            crate::led_controller::LedZone::Side => aethermap_common::LedZone::Side,
-                            crate::led_controller::LedZone::Logo => aethermap_common::LedZone::Logo,
-                            crate::led_controller::LedZone::Keys => aethermap_common::LedZone::Keys,
-                            crate::led_controller::LedZone::Thumbstick => aethermap_common::LedZone::Thumbstick,
-                            crate::led_controller::LedZone::All => aethermap_common::LedZone::All,
-                            crate::led_controller::LedZone::Global => aethermap_common::LedZone::Global,
-                            crate::led_controller::LedZone::Unknown(_) => aethermap_common::LedZone::Side, // Default to side for unknown
-                        });
-                        LayerConfigInfo {
-                            layer_id: c.layer_id,
-                            name: c.name.clone(),
-                            mode: ipc_mode,
-                            remap_count: c.remaps.len(),
-                            led_color: c.led_color,
-                            led_zone: ipc_led_zone,
-                        }
-                    }).collect()
+                    s.layer_configs
+                        .iter()
+                        .map(|c| {
+                            let ipc_mode = match c.mode {
+                                LayerMode::Hold => CommonLayerMode::Hold,
+                                LayerMode::Toggle => CommonLayerMode::Toggle,
+                            };
+                            // Convert internal LedZone to common LedZone
+                            let ipc_led_zone = c.led_zone.map(|zone| match zone {
+                                crate::led_controller::LedZone::Side => {
+                                    aethermap_common::LedZone::Side
+                                }
+                                crate::led_controller::LedZone::Logo => {
+                                    aethermap_common::LedZone::Logo
+                                }
+                                crate::led_controller::LedZone::Keys => {
+                                    aethermap_common::LedZone::Keys
+                                }
+                                crate::led_controller::LedZone::Thumbstick => {
+                                    aethermap_common::LedZone::Thumbstick
+                                }
+                                crate::led_controller::LedZone::All => {
+                                    aethermap_common::LedZone::All
+                                }
+                                crate::led_controller::LedZone::Global => {
+                                    aethermap_common::LedZone::Global
+                                }
+                                crate::led_controller::LedZone::Unknown(_) => {
+                                    aethermap_common::LedZone::Side
+                                } // Default to side for unknown
+                            });
+                            LayerConfigInfo {
+                                layer_id: c.layer_id,
+                                name: c.name.clone(),
+                                mode: ipc_mode,
+                                remap_count: c.remaps.len(),
+                                led_color: c.led_color,
+                                led_zone: ipc_led_zone,
+                            }
+                        })
+                        .collect()
                 })
                 .unwrap_or_default();
 
             Response::LayerList { device_id, layers }
         }
-        Request::SetAnalogSensitivity { device_id, sensitivity } => {
-            info!("SetAnalogSensitivity request: device={}, sensitivity={:.2}", device_id, sensitivity);
+        Request::SetAnalogSensitivity {
+            device_id,
+            sensitivity,
+        } => {
+            info!(
+                "SetAnalogSensitivity request: device={}, sensitivity={:.2}",
+                device_id, sensitivity
+            );
 
             // Validate sensitivity range
-            if sensitivity < 0.1 || sensitivity > 5.0 {
-                warn!("Invalid sensitivity value: {:.2} (valid range: 0.1-5.0)", sensitivity);
+            if !(0.1..=5.0).contains(&sensitivity) {
+                warn!(
+                    "Invalid sensitivity value: {:.2} (valid range: 0.1-5.0)",
+                    sensitivity
+                );
                 return Response::Error(format!(
                     "Invalid sensitivity value: {:.2}. Valid range is 0.1-5.0",
                     sensitivity
@@ -1113,7 +1245,9 @@ async fn handle_request(
             let state = state.read().await;
             if let Some(analog_processor) = &state.analog_processor {
                 // Set sensitivity
-                analog_processor.set_sensitivity(&device_id, sensitivity).await;
+                analog_processor
+                    .set_sensitivity(&device_id, sensitivity)
+                    .await;
 
                 Response::AnalogSensitivitySet {
                     device_id,
@@ -1148,7 +1282,10 @@ async fn handle_request(
             }
         }
         Request::SetAnalogResponseCurve { device_id, curve } => {
-            debug!("SetAnalogResponseCurve request for device {}: {}", device_id, curve);
+            debug!(
+                "SetAnalogResponseCurve request for device {}: {}",
+                device_id, curve
+            );
 
             // Parse curve string
             let response_curve = match curve.as_str() {
@@ -1163,15 +1300,26 @@ async fn handle_request(
                         let end = s.find(')').unwrap_or(s.len());
                         if start > 0 && end > start {
                             match s[start + 1..end].parse::<f32>() {
-                                Ok(exp) => Ok(crate::analog_processor::ResponseCurve::Exponential { exponent: exp }),
-                                Err(_) => Err(format!("Invalid exponent value: {}", &s[start + 1..end])),
+                                Ok(exp) => {
+                                    Ok(crate::analog_processor::ResponseCurve::Exponential {
+                                        exponent: exp,
+                                    })
+                                }
+                                Err(_) => {
+                                    Err(format!("Invalid exponent value: {}", &s[start + 1..end]))
+                                }
                             }
                         } else {
-                            Ok(crate::analog_processor::ResponseCurve::Exponential { exponent: 2.0 })
+                            Ok(crate::analog_processor::ResponseCurve::Exponential {
+                                exponent: 2.0,
+                            })
                         }
                     }
                 }
-                _ => Err(format!("Invalid curve type: {}. Use 'linear' or 'exponential'", curve)),
+                _ => Err(format!(
+                    "Invalid curve type: {}. Use 'linear' or 'exponential'",
+                    curve
+                )),
             };
 
             let response_curve = match response_curve {
@@ -1182,12 +1330,11 @@ async fn handle_request(
             // Get analog processor from state
             let state = state.read().await;
             if let Some(analog_processor) = &state.analog_processor {
-                analog_processor.set_response_curve(&device_id, response_curve).await;
+                analog_processor
+                    .set_response_curve(&device_id, response_curve)
+                    .await;
                 // Return curve string in response for confirmation
-                Response::AnalogResponseCurveSet {
-                    device_id,
-                    curve,
-                }
+                Response::AnalogResponseCurveSet { device_id, curve }
             } else {
                 Response::Error("Analog processor not initialized".to_string())
             }
@@ -1221,12 +1368,21 @@ async fn handle_request(
                 Response::Error("Analog processor not initialized".to_string())
             }
         }
-        Request::SetAnalogDeadzone { device_id, percentage } => {
-            info!("SetAnalogDeadzone request: device={}, percentage={}", device_id, percentage);
+        Request::SetAnalogDeadzone {
+            device_id,
+            percentage,
+        } => {
+            info!(
+                "SetAnalogDeadzone request: device={}, percentage={}",
+                device_id, percentage
+            );
 
             // Validate percentage range
             if percentage > 100 {
-                warn!("Invalid deadzone percentage: {} (valid range: 0-100)", percentage);
+                warn!(
+                    "Invalid deadzone percentage: {} (valid range: 0-100)",
+                    percentage
+                );
                 return Response::Error(format!(
                     "Invalid deadzone percentage: {}. Valid range is 0-100",
                     percentage
@@ -1237,7 +1393,10 @@ async fn handle_request(
             let state = state.read().await;
             if let Some(analog_processor) = &state.analog_processor {
                 // Set deadzone percentage
-                match analog_processor.set_deadzone_percentage(&device_id, percentage).await {
+                match analog_processor
+                    .set_deadzone_percentage(&device_id, percentage)
+                    .await
+                {
                     Ok(_) => Response::AnalogDeadzoneSet {
                         device_id,
                         percentage,
@@ -1264,12 +1423,22 @@ async fn handle_request(
                 Response::Error("Analog processor not initialized".to_string())
             }
         }
-        Request::SetAnalogDeadzoneXY { device_id, x_percentage, y_percentage } => {
-            info!("SetAnalogDeadzoneXY request: device={}, x={}%, y={}%", device_id, x_percentage, y_percentage);
+        Request::SetAnalogDeadzoneXY {
+            device_id,
+            x_percentage,
+            y_percentage,
+        } => {
+            info!(
+                "SetAnalogDeadzoneXY request: device={}, x={}%, y={}%",
+                device_id, x_percentage, y_percentage
+            );
 
             // Validate percentage ranges
             if x_percentage > 100 || y_percentage > 100 {
-                warn!("Invalid deadzone percentage: x={}, y={} (valid range: 0-100)", x_percentage, y_percentage);
+                warn!(
+                    "Invalid deadzone percentage: x={}, y={} (valid range: 0-100)",
+                    x_percentage, y_percentage
+                );
                 return Response::Error(format!(
                     "Invalid deadzone percentage: x={}, y={}. Valid range is 0-100",
                     x_percentage, y_percentage
@@ -1280,8 +1449,12 @@ async fn handle_request(
             let state = state.read().await;
             if let Some(analog_processor) = &state.analog_processor {
                 // Set X and Y deadzone percentages
-                let result_x = analog_processor.set_deadzone_percentage_x(&device_id, x_percentage).await;
-                let result_y = analog_processor.set_deadzone_percentage_y(&device_id, y_percentage).await;
+                let result_x = analog_processor
+                    .set_deadzone_percentage_x(&device_id, x_percentage)
+                    .await;
+                let result_y = analog_processor
+                    .set_deadzone_percentage_y(&device_id, y_percentage)
+                    .await;
 
                 match (result_x, result_y) {
                     (Ok(_), Ok(_)) => Response::AnalogDeadzoneXYSet {
@@ -1314,12 +1487,22 @@ async fn handle_request(
                 Response::Error("Analog processor not initialized".to_string())
             }
         }
-        Request::SetAnalogOuterDeadzoneXY { device_id, x_percentage, y_percentage } => {
-            info!("SetAnalogOuterDeadzoneXY request: device={}, x={}%, y={}%", device_id, x_percentage, y_percentage);
+        Request::SetAnalogOuterDeadzoneXY {
+            device_id,
+            x_percentage,
+            y_percentage,
+        } => {
+            info!(
+                "SetAnalogOuterDeadzoneXY request: device={}, x={}%, y={}%",
+                device_id, x_percentage, y_percentage
+            );
 
             // Validate percentage ranges
             if x_percentage > 100 || y_percentage > 100 {
-                warn!("Invalid outer deadzone percentage: x={}, y={} (valid range: 0-100)", x_percentage, y_percentage);
+                warn!(
+                    "Invalid outer deadzone percentage: x={}, y={} (valid range: 0-100)",
+                    x_percentage, y_percentage
+                );
                 return Response::Error(format!(
                     "Invalid outer deadzone percentage: x={}, y={}. Valid range is 0-100",
                     x_percentage, y_percentage
@@ -1330,14 +1513,23 @@ async fn handle_request(
             let state = state.read().await;
             if let Some(analog_processor) = &state.analog_processor {
                 // Convert percentages to raw values
-                let x_raw = (x_percentage as u32 * crate::analog_processor::MAX_ABS_VALUE as u32 / 100) as u16;
-                let y_raw = (y_percentage as u32 * crate::analog_processor::MAX_ABS_VALUE as u32 / 100) as u16;
+                let x_raw = (x_percentage as u32 * crate::analog_processor::MAX_ABS_VALUE as u32
+                    / 100) as u16;
+                let y_raw = (y_percentage as u32 * crate::analog_processor::MAX_ABS_VALUE as u32
+                    / 100) as u16;
 
                 // Set outer deadzones via AnalogProcessor methods
-                analog_processor.set_outer_deadzone_x(&device_id, x_raw).await;
-                analog_processor.set_outer_deadzone_y(&device_id, y_raw).await;
+                analog_processor
+                    .set_outer_deadzone_x(&device_id, x_raw)
+                    .await;
+                analog_processor
+                    .set_outer_deadzone_y(&device_id, y_raw)
+                    .await;
 
-                info!("Outer deadzones updated: device={}, x={}%, y={}%", device_id, x_percentage, y_percentage);
+                info!(
+                    "Outer deadzones updated: device={}, x={}%, y={}%",
+                    device_id, x_percentage, y_percentage
+                );
                 Response::AnalogOuterDeadzoneXYSet {
                     device_id,
                     x_percentage,
@@ -1354,8 +1546,12 @@ async fn handle_request(
             let state = state.read().await;
             if let Some(analog_processor) = &state.analog_processor {
                 // Get X and Y outer deadzone percentages
-                let x_percentage = analog_processor.get_outer_deadzone_percentage_x(&device_id).await;
-                let y_percentage = analog_processor.get_outer_deadzone_percentage_y(&device_id).await;
+                let x_percentage = analog_processor
+                    .get_outer_deadzone_percentage_x(&device_id)
+                    .await;
+                let y_percentage = analog_processor
+                    .get_outer_deadzone_percentage_y(&device_id)
+                    .await;
                 Response::AnalogOuterDeadzoneXY {
                     device_id,
                     x_percentage,
@@ -1367,7 +1563,10 @@ async fn handle_request(
         }
 
         Request::SetAnalogDpadMode { device_id, mode } => {
-            info!("SetAnalogDpadMode request: device={}, mode={}", device_id, mode);
+            info!(
+                "SetAnalogDpadMode request: device={}, mode={}",
+                device_id, mode
+            );
 
             // Parse mode string to DpadMode
             let dpad_mode = match mode.as_str() {
@@ -1375,7 +1574,10 @@ async fn handle_request(
                 "eight_way" => crate::analog_processor::DpadMode::EightWay,
                 "four_way" => crate::analog_processor::DpadMode::FourWay,
                 _ => {
-                    warn!("Invalid D-pad mode: {} (valid: disabled, eight_way, four_way)", mode);
+                    warn!(
+                        "Invalid D-pad mode: {} (valid: disabled, eight_way, four_way)",
+                        mode
+                    );
                     return Response::Error(format!(
                         "Invalid D-pad mode: {}. Valid modes are: disabled, eight_way, four_way",
                         mode
@@ -1388,10 +1590,7 @@ async fn handle_request(
             if let Some(analog_processor) = &state.analog_processor {
                 // Set D-pad mode
                 analog_processor.set_dpad_mode(&device_id, dpad_mode).await;
-                Response::AnalogDpadModeSet {
-                    device_id,
-                    mode,
-                }
+                Response::AnalogDpadModeSet { device_id, mode }
             } else {
                 Response::Error("Analog processor not initialized".to_string())
             }
@@ -1419,11 +1618,19 @@ async fn handle_request(
             }
         }
 
-        Request::GetAnalogCalibration { device_id, layer_id } => {
-            debug!("GetAnalogCalibration request: device={}, layer={}", device_id, layer_id);
+        Request::GetAnalogCalibration {
+            device_id,
+            layer_id,
+        } => {
+            debug!(
+                "GetAnalogCalibration request: device={}, layer={}",
+                device_id, layer_id
+            );
 
             // Get calibration from config manager
-            let calibration = config_manager.get_analog_calibration(&device_id, layer_id).await;
+            let calibration = config_manager
+                .get_analog_calibration(&device_id, layer_id)
+                .await;
             let config = calibration.as_ref().map(calibration_to_config);
 
             Response::AnalogCalibration {
@@ -1433,7 +1640,11 @@ async fn handle_request(
             }
         }
 
-        Request::SetAnalogCalibration { device_id, layer_id, calibration } => {
+        Request::SetAnalogCalibration {
+            device_id,
+            layer_id,
+            calibration,
+        } => {
             info!(
                 "SetAnalogCalibration request: device={}, layer={}, deadzone={}, sensitivity={}, curve={}, mode={:?}",
                 device_id,
@@ -1446,7 +1657,8 @@ async fn handle_request(
 
             // Extract mode settings from calibration (convert from common types to internal)
             let layer_mode = common_to_internal_analog_mode(calibration.analog_mode);
-            let camera_mode = calibration.camera_output_mode
+            let camera_mode = calibration
+                .camera_output_mode
                 .map(common_to_internal_camera_mode)
                 .unwrap_or(CameraOutputMode::Scroll);
 
@@ -1463,32 +1675,35 @@ async fn handle_request(
                     {
                         let state_guard = state.read().await;
                         if let Some(analog_processor) = &state_guard.analog_processor {
-                            analog_processor.set_calibration(&device_id, layer_id, cal.clone()).await;
+                            analog_processor
+                                .set_calibration(&device_id, layer_id, cal.clone())
+                                .await;
                         } else {
                             return Response::Error("Analog processor not initialized".to_string());
                         }
                     } // Release read lock
 
                     // Save to config
-                    if let Err(e) = config_manager.save_analog_calibration(&device_id, layer_id, cal).await {
+                    if let Err(e) = config_manager
+                        .save_analog_calibration(&device_id, layer_id, cal)
+                        .await
+                    {
                         warn!("Failed to save analog calibration: {}", e);
                         return Response::Error(format!("Failed to save calibration: {}", e));
                     }
 
                     // Also update analog_mode in layer config
                     let state_guard = state.write().await;
-                    let mut layer_manager = state_guard.layer_manager.write().await;
+                    let layer_manager = state_guard.layer_manager.write().await;
 
                     // Get existing config or create default
                     let device_state = layer_manager.get_device_state(&device_id).await;
-                    let existing_config = device_state.as_ref().and_then(|s| s.get_layer_config(layer_id));
+                    let existing_config = device_state
+                        .as_ref()
+                        .and_then(|s| s.get_layer_config(layer_id));
 
                     let mut layer_config = existing_config.cloned().unwrap_or_else(|| {
-                        LayerConfig::new(
-                            layer_id,
-                            format!("Layer {}", layer_id),
-                            LayerMode::Hold,
-                        )
+                        LayerConfig::new(layer_id, format!("Layer {}", layer_id), LayerMode::Hold)
                     });
 
                     // Update mode from calibration
@@ -1498,7 +1713,10 @@ async fn handle_request(
                     }
 
                     // Apply the updated config
-                    match layer_manager.set_layer_config(&device_id, layer_id, layer_config).await {
+                    match layer_manager
+                        .set_layer_config(&device_id, layer_id, layer_config)
+                        .await
+                    {
                         Ok(_) => Response::AnalogCalibrationAck,
                         Err(e) => Response::Error(format!("Failed to set analog mode: {}", e)),
                     }
@@ -1530,8 +1748,10 @@ async fn handle_request(
         }
 
         Request::SetMacroSettings(settings) => {
-            info!("SetMacroSettings request: latency_offset_ms={}, jitter_pct={:.2}",
-                  settings.latency_offset_ms, settings.jitter_pct);
+            info!(
+                "SetMacroSettings request: latency_offset_ms={}, jitter_pct={:.2}",
+                settings.latency_offset_ms, settings.jitter_pct
+            );
 
             // Update in macro engine
             macro_engine.set_macro_settings(settings.clone()).await;
@@ -1556,8 +1776,17 @@ async fn handle_request(
             Response::MacroSettings(settings)
         }
 
-        Request::SetLedColor { device_id, zone, red, green, blue } => {
-            info!("SetLedColor request: device={}, zone={:?}, RGB=({}, {}, {})", device_id, zone, red, green, blue);
+        Request::SetLedColor {
+            device_id,
+            zone,
+            red,
+            green,
+            blue,
+        } => {
+            info!(
+                "SetLedColor request: device={}, zone={:?}, RGB=({}, {}, {})",
+                device_id, zone, red, green, blue
+            );
 
             // Validate RGB range (0-255) - enforced by u8 type, but double-check
             // This is redundant since u8 can't exceed 255, but kept for clarity
@@ -1573,18 +1802,23 @@ async fn handle_request(
                     LedZone::Global => InternalLedZone::Global,
                 };
 
-                match led_controller.set_zone_color(internal_zone, red, green, blue).await {
+                match led_controller
+                    .set_zone_color(internal_zone, red, green, blue)
+                    .await
+                {
                     Ok(_) => {
                         // Update DaemonState.led_state for hotplug persistence
                         drop(state_guard); // Release read lock before write
-                        let mut state_guard = state.write().await;
+                        let state_guard = state.write().await;
 
                         // Update or create LED state entry for this device
                         let device_led_state = state_guard.led_state.read().await;
                         if let Some(led_state) = device_led_state.get(&device_id) {
                             // Clone and update
                             let mut updated = led_state.clone();
-                            updated.zone_colors.insert(internal_zone, (red, green, blue));
+                            updated
+                                .zone_colors
+                                .insert(internal_zone, (red, green, blue));
 
                             // Write back
                             drop(device_led_state);
@@ -1593,7 +1827,9 @@ async fn handle_request(
                         } else {
                             // Create new entry
                             let mut new_state = crate::led_controller::DeviceLedState::default();
-                            new_state.zone_colors.insert(internal_zone, (red, green, blue));
+                            new_state
+                                .zone_colors
+                                .insert(internal_zone, (red, green, blue));
 
                             drop(state_guard.led_state.read().await);
                             let mut device_led_state = state_guard.led_state.write().await;
@@ -1605,7 +1841,7 @@ async fn handle_request(
                             zone,
                             color: (red, green, blue),
                         }
-                    },
+                    }
                     Err(e) => Response::Error(format!("Failed to set LED color: {}", e)),
                 }
             } else {
@@ -1628,7 +1864,11 @@ async fn handle_request(
                 };
 
                 let color = led_controller.get_zone_color(internal_zone).await;
-                Response::LedColor { device_id, zone, color }
+                Response::LedColor {
+                    device_id,
+                    zone,
+                    color,
+                }
             } else {
                 Response::Error("LED controller not available".to_string())
             }
@@ -1660,12 +1900,22 @@ async fn handle_request(
                 Response::Error("LED controller not available".to_string())
             }
         }
-        Request::SetLedBrightness { device_id, zone, brightness } => {
-            info!("SetLedBrightness request: device={}, zone={:?}, brightness={}", device_id, zone, brightness);
+        Request::SetLedBrightness {
+            device_id,
+            zone,
+            brightness,
+        } => {
+            info!(
+                "SetLedBrightness request: device={}, zone={:?}, brightness={}",
+                device_id, zone, brightness
+            );
 
             // Validate brightness range (0-100)
             if brightness > 100 {
-                warn!("Invalid brightness value: {} (valid range: 0-100)", brightness);
+                warn!(
+                    "Invalid brightness value: {} (valid range: 0-100)",
+                    brightness
+                );
                 return Response::Error(format!(
                     "Invalid brightness value: {}. Valid range is 0-100",
                     brightness
@@ -1680,13 +1930,15 @@ async fn handle_request(
                         // Convert IPC LedZone to internal LedZone
                         let internal_zone = match ipc_zone {
                             LedZone::Side => InternalLedZone::Side,
-                    LedZone::Logo => InternalLedZone::Logo,
+                            LedZone::Logo => InternalLedZone::Logo,
                             LedZone::Keys => InternalLedZone::Keys,
                             LedZone::Thumbstick => InternalLedZone::Thumbstick,
                             LedZone::All => InternalLedZone::All,
                             LedZone::Global => InternalLedZone::Global,
                         };
-                        led_controller.set_zone_brightness(internal_zone, brightness).await
+                        led_controller
+                            .set_zone_brightness(internal_zone, brightness)
+                            .await
                     }
                     None => led_controller.set_global_brightness(brightness).await,
                 };
@@ -1695,7 +1947,7 @@ async fn handle_request(
                     Ok(_) => {
                         // Update DaemonState.led_state for hotplug persistence
                         drop(state_guard); // Release read lock before write
-                        let mut state_guard = state.write().await;
+                        let state_guard = state.write().await;
 
                         // Update or create LED state entry for this device
                         let device_led_state = state_guard.led_state.read().await;
@@ -1708,7 +1960,7 @@ async fn handle_request(
                                 Some(ipc_zone) => {
                                     let internal_zone = match ipc_zone {
                                         LedZone::Side => InternalLedZone::Side,
-                    LedZone::Logo => InternalLedZone::Logo,
+                                        LedZone::Logo => InternalLedZone::Logo,
                                         LedZone::Keys => InternalLedZone::Keys,
                                         LedZone::Thumbstick => InternalLedZone::Thumbstick,
                                         LedZone::All => InternalLedZone::All,
@@ -1733,7 +1985,7 @@ async fn handle_request(
                                 Some(ipc_zone) => {
                                     let internal_zone = match ipc_zone {
                                         LedZone::Side => InternalLedZone::Side,
-                    LedZone::Logo => InternalLedZone::Logo,
+                                        LedZone::Logo => InternalLedZone::Logo,
                                         LedZone::Keys => InternalLedZone::Keys,
                                         LedZone::Thumbstick => InternalLedZone::Thumbstick,
                                         LedZone::All => InternalLedZone::All,
@@ -1756,7 +2008,7 @@ async fn handle_request(
                             zone,
                             brightness,
                         }
-                    },
+                    }
                     Err(e) => Response::Error(format!("Failed to set LED brightness: {}", e)),
                 }
             } else {
@@ -1764,7 +2016,10 @@ async fn handle_request(
             }
         }
         Request::GetLedBrightness { device_id, zone } => {
-            debug!("GetLedBrightness request: device={}, zone={:?}", device_id, zone);
+            debug!(
+                "GetLedBrightness request: device={}, zone={:?}",
+                device_id, zone
+            );
 
             let state = state.read().await;
             if let Some(led_controller) = &state.led_controller {
@@ -1795,7 +2050,10 @@ async fn handle_request(
             }
         }
         Request::SetLedPattern { device_id, pattern } => {
-            info!("SetLedPattern request: device={}, pattern={:?}", device_id, pattern);
+            info!(
+                "SetLedPattern request: device={}, pattern={:?}",
+                device_id, pattern
+            );
 
             let state = state.read().await;
             if let Some(led_controller) = &state.led_controller {
@@ -1808,10 +2066,7 @@ async fn handle_request(
                 };
 
                 match led_controller.set_pattern(internal_pattern).await {
-                    Ok(_) => Response::LedPatternSet {
-                        device_id,
-                        pattern,
-                    },
+                    Ok(_) => Response::LedPatternSet { device_id, pattern },
                     Err(e) => Response::Error(format!("Failed to set LED pattern: {}", e)),
                 }
             } else {
@@ -1832,16 +2087,19 @@ async fn handle_request(
                     crate::led_controller::LedPattern::RainbowWave => CommonLedPattern::RainbowWave,
                 };
 
-                Response::LedPattern {
-                    device_id,
-                    pattern,
-                }
+                Response::LedPattern { device_id, pattern }
             } else {
                 Response::Error("LED controller not available".to_string())
             }
         }
-        Request::FocusChanged { app_id, window_title } => {
-            debug!("Focus changed: app_id={}, window_title={:?}", app_id, window_title);
+        Request::FocusChanged {
+            app_id,
+            window_title,
+        } => {
+            debug!(
+                "Focus changed: app_id={}, window_title={:?}",
+                app_id, window_title
+            );
 
             // Apply focus-based profile switching via AutoProfileSwitcher
             if let Some(switcher) = &auto_profile_switcher {
@@ -1859,19 +2117,24 @@ async fn handle_request(
         }
 
         Request::RegisterHotkey { device_id, binding } => {
-            debug!("RegisterHotkey: device={}, key={:?}, profile={}",
-                device_id, binding.key, binding.profile_name);
+            debug!(
+                "RegisterHotkey: device={}, key={:?}, profile={}",
+                device_id, binding.key, binding.profile_name
+            );
 
             // Validate profile exists
             let profiles = config_manager.device_profiles.read().await;
-            let profile_exists = profiles.get(&device_id)
+            let profile_exists = profiles
+                .get(&device_id)
                 .and_then(|device_profiles| device_profiles.get(&binding.profile_name))
                 .is_some();
             drop(profiles);
 
             if !profile_exists {
-                warn!("RegisterHotkey: profile '{}' not found for device {}",
-                    binding.profile_name, device_id);
+                warn!(
+                    "RegisterHotkey: profile '{}' not found for device {}",
+                    binding.profile_name, device_id
+                );
                 return Response::Error(format!("Profile '{}' not found", binding.profile_name));
             }
 
@@ -1885,7 +2148,10 @@ async fn handle_request(
             };
 
             // Add to config
-            match config_manager.add_hotkey_binding(&device_id, internal_binding).await {
+            match config_manager
+                .add_hotkey_binding(&device_id, internal_binding)
+                .await
+            {
                 Ok(()) => {
                     // Reload hotkey manager
                     let state = state.read().await;
@@ -1898,8 +2164,12 @@ async fn handle_request(
                         }
                     }
 
-                    info!("Registered hotkey: {}+{:?} for device {}",
-                        binding.modifiers.join("+"), binding.key, device_id);
+                    info!(
+                        "Registered hotkey: {}+{:?} for device {}",
+                        binding.modifiers.join("+"),
+                        binding.key,
+                        device_id
+                    );
                     Response::HotkeyRegistered {
                         device_id,
                         key: binding.key,
@@ -1919,7 +2189,8 @@ async fn handle_request(
             match config_manager.get_hotkey_bindings(&device_id).await {
                 Ok(bindings) => {
                     // Convert from config::HotkeyBinding to common::HotkeyBinding
-                    let common_bindings: Vec<aethermap_common::HotkeyBinding> = bindings.into_iter()
+                    let common_bindings: Vec<aethermap_common::HotkeyBinding> = bindings
+                        .into_iter()
                         .map(|b| aethermap_common::HotkeyBinding {
                             modifiers: b.modifiers,
                             key: b.key,
@@ -1929,8 +2200,11 @@ async fn handle_request(
                         })
                         .collect();
 
-                    debug!("Returning {} hotkey bindings for device {}",
-                        common_bindings.len(), device_id);
+                    debug!(
+                        "Returning {} hotkey bindings for device {}",
+                        common_bindings.len(),
+                        device_id
+                    );
                     Response::HotkeyList {
                         device_id,
                         bindings: common_bindings,
@@ -1946,11 +2220,20 @@ async fn handle_request(
             }
         }
 
-        Request::RemoveHotkey { device_id, key, modifiers } => {
-            debug!("RemoveHotkey: device={}, key={}, modifiers={:?}",
-                device_id, key, modifiers);
+        Request::RemoveHotkey {
+            device_id,
+            key,
+            modifiers,
+        } => {
+            debug!(
+                "RemoveHotkey: device={}, key={}, modifiers={:?}",
+                device_id, key, modifiers
+            );
 
-            match config_manager.remove_hotkey_binding(&device_id, &key, &modifiers).await {
+            match config_manager
+                .remove_hotkey_binding(&device_id, &key, &modifiers)
+                .await
+            {
                 Ok(()) => {
                     // Reload hotkey manager
                     let state = state.read().await;
@@ -1963,8 +2246,12 @@ async fn handle_request(
                         }
                     }
 
-                    info!("Removed hotkey: {}+{:?} for device {}",
-                        modifiers.join("+"), key, device_id);
+                    info!(
+                        "Removed hotkey: {}+{:?} for device {}",
+                        modifiers.join("+"),
+                        key,
+                        device_id
+                    );
                     Response::HotkeyRemoved {
                         device_id,
                         key,
@@ -1984,7 +2271,8 @@ async fn handle_request(
             let rules_count = rules.len();
 
             // Convert from common::AutoSwitchRule to config::AutoSwitchRule
-            let internal_rules: Vec<crate::config::AutoSwitchRule> = rules.into_iter()
+            let internal_rules: Vec<crate::config::AutoSwitchRule> = rules
+                .into_iter()
                 .map(|r| crate::config::AutoSwitchRule {
                     app_id: r.app_id,
                     profile_name: r.profile_name,
@@ -2089,14 +2377,15 @@ pub async fn broadcast_analog_input(
 /// # Returns
 ///
 /// DeviceCapabilities struct with detected features
-fn detect_device_capabilities(
-    device_info: &aethermap_common::DeviceInfo,
-) -> DeviceCapabilities {
+fn detect_device_capabilities(device_info: &aethermap_common::DeviceInfo) -> DeviceCapabilities {
     use aethermap_common::DeviceType;
 
     // Infer analog stick from device type
     // Keypads (like Azeron) and gamepads typically have analog sticks
-    let has_analog = matches!(device_info.device_type, DeviceType::Keypad | DeviceType::Gamepad);
+    let has_analog = matches!(
+        device_info.device_type,
+        DeviceType::Keypad | DeviceType::Gamepad
+    );
 
     // Azeron keypads have hat switches (detected via DeviceType::Keypad)
     let has_hat_switch = matches!(device_info.device_type, DeviceType::Keypad);
@@ -2105,7 +2394,7 @@ fn detect_device_capabilities(
     // For other devices, we use reasonable defaults
     let joystick_button_count = match device_info.device_type {
         DeviceType::Keypad => 26,  // Azeron Cybo
-        DeviceType::Gamepad => 12,  // Generic gamepad
+        DeviceType::Gamepad => 12, // Generic gamepad
         _ => 0,
     };
 
@@ -2120,9 +2409,9 @@ fn detect_device_capabilities(
     }
 }
 
-
 /// Get the GID for a group name
 #[cfg(target_os = "linux")]
+#[allow(dead_code)]
 fn get_group_gid(group_name: &str) -> Option<u32> {
     // Simplified implementation for now
     // In a real implementation, this would use libc or nix to resolve group names
@@ -2137,7 +2426,7 @@ fn get_group_gid(group_name: &str) -> Option<u32> {
 mod tests {
     use super::*;
     use crate::DaemonState;
-    use aethermap_common::{DeviceInfo, MacroEntry, KeyCombo, Action};
+    use aethermap_common::{Action, DeviceInfo, KeyCombo, MacroEntry};
     use std::path::PathBuf;
     use std::sync::Arc;
     use tempfile::TempDir;
@@ -2199,11 +2488,29 @@ mod tests {
         let security_manager = Arc::new(RwLock::new(security::SecurityManager::new(false)));
 
         // Test GetDevices request
-        let response = handle_request(Request::GetDevices, Arc::clone(&state), Arc::clone(&macro_engine), Arc::clone(&injector), Arc::clone(&config_manager), Arc::clone(&security_manager), None).await;
+        let response = handle_request(
+            Request::GetDevices,
+            Arc::clone(&state),
+            Arc::clone(&macro_engine),
+            Arc::clone(&injector),
+            Arc::clone(&config_manager),
+            Arc::clone(&security_manager),
+            None,
+        )
+        .await;
         assert!(matches!(response, Response::Devices(_)));
 
         // Test GetStatus request
-        let response = handle_request(Request::GetStatus, Arc::clone(&state), Arc::clone(&macro_engine), Arc::clone(&injector), Arc::clone(&config_manager), Arc::clone(&security_manager), None).await;
+        let response = handle_request(
+            Request::GetStatus,
+            Arc::clone(&state),
+            Arc::clone(&macro_engine),
+            Arc::clone(&injector),
+            Arc::clone(&config_manager),
+            Arc::clone(&security_manager),
+            None,
+        )
+        .await;
         match response {
             Response::Status { version, .. } => assert_eq!(version, "0.1.0"),
             _ => panic!("Expected Status response"),
@@ -2233,8 +2540,9 @@ mod tests {
             Arc::clone(&injector),
             Arc::clone(&config_manager),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         match response {
             Response::Error(msg) => assert!(msg.contains("not found")),
@@ -2288,8 +2596,9 @@ mod tests {
             Arc::clone(&injector),
             Arc::clone(&config_manager),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         assert!(matches!(response, Response::Ack));
 
@@ -2304,7 +2613,6 @@ mod tests {
     #[tokio::test]
     async fn test_profile_activation_ipc_flow() {
         use crate::config::ConfigManager;
-        use crate::device::DeviceManager;
         use crate::remap_engine::RemapProfile;
         use std::collections::HashMap;
         use tempfile::TempDir;
@@ -2319,7 +2627,7 @@ mod tests {
             profiles_dir: temp_dir.path().join("profiles"),
             remaps_path: temp_dir.path().join("remaps.yaml"),
             device_profiles_path: temp_dir.path().join("device_profiles.yaml"),
-                layer_state_path: std::path::PathBuf::from("/tmp/layer_state.yaml"),
+            layer_state_path: std::path::PathBuf::from("/tmp/layer_state.yaml"),
             config: Default::default(),
             macros: Arc::new(RwLock::new(HashMap::new())),
             profiles: Arc::new(RwLock::new(HashMap::new())),
@@ -2334,7 +2642,8 @@ mod tests {
 
         // Store in device_profiles
         let mut profiles = config_manager.device_profiles.write().await;
-        profiles.entry("1532:0220".to_string())
+        profiles
+            .entry("1532:0220".to_string())
             .or_insert_with(HashMap::new)
             .insert("test".to_string(), profile);
         drop(profiles);
@@ -2356,8 +2665,9 @@ mod tests {
             Arc::clone(&injector),
             Arc::new(config_manager),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         assert!(matches!(response, Response::DeviceProfiles { .. }));
         if let Response::DeviceProfiles { profiles, .. } = response {
@@ -2389,8 +2699,9 @@ mod tests {
                 device_profiles: Arc::new(RwLock::new(HashMap::new())),
             }),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         // Should return error since device manager is not initialized
         assert!(matches!(response, Response::Error(_)));
@@ -2420,7 +2731,10 @@ mod tests {
         assert_eq!(restored.deadzone, config.deadzone);
         assert_eq!(restored.deadzone_shape, config.deadzone_shape);
         assert_eq!(restored.sensitivity, config.sensitivity);
-        assert_eq!(restored.sensitivity_multiplier, config.sensitivity_multiplier);
+        assert_eq!(
+            restored.sensitivity_multiplier,
+            config.sensitivity_multiplier
+        );
         assert_eq!(restored.range_min, config.range_min);
         assert_eq!(restored.range_max, config.range_max);
         assert_eq!(restored.invert_x, config.invert_x);
@@ -2452,8 +2766,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_analog_calibration_ipc_roundtrip() {
-        use aethermap_common::AnalogCalibrationConfig;
         use crate::analog_processor::AnalogProcessor;
+        use aethermap_common::AnalogCalibrationConfig;
 
         let mut state = DaemonState::new();
         state.analog_processor = Some(Arc::new(AnalogProcessor::new()));
@@ -2490,8 +2804,9 @@ mod tests {
             Arc::clone(&injector),
             Arc::clone(&config_manager),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         assert!(matches!(response, Response::AnalogCalibrationAck));
 
@@ -2506,24 +2821,29 @@ mod tests {
             Arc::clone(&injector),
             Arc::clone(&config_manager),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         match response {
-            Response::AnalogCalibration { calibration: Some(cal), .. } => {
+            Response::AnalogCalibration {
+                calibration: Some(cal),
+                ..
+            } => {
                 assert_eq!(cal.deadzone, config.deadzone);
                 assert_eq!(cal.deadzone_shape, config.deadzone_shape);
                 assert_eq!(cal.sensitivity, config.sensitivity);
                 assert_eq!(cal.sensitivity_multiplier, config.sensitivity_multiplier);
             }
-            _ => panic!("Expected AnalogCalibration response with calibration data, got {:?}", response),
+            _ => panic!(
+                "Expected AnalogCalibration response with calibration data, got {:?}",
+                response
+            ),
         }
     }
 
     #[tokio::test]
     async fn test_analog_calibration_default_on_missing() {
-        use aethermap_common::AnalogCalibrationConfig;
-
         let state = Arc::new(RwLock::new(DaemonState::new()));
         let macro_engine = Arc::new(macro_engine::MacroEngine::new());
         let injector = create_test_injector();
@@ -2541,15 +2861,21 @@ mod tests {
             Arc::clone(&injector),
             Arc::clone(&config_manager),
             Arc::clone(&security_manager),
-            None
-        ).await;
+            None,
+        )
+        .await;
 
         // Should return default calibration
         match response {
-            Response::AnalogCalibration { calibration: None, .. } => {
+            Response::AnalogCalibration {
+                calibration: None, ..
+            } => {
                 // Expected - no custom calibration configured
             }
-            Response::AnalogCalibration { calibration: Some(cal), .. } => {
+            Response::AnalogCalibration {
+                calibration: Some(cal),
+                ..
+            } => {
                 // Should have default values
                 assert_eq!(cal.deadzone, 0.15);
                 assert_eq!(cal.deadzone_shape, "circular");

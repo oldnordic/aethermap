@@ -7,12 +7,15 @@
 //! - Security management and privilege dropping
 
 use aethermap_common::tracing;
-use aethermapd::{DaemonState, config, device, hotplug, macro_engine, injector, ipc, security, remap_engine, analog_processor, led_controller};
+use aethermapd::{
+    analog_processor, config, device, hotplug, injector, ipc, led_controller, macro_engine,
+    remap_engine, security, DaemonState,
+};
 use std::collections::HashMap;
+use std::env;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{info, error, warn};
-use std::env;
+use tracing::{error, info, warn};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -22,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return security::test_security_functionality().await;
     }
 
-// Main daemon implementation
+    // Main daemon implementation
     // Initialize logging
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
@@ -43,8 +46,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize security manager with token authentication based on feature flag
     let token_auth_enabled = cfg!(feature = "token-auth");
-    let security_manager = Arc::new(RwLock::new(security::SecurityManager::new(token_auth_enabled)));
-    info!("Token authentication {}", if token_auth_enabled { "enabled" } else { "disabled" });
+    let security_manager = Arc::new(RwLock::new(security::SecurityManager::new(
+        token_auth_enabled,
+    )));
+    info!(
+        "Token authentication {}",
+        if token_auth_enabled {
+            "enabled"
+        } else {
+            "disabled"
+        }
+    );
 
     // Create shared state
     let state = Arc::new(RwLock::new(DaemonState::new()));
@@ -55,7 +67,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize injector with full privileges before dropping them
     {
-        injector.initialize().await.map_err(|e| -> Box<dyn std::error::Error> { e })?;
+        injector
+            .initialize()
+            .await
+            .map_err(|e| -> Box<dyn std::error::Error> { e })?;
         info!("Uinput injector initialized");
     }
 
@@ -70,11 +85,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let remap_engine = Arc::new(remap_engine::RemapEngine::new());
 
     // Load remap configuration with eager validation
-    let remap_entries = config_manager.load_remaps().await
-        .map_err(|e| -> Box<dyn std::error::Error> {
-            error!("Failed to load remap configuration: {}", e);
-            e.into()
-        })?;
+    let remap_entries =
+        config_manager
+            .load_remaps()
+            .await
+            .map_err(|e| -> Box<dyn std::error::Error> {
+                error!("Failed to load remap configuration: {}", e);
+                e.into()
+            })?;
 
     // Convert RemapEntry vec to HashMap for RemapEngine
     let mut remap_hash = HashMap::new();
@@ -83,7 +101,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Eager validation happens here - all keys validated before daemon accepts config
-    remap_engine.load_config(&remap_hash).await
+    remap_engine
+        .load_config(&remap_hash)
+        .await
         .map_err(|e| -> Box<dyn std::error::Error> {
             error!("Failed to load remap configuration: {}", e);
             e.into()
@@ -98,7 +118,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Initialize macro engine with injector
-    let macro_engine = Arc::new(macro_engine::MacroEngine::with_injector(Arc::clone(&injector_for_macro)));
+    let macro_engine = Arc::new(macro_engine::MacroEngine::with_injector(Arc::clone(
+        &injector_for_macro,
+    )));
     {
         let mut state = state.write().await;
         state.macro_engine = Some(Arc::clone(&macro_engine));
@@ -114,7 +136,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         aethermapd::GlobalHotkeyManager::new(
             layer_manager_for_hotkeys,
             Arc::clone(&config_manager),
-        )
+        ),
     ));
 
     // Load hotkey bindings from device_profiles.yaml at startup
@@ -163,7 +185,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         info!("Device discovery successful");
 
         // Load device profiles from config
-        let device_profiles = config_manager.load_device_profiles_extended().await
+        let device_profiles = config_manager
+            .load_device_profiles_extended()
+            .await
             .map_err(|e| -> Box<dyn std::error::Error> {
                 error!("Failed to load device profiles: {}", e);
                 e.into()
@@ -198,7 +222,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut event_receiver = event_receiver;
             loop {
                 if let Some(msg) = event_receiver.recv().await {
-                    use aethermapd::device::DeviceEventMessage;
                     use aethermapd::device::DeviceEventType;
 
                     let device_path = msg.device_path.clone();
@@ -215,7 +238,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     // Handle based on event type
                     match msg.event_type {
-                        DeviceEventType::Key { original_code, value } => {
+                        DeviceEventType::Key {
+                            original_code,
+                            value,
+                        } => {
                             let pressed = value == 1;
                             let is_repeat = value == 2;
 
@@ -224,11 +250,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             let consumed = if !is_repeat {
                                 let state = state_clone2.read().await;
                                 if let Some(macro_engine) = &state.macro_engine {
-                                    match macro_engine.process_input_event(
-                                        msg.key_code.unwrap_or(original_code),
-                                        pressed,
-                                        &device_path
-                                    ).await {
+                                    match macro_engine
+                                        .process_input_event(
+                                            msg.key_code.unwrap_or(original_code),
+                                            pressed,
+                                            &device_path,
+                                        )
+                                        .await
+                                    {
                                         Ok(consumed) => consumed,
                                         Err(e) => {
                                             error!("Error processing input event: {}", e);
@@ -247,7 +276,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 if let Some(inj) = injector {
                                     let injector_ref = inj.read().await;
                                     // Check if this is a mouse button (BTN_LEFT=272, BTN_RIGHT=273, etc.)
-                                    if original_code >= 272 && original_code <= 288 {
+                                    if (272..=288).contains(&original_code) {
                                         // Mouse button: convert to 1-based (272->1, 273->2, etc.)
                                         let button_num = original_code - 271;
                                         if value == 0 {
@@ -296,10 +325,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Start device hotplug monitoring
-    let mut device_monitor = hotplug::DeviceMonitor::new()
-        .map_err(|e| -> Box<dyn std::error::Error> {
+    let mut device_monitor =
+        hotplug::DeviceMonitor::new().map_err(|e| -> Box<dyn std::error::Error> {
             error!("Failed to start device monitor: {}", e);
-            e.into()
+            e
         })?;
     info!("Device hotplug monitoring started");
 
@@ -316,26 +345,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Load device profiles
-    config_manager.load_device_profiles().await
-        .map_err(|e| {
-            error!("Failed to load device profiles: {}", e);
-            e
-        })?;
+    config_manager.load_device_profiles().await.map_err(|e| {
+        error!("Failed to load device profiles: {}", e);
+        e
+    })?;
     info!("Device profiles loaded");
 
     // Initialize AutoProfileSwitcher for focus-based profile switching
     let state_guard = state.read().await;
-    let auto_profile_switcher = Some(Arc::new(aethermapd::auto_profile_switcher::AutoProfileSwitcher::new(
-        state_guard.layer_manager.clone(),
-        config_manager.clone(),
-    )));
+    let auto_profile_switcher = Some(Arc::new(
+        aethermapd::auto_profile_switcher::AutoProfileSwitcher::new(
+            state_guard.layer_manager.clone(),
+            config_manager.clone(),
+        ),
+    ));
     drop(state_guard);
     info!("AutoProfileSwitcher initialized");
 
     // Log devices with profiles configured
     let devices_with_profiles = config_manager.list_profile_devices().await;
     if !devices_with_profiles.is_empty() {
-        info!("Found profiles for {} devices: {:?}", devices_with_profiles.len(), devices_with_profiles);
+        info!(
+            "Found profiles for {} devices: {:?}",
+            devices_with_profiles.len(),
+            devices_with_profiles
+        );
     }
 
     // Initialize LED controller BEFORE privilege drop
@@ -353,7 +387,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             None
         }
         Err(e) => {
-            warn!("Failed to initialize LED controller: {} - continuing without LED support", e);
+            warn!(
+                "Failed to initialize LED controller: {} - continuing without LED support",
+                e
+            );
             None
         }
     };
@@ -376,7 +413,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for device in devices {
                 let device_id = aethermapd::device::DeviceManager::format_device_id(
                     device.vendor_id,
-                    device.product_id
+                    device.product_id,
                 );
                 // Check if this is an Azeron device
                 if device_id.contains(AZERON_VENDOR_ID) {
@@ -407,14 +444,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Start IPC server
     let mut ipc_server = ipc::IpcServer::new(&socket_path)?;
-    ipc_server.start(
-        state,
-        macro_engine,
-        injector_for_ipc,
-        config_manager,
-        security_manager,
-        auto_profile_switcher.clone()
-    ).await?;
+    ipc_server
+        .start(
+            state,
+            macro_engine,
+            injector_for_ipc,
+            config_manager,
+            security_manager,
+            auto_profile_switcher.clone(),
+        )
+        .await?;
     info!("IPC server started successfully");
 
     // Set up signal handlers for graceful shutdown and hot-reload

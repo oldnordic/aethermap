@@ -191,9 +191,12 @@ impl LedZone {
 }
 
 /// LED pattern types for visual effects
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, Default,
+)]
 pub enum LedPattern {
     /// Static solid colors (no animation)
+    #[default]
     Static,
     /// Breathing pattern - fades colors in/out
     Breathing,
@@ -201,12 +204,6 @@ pub enum LedPattern {
     Rainbow,
     /// Rainbow wave - wave effect across zones
     RainbowWave,
-}
-
-impl Default for LedPattern {
-    fn default() -> Self {
-        LedPattern::Static
-    }
 }
 
 // =============================================================================
@@ -399,8 +396,7 @@ impl LedController {
     pub fn find_led_interface() -> Result<Self, LedError> {
         info!("Searching for Azeron LED control interface...");
 
-        let api = hidapi::HidApi::new()
-            .map_err(LedError::HidApi)?;
+        let api = hidapi::HidApi::new().map_err(LedError::HidApi)?;
 
         let mut found_interfaces = Vec::new();
 
@@ -413,7 +409,10 @@ impl LedController {
             // Match Cyborg 2 product ID (or allow any Azeron device)
             let product_id = device_info.product_id();
             if product_id != AZERON_CYBORG2_PRODUCT_ID {
-                debug!("Skipping non-Cyborg2 Azeron device (PID={:04x})", product_id);
+                debug!(
+                    "Skipping non-Cyborg2 Azeron device (PID={:04x})",
+                    product_id
+                );
                 continue;
             }
 
@@ -430,13 +429,16 @@ impl LedController {
             // CRITICAL: Skip keyboard interface (usage_page == 0x01)
             // This is the evdev input interface - not for LED control
             if usage_page == KEYBOARD_USAGE_PAGE {
-                debug!("Skipping keyboard interface (usage_page={:04x})", usage_page);
+                debug!(
+                    "Skipping keyboard interface (usage_page={:04x})",
+                    usage_page
+                );
                 continue;
             }
 
             // Cyborg 2 LED control interface has usage_page 0xff01 (vendor-defined)
             // This is interface number 4
-            if (usage_page & 0xff00) != LED_CONTROL_USAGE_PAGE {
+            if usage_page != LED_CONTROL_USAGE_PAGE {
                 debug!("Skipping non-LED interface (usage_page={:04x})", usage_page);
                 continue;
             }
@@ -444,12 +446,10 @@ impl LedController {
             // Open vendor-defined interface for LED control
             info!(
                 "Opening Azeron Cyborg 2 LED control interface: usage_page={:04x} interface={}",
-                usage_page,
-                interface_number
+                usage_page, interface_number
             );
 
-            let device = device_info.open_device(&api)
-                .map_err(LedError::HidApi)?;
+            let device = device_info.open_device(&api).map_err(LedError::HidApi)?;
 
             return Ok(Self {
                 device,
@@ -479,13 +479,7 @@ impl LedController {
     /// * `r` - Red component (0-255)
     /// * `g` - Green component (0-255)
     /// * `b` - Blue component (0-255)
-    pub async fn set_zone_color(
-        &self,
-        zone: LedZone,
-        r: u8,
-        g: u8,
-        b: u8,
-    ) -> Result<(), LedError> {
+    pub async fn set_zone_color(&self, zone: LedZone, r: u8, g: u8, b: u8) -> Result<(), LedError> {
         let zone_id = zone.to_raw_id();
 
         // Build HID command packet (PLACEHOLDER protocol)
@@ -505,8 +499,7 @@ impl LedController {
 
         // Send HID write using the device's write method
         // Note: This is a blocking call but HID writes are typically fast (< 1ms)
-        self.device.write(&buffer)
-            .map_err(LedError::HidApi)?;
+        self.device.write(&buffer).map_err(LedError::HidApi)?;
 
         // Update state after successful write
         {
@@ -534,17 +527,15 @@ impl LedController {
     /// # Arguments
     ///
     /// * `brightness` - Brightness value (0-100)
-    pub async fn set_global_brightness(
-        &self,
-        brightness: u8,
-    ) -> Result<(), LedError> {
+    pub async fn set_global_brightness(&self, brightness: u8) -> Result<(), LedError> {
         if brightness > 100 {
             return Err(LedError::InvalidValue("Brightness must be 0-100".into()));
         }
 
         // Convert 0-100% to hardware brightness value (256-406)
         // Formula: brightness_value = 256 + (brightness_percent * 150 / 100)
-        let hw_brightness = AZERON_BRIGHTNESS_BASE + (u16::from(brightness) * AZERON_BRIGHTNESS_MAX_STEP / 100);
+        let hw_brightness =
+            AZERON_BRIGHTNESS_BASE + (u16::from(brightness) * AZERON_BRIGHTNESS_MAX_STEP / 100);
 
         // Build HID command packet (discovered protocol)
         let mut buffer = [0u8; AZERON_HID_PACKET_SIZE];
@@ -573,11 +564,13 @@ impl LedController {
 
         // Remaining bytes are padding (0x00)
 
-        debug!("Sending LED global brightness command: {}% (raw: {})", brightness, hw_brightness);
+        debug!(
+            "Sending LED global brightness command: {}% (raw: {})",
+            brightness, hw_brightness
+        );
 
         // Send HID write using the device's write method
-        self.device.write(&buffer)
-            .map_err(LedError::HidApi)?;
+        self.device.write(&buffer).map_err(LedError::HidApi)?;
 
         // Update state after successful write
         {
@@ -585,7 +578,10 @@ impl LedController {
             state.global_brightness = brightness;
         }
 
-        info!("LED global brightness set: {}% (hw: {})", brightness, hw_brightness);
+        info!(
+            "LED global brightness set: {}% (hw: {})",
+            brightness, hw_brightness
+        );
 
         Ok(())
     }
@@ -599,11 +595,7 @@ impl LedController {
     ///
     /// * `zone` - The LED zone to set brightness for (ignored, uses global)
     /// * `brightness` - Brightness value (0-100)
-    pub async fn set_zone_brightness(
-        &self,
-        zone: LedZone,
-        brightness: u8,
-    ) -> Result<(), LedError> {
+    pub async fn set_zone_brightness(&self, zone: LedZone, brightness: u8) -> Result<(), LedError> {
         // The Cyborg 2 only supports global brightness
         // Store the per-zone value for potential future use
         {
@@ -637,7 +629,8 @@ impl LedController {
         let counter: u16 = (std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
-            .as_secs() & 0xFFFF) as u16;
+            .as_secs()
+            & 0xFFFF) as u16;
         let counter = 0x1259 + (counter & 0xFF); // Start from observed base value
         buffer[2] = (counter & 0xFF) as u8;
         buffer[3] = ((counter >> 8) & 0xFF) as u8;
@@ -654,8 +647,7 @@ impl LedController {
 
         // Remaining bytes are padding (0x00)
 
-        self.device.write(&buffer)
-            .map_err(LedError::HidApi)?;
+        self.device.write(&buffer).map_err(LedError::HidApi)?;
 
         debug!("Sent LED keepalive packet (counter: {:#04x})", counter);
 
@@ -682,7 +674,9 @@ impl LedController {
     /// Returns the zone-specific brightness if set, otherwise returns the global brightness.
     pub async fn get_zone_brightness(&self, zone: LedZone) -> u8 {
         let state = self.state.read().await;
-        state.zone_brightness.get(&zone)
+        state
+            .zone_brightness
+            .get(&zone)
             .copied()
             .unwrap_or(state.global_brightness)
     }
@@ -714,11 +708,7 @@ impl LedController {
     ///
     /// * `layer_id` - Layer identifier (0 = base, 1+ = additional layers)
     /// * `color` - RGB color tuple (red, green, blue) with values 0-255
-    pub async fn set_layer_color(
-        &self,
-        layer_id: usize,
-        color: (u8, u8, u8),
-    ) {
+    pub async fn set_layer_color(&self, layer_id: usize, color: (u8, u8, u8)) {
         let mut state = self.state.write().await;
         state.layer_colors.insert(layer_id, color);
         debug!("Set layer {} color to RGB {:?}", layer_id, color);
@@ -754,11 +744,7 @@ impl LedController {
     ///
     /// * `Ok(())` - Color applied successfully
     /// * `Err(LedError)` - Failed to apply color
-    pub async fn apply_layer_color(
-        &self,
-        layer_id: usize,
-        zone: LedZone,
-    ) -> Result<(), LedError> {
+    pub async fn apply_layer_color(&self, layer_id: usize, zone: LedZone) -> Result<(), LedError> {
         if let Some((r, g, b)) = self.get_layer_color(layer_id).await {
             self.set_zone_color(zone, r, g, b).await?;
             debug!("Applied layer {} color to zone {:?}", layer_id, zone);
@@ -777,10 +763,7 @@ impl LedController {
     /// # Arguments
     ///
     /// * `pattern` - The pattern to activate (Static, Breathing, Rainbow, RainbowWave)
-    pub async fn set_pattern(
-        &self,
-        pattern: LedPattern,
-    ) -> Result<(), LedError> {
+    pub async fn set_pattern(&self, pattern: LedPattern) -> Result<(), LedError> {
         // Cancel existing animation if any
         {
             let mut state = self.state.write().await;
@@ -842,8 +825,7 @@ impl LedController {
         debug!("Sending LED pattern command: pattern_id={}", pattern_id);
 
         // Send HID write
-        self.device.write(&buffer)
-            .map_err(LedError::HidApi)?;
+        self.device.write(&buffer).map_err(LedError::HidApi)?;
 
         Ok(())
     }
@@ -855,11 +837,10 @@ impl LedController {
                 // Static doesn't need animation - just ensure colors are set
                 Ok(())
             }
-            LedPattern::Breathing => {
-                self.start_breathing_animation().await
-            }
+            LedPattern::Breathing => self.start_breathing_animation().await,
             LedPattern::Rainbow | LedPattern::RainbowWave => {
-                self.start_rainbow_animation(matches!(pattern, LedPattern::RainbowWave)).await
+                self.start_rainbow_animation(matches!(pattern, LedPattern::RainbowWave))
+                    .await
             }
         }
     }
@@ -881,7 +862,7 @@ impl LedController {
                 interval.tick().await;
 
                 // Calculate brightness (0-100)
-                brightness += direction * 5;  // Step size
+                brightness += direction * 5; // Step size
                 if brightness >= 100 {
                     brightness = 100;
                     direction = -1;
@@ -932,7 +913,7 @@ impl LedController {
                 // TODO: Need channel-based architecture to write HID from spawned task
                 // For now, just calculate values without writing
 
-                hue = (hue + 5) % 360;  // Advance hue
+                hue = (hue + 5) % 360; // Advance hue
             }
         });
 
@@ -945,6 +926,7 @@ impl LedController {
     }
 
     /// Send color command with brightness scaling (for animations)
+    #[allow(dead_code)]
     async fn send_color_with_brightness(
         &self,
         zone: LedZone,
@@ -959,13 +941,7 @@ impl LedController {
     }
 
     /// Internal color command without state update (for animations)
-    async fn send_color_command(
-        &self,
-        zone: LedZone,
-        r: u8,
-        g: u8,
-        b: u8,
-    ) -> Result<(), LedError> {
+    async fn send_color_command(&self, zone: LedZone, r: u8, g: u8, b: u8) -> Result<(), LedError> {
         let zone_id = zone.to_raw_id();
 
         // Build HID command packet (PLACEHOLDER protocol)
@@ -979,8 +955,7 @@ impl LedController {
         // Remaining bytes are padding (0x00)
 
         // Send HID write
-        self.device.write(&buffer)
-            .map_err(LedError::HidApi)?;
+        self.device.write(&buffer).map_err(LedError::HidApi)?;
 
         Ok(())
     }
@@ -1031,7 +1006,8 @@ impl LedController {
         }
 
         // Restore global brightness
-        self.send_global_brightness_command(global_brightness).await?;
+        self.send_global_brightness_command(global_brightness)
+            .await?;
 
         // Restore pattern (if not Static - Static is already set via colors)
         if active_pattern != LedPattern::Static {
@@ -1048,8 +1024,10 @@ impl LedController {
             state.layer_colors = imported.layer_colors;
         }
 
-        info!("LED state restored: {} zones, brightness {}%, pattern {:?}",
-              zone_count, global_brightness, active_pattern);
+        info!(
+            "LED state restored: {} zones, brightness {}%, pattern {:?}",
+            zone_count, global_brightness, active_pattern
+        );
 
         Ok(())
     }
@@ -1067,8 +1045,7 @@ impl LedController {
         buffer[3] = brightness;
         // Remaining bytes are padding (0x00)
 
-        self.device.write(&buffer)
-            .map_err(LedError::HidApi)?;
+        self.device.write(&buffer).map_err(LedError::HidApi)?;
 
         Ok(())
     }
@@ -1114,6 +1091,7 @@ fn hsv_to_rgb(h: u16, s: u8, v: u8) -> (u8, u8, u8) {
 }
 
 #[cfg(test)]
+#[allow(clippy::field_reassign_with_default)]
 mod tests {
     use super::*;
 
@@ -1176,14 +1154,17 @@ mod tests {
         let mut state = LedState::default();
 
         // Set different colors for each zone
-        state.zone_colors.insert(LedZone::Logo, (255, 0, 0));      // Red
-        state.zone_colors.insert(LedZone::Keys, (0, 255, 0));       // Green
+        state.zone_colors.insert(LedZone::Logo, (255, 0, 0)); // Red
+        state.zone_colors.insert(LedZone::Keys, (0, 255, 0)); // Green
         state.zone_colors.insert(LedZone::Thumbstick, (0, 0, 255)); // Blue
 
         // Verify each zone has its own color
         assert_eq!(state.zone_colors.get(&LedZone::Logo), Some(&(255, 0, 0)));
         assert_eq!(state.zone_colors.get(&LedZone::Keys), Some(&(0, 255, 0)));
-        assert_eq!(state.zone_colors.get(&LedZone::Thumbstick), Some(&(0, 0, 255)));
+        assert_eq!(
+            state.zone_colors.get(&LedZone::Thumbstick),
+            Some(&(0, 0, 255))
+        );
     }
 
     #[test]
@@ -1260,8 +1241,8 @@ mod tests {
         let mut state = LedState::default();
 
         state.layer_colors.insert(0, (255, 255, 255)); // Base: white
-        state.layer_colors.insert(1, (0, 0, 255));      // Layer 1: blue
-        state.layer_colors.insert(2, (0, 255, 0));      // Layer 2: green
+        state.layer_colors.insert(1, (0, 0, 255)); // Layer 1: blue
+        state.layer_colors.insert(2, (0, 255, 0)); // Layer 2: green
 
         assert_eq!(state.layer_colors.len(), 3);
         assert_eq!(state.layer_colors.get(&0), Some(&(255, 255, 255)));

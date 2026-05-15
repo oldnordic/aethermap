@@ -4,8 +4,8 @@ pub mod styles;
 pub use palette::*;
 pub use styles::*;
 
-use iced::{Color, Theme};
 use iced::theme::Palette;
+use iced::{Color, Theme};
 
 pub fn aether_dark() -> Theme {
     Theme::custom(

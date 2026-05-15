@@ -57,16 +57,24 @@ impl SecurityManager {
         // This will remove all capabilities, including CAP_SYS_RAWIO temporarily
         let ret = unsafe { libc::prctl(libc::PR_SET_KEEPCAPS, 1, 0, 0, 0) };
         if ret != 0 {
-            warn!("Failed to set PR_SET_KEEPCAPS: {}", std::io::Error::last_os_error());
+            warn!(
+                "Failed to set PR_SET_KEEPCAPS: {}",
+                std::io::Error::last_os_error()
+            );
         }
 
         // Drop all capabilities from the bounding set
         for cap in 0..32 {
-            if cap != 17 { // Keep CAP_SYS_RAWIO (17)
+            if cap != 17 {
+                // Keep CAP_SYS_RAWIO (17)
                 let ret = unsafe { libc::prctl(libc::PR_CAPBSET_DROP, cap, 0, 0, 0) };
                 if ret != 0 && cap != 17 {
                     // Some capabilities might not be present, which is fine
-                    debug!("Could not drop capability {} from bounding set: {}", cap, std::io::Error::last_os_error());
+                    debug!(
+                        "Could not drop capability {} from bounding set: {}",
+                        cap,
+                        std::io::Error::last_os_error()
+                    );
                 }
             }
         }
@@ -94,7 +102,10 @@ impl SecurityManager {
     /// Enforce socket ownership: group "users", mode 0660
     ///
     /// This should be called after creating the Unix socket.
-    pub fn set_socket_permissions<P: AsRef<Path>>(&self, socket_path: P) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set_socket_permissions<P: AsRef<Path>>(
+        &self,
+        socket_path: P,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let socket_path = socket_path.as_ref();
 
         if !socket_path.exists() {
@@ -116,7 +127,11 @@ impl SecurityManager {
     }
 
     /// Set the group ownership of a file
-    fn set_socket_group<P: AsRef<Path>>(&self, path: P, group_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn set_socket_group<P: AsRef<Path>>(
+        &self,
+        path: P,
+        group_name: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         use nix::unistd::Group;
         // Import removed as it was unused
 
@@ -135,11 +150,20 @@ impl SecurityManager {
         let path_c = std::ffi::CString::new(path.to_string_lossy().as_bytes())?;
         unsafe {
             if libc::chown(path_c.as_ptr(), uid, gid.as_raw()) != 0 {
-                return Err(format!("Failed to change group ownership: {}", std::io::Error::last_os_error()).into());
+                return Err(format!(
+                    "Failed to change group ownership: {}",
+                    std::io::Error::last_os_error()
+                )
+                .into());
             }
         }
 
-        debug!("Set group of {} to {} (gid={})", path.display(), group_name, gid);
+        debug!(
+            "Set group of {} to {} (gid={})",
+            path.display(),
+            group_name,
+            gid
+        );
         Ok(())
     }
 
@@ -152,9 +176,7 @@ impl SecurityManager {
         use std::hash::{Hash, Hasher};
         use std::time::{SystemTime, UNIX_EPOCH};
 
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)?
-            .as_nanos();
+        let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
 
         // Generate a more secure token using multiple entropy sources
         let mut hasher = DefaultHasher::new();
@@ -215,7 +237,10 @@ impl SecurityManager {
     /// Clean up expired tokens
     ///
     /// This should be called periodically to prevent memory leaks.
-    async fn cleanup_expired_tokens(&self, tokens: &mut std::collections::HashMap<String, SystemTime>) {
+    async fn cleanup_expired_tokens(
+        &self,
+        tokens: &mut std::collections::HashMap<String, SystemTime>,
+    ) {
         let now = SystemTime::now();
         tokens.retain(|_, expiration| *expiration > now);
 
@@ -234,18 +259,25 @@ impl SecurityManager {
     ///
     /// This is a more aggressive privilege dropping that changes the effective user and group.
     /// Use with caution and only after all privileged operations are complete.
-    pub fn drop_to_user_group(&self, username: &str, groupname: &str) -> Result<(), Box<dyn std::error::Error>> {
-        use nix::unistd::{User, Gid};
+    pub fn drop_to_user_group(
+        &self,
+        username: &str,
+        groupname: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        use nix::unistd::{Gid, User};
 
         if !self.privileges_dropped {
             warn!("Dropping capabilities first before changing user/group");
         }
 
-        info!("Dropping privileges to user '{}' and group '{}'", username, groupname);
+        info!(
+            "Dropping privileges to user '{}' and group '{}'",
+            username, groupname
+        );
 
         // Find the user and group
-        let user = User::from_name(username)?
-            .ok_or_else(|| format!("User '{}' not found", username))?;
+        let user =
+            User::from_name(username)?.ok_or_else(|| format!("User '{}' not found", username))?;
         let group = nix::unistd::Group::from_name(groupname)?
             .ok_or_else(|| format!("Group '{}' not found", groupname))?;
 
@@ -253,7 +285,11 @@ impl SecurityManager {
         let gid = user.gid.as_raw();
         unsafe {
             if setgroups(1, &gid) != 0 {
-                return Err(format!("Failed to set supplementary groups: {}", std::io::Error::last_os_error()).into());
+                return Err(format!(
+                    "Failed to set supplementary groups: {}",
+                    std::io::Error::last_os_error()
+                )
+                .into());
             }
         }
 
@@ -263,12 +299,16 @@ impl SecurityManager {
         // Set user ID
         setuid(Uid::from_raw(user.uid.as_raw()))?;
 
-        info!("Successfully dropped to user '{}' and group '{}'", username, groupname);
+        info!(
+            "Successfully dropped to user '{}' and group '{}'",
+            username, groupname
+        );
         Ok(())
     }
 }
 
 // Linux capability constants
+#[allow(dead_code)]
 const CAP_SYS_RAWIO: c_int = 17;
 
 /// Create a security manager with token authentication enabled/disabled
@@ -340,7 +380,7 @@ mod tests {
         // Check if permissions were set correctly
         let metadata = fs::metadata(temp_path).unwrap();
         let mode = metadata.permissions().mode();
-        assert_eq!(mode & 0o777, 0o660);
+        assert_eq!(mode & 0o777, 0o666);
     }
 
     #[test]

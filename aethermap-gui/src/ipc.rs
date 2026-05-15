@@ -3,7 +3,10 @@
 //! This module provides a simplified interface for the GUI to communicate
 //! with the aethermap daemon using the common IPC client.
 
-use aethermap_common::{ipc_client, DeviceCapabilities, DeviceInfo, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, Request, Response, AnalogCalibrationConfig};
+use aethermap_common::{
+    ipc_client, AnalogCalibrationConfig, DeviceCapabilities, DeviceInfo, LayerConfigInfo,
+    LayerMode, LedPattern, LedZone, MacroEntry, Request, Response,
+};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -47,7 +50,12 @@ impl GuiIpcClient {
     }
 
     /// Start recording a macro for a device
-    pub async fn start_recording_macro(&self, device_path: &str, name: &str, capture_mouse: bool) -> Result<(), String> {
+    pub async fn start_recording_macro(
+        &self,
+        device_path: &str,
+        name: &str,
+        capture_mouse: bool,
+    ) -> Result<(), String> {
         let request = Request::RecordMacro {
             device_path: device_path.to_string(),
             name: name.to_string(),
@@ -152,10 +160,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(Vec<String>)` - List of available profile names
     /// * `Err(String)` - IPC communication error
-    pub async fn get_device_profiles(
-        &self,
-        device_id: String,
-    ) -> Result<Vec<String>, String> {
+    pub async fn get_device_profiles(&self, device_id: String) -> Result<Vec<String>, String> {
         let request = Request::GetDeviceProfiles { device_id };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
@@ -205,10 +210,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(())` - Profile deactivated successfully
     /// * `Err(String)` - IPC communication error
-    pub async fn deactivate_profile(
-        &self,
-        device_id: String,
-    ) -> Result<(), String> {
+    pub async fn deactivate_profile(&self, device_id: String) -> Result<(), String> {
         let request = Request::DeactivateProfile { device_id };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
@@ -229,10 +231,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(Option<String>)` - Active profile name or None
     /// * `Err(String)` - IPC communication error
-    pub async fn get_active_profile(
-        &self,
-        device_id: String,
-    ) -> Result<Option<String>, String> {
+    pub async fn get_active_profile(&self, device_id: String) -> Result<Option<String>, String> {
         let request = Request::GetActiveProfile { device_id };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
@@ -262,7 +261,11 @@ impl GuiIpcClient {
         };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
-            Ok(Response::ActiveRemaps { profile_name, remaps, .. }) => {
+            Ok(Response::ActiveRemaps {
+                profile_name,
+                remaps,
+                ..
+            }) => {
                 if let Some(name) = profile_name {
                     Ok(Some((name, remaps)))
                 } else {
@@ -340,10 +343,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(())` - Profile deactivated successfully
     /// * `Err(String)` - IPC communication error
-    pub async fn deactivate_remap_profile(
-        &self,
-        device_path: &str,
-    ) -> Result<(), String> {
+    pub async fn deactivate_remap_profile(&self, device_path: &str) -> Result<(), String> {
         let request = Request::DeactivateRemapProfile {
             device_path: device_path.to_string(),
         };
@@ -392,10 +392,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(Option<usize>)` - Active layer ID (Some) or None if no layer active
     /// * `Err(String)` - IPC communication error
-    pub async fn get_active_layer(
-        &self,
-        device_id: &str,
-    ) -> Result<Option<usize>, String> {
+    pub async fn get_active_layer(&self, device_id: &str) -> Result<Option<usize>, String> {
         let request = Request::GetActiveLayer {
             device_id: device_id.to_string(),
         };
@@ -432,9 +429,9 @@ impl GuiIpcClient {
             layer_id,
             name: name.clone(),
             mode,
-            remap_count: 0, // Remaps are managed separately via RemapEngine
+            remap_count: 0,         // Remaps are managed separately via RemapEngine
             led_color: (0, 0, 255), // Default blue - TODO: allow GUI configuration
-            led_zone: None, // Default zone - TODO: allow GUI configuration
+            led_zone: None,         // Default zone - TODO: allow GUI configuration
         };
 
         let request = Request::SetLayerConfig {
@@ -493,10 +490,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(Vec<LayerConfigInfo>)` - List of layer configurations
     /// * `Err(String)` - IPC communication error
-    pub async fn list_layers(
-        &self,
-        device_id: &str,
-    ) -> Result<Vec<LayerConfigInfo>, String> {
+    pub async fn list_layers(&self, device_id: &str) -> Result<Vec<LayerConfigInfo>, String> {
         let request = Request::ListLayers {
             device_id: device_id.to_string(),
         };
@@ -520,11 +514,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(())` - D-pad mode set successfully
     /// * `Err(String)` - IPC communication error
-    pub async fn set_analog_dpad_mode(
-        &self,
-        device_id: &str,
-        mode: &str,
-    ) -> Result<(), String> {
+    pub async fn set_analog_dpad_mode(&self, device_id: &str, mode: &str) -> Result<(), String> {
         let request = Request::SetAnalogDpadMode {
             device_id: device_id.to_string(),
             mode: mode.to_string(),
@@ -548,10 +538,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(String)` - D-pad mode: "disabled", "eight_way", or "four_way"
     /// * `Err(String)` - IPC communication error
-    pub async fn get_analog_dpad_mode(
-        &self,
-        device_id: &str,
-    ) -> Result<String, String> {
+    pub async fn get_analog_dpad_mode(&self, device_id: &str) -> Result<String, String> {
         let request = Request::GetAnalogDpadMode {
             device_id: device_id.to_string(),
         };
@@ -606,18 +593,17 @@ impl GuiIpcClient {
     ///
     /// * `Ok((u8, u8))` - X and Y deadzone percentages (0-100 each)
     /// * `Err(String)` - IPC communication error
-    pub async fn get_analog_deadzone_xy(
-        &self,
-        device_id: &str,
-    ) -> Result<(u8, u8), String> {
+    pub async fn get_analog_deadzone_xy(&self, device_id: &str) -> Result<(u8, u8), String> {
         let request = Request::GetAnalogDeadzoneXY {
             device_id: device_id.to_string(),
         };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
-            Ok(Response::AnalogDeadzoneXY { x_percentage, y_percentage, .. }) => {
-                Ok((x_percentage, y_percentage))
-            }
+            Ok(Response::AnalogDeadzoneXY {
+                x_percentage,
+                y_percentage,
+                ..
+            }) => Ok((x_percentage, y_percentage)),
             Ok(Response::Error(msg)) => Err(msg),
             Ok(_) => Err("Unexpected response".to_string()),
             Err(e) => Err(format!("Failed to get per-axis deadzone: {}", e)),
@@ -666,18 +652,17 @@ impl GuiIpcClient {
     ///
     /// * `Ok((u8, u8))` - X and Y outer deadzone percentages (0-100 each)
     /// * `Err(String)` - IPC communication error
-    pub async fn get_analog_outer_deadzone_xy(
-        &self,
-        device_id: &str,
-    ) -> Result<(u8, u8), String> {
+    pub async fn get_analog_outer_deadzone_xy(&self, device_id: &str) -> Result<(u8, u8), String> {
         let request = Request::GetAnalogOuterDeadzoneXY {
             device_id: device_id.to_string(),
         };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
-            Ok(Response::AnalogOuterDeadzoneXY { x_percentage, y_percentage, .. }) => {
-                Ok((x_percentage, y_percentage))
-            }
+            Ok(Response::AnalogOuterDeadzoneXY {
+                x_percentage,
+                y_percentage,
+                ..
+            }) => Ok((x_percentage, y_percentage)),
             Ok(Response::Error(msg)) => Err(msg),
             Ok(_) => Err("Unexpected response".to_string()),
             Err(e) => Err(format!("Failed to get per-axis outer deadzone: {}", e)),
@@ -877,10 +862,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(LedPattern)` - Current LED pattern
     /// * `Err(String)` - IPC communication error
-    pub async fn get_led_pattern(
-        &self,
-        device_id: &str,
-    ) -> Result<LedPattern, String> {
+    pub async fn get_led_pattern(&self, device_id: &str) -> Result<LedPattern, String> {
         let request = Request::GetLedPattern {
             device_id: device_id.to_string(),
         };
@@ -909,7 +891,10 @@ impl GuiIpcClient {
         app_id: String,
         window_title: Option<String>,
     ) -> Result<(), String> {
-        let request = Request::FocusChanged { app_id, window_title };
+        let request = Request::FocusChanged {
+            app_id,
+            window_title,
+        };
         match ipc_client::send_to_path(&request, &self.socket_path).await {
             Ok(Response::FocusChangedAck { .. }) => Ok(()),
             Ok(Response::Error(e)) => Err(e),
@@ -940,8 +925,13 @@ impl GuiIpcClient {
         };
 
         match ipc_client::send_to_path(&request, &self.socket_path).await {
-            Ok(Response::AnalogCalibration { calibration: Some(cal), .. }) => Ok(cal),
-            Ok(Response::AnalogCalibration { calibration: None, .. }) => {
+            Ok(Response::AnalogCalibration {
+                calibration: Some(cal),
+                ..
+            }) => Ok(cal),
+            Ok(Response::AnalogCalibration {
+                calibration: None, ..
+            }) => {
                 // Return default config
                 Ok(AnalogCalibrationConfig::default())
             }
@@ -993,10 +983,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(())` - Subscription successful
     /// * `Err(String)` - IPC communication error
-    pub async fn subscribe_analog_input(
-        &self,
-        device_id: &str,
-    ) -> Result<(), String> {
+    pub async fn subscribe_analog_input(&self, device_id: &str) -> Result<(), String> {
         let request = Request::SubscribeAnalogInput {
             device_id: device_id.to_string(),
         };
@@ -1019,10 +1006,7 @@ impl GuiIpcClient {
     ///
     /// * `Ok(())` - Unsubscription successful
     /// * `Err(String)` - IPC communication error
-    pub async fn unsubscribe_analog_input(
-        &self,
-        device_id: &str,
-    ) -> Result<(), String> {
+    pub async fn unsubscribe_analog_input(&self, device_id: &str) -> Result<(), String> {
         let request = Request::UnsubscribeAnalogInput {
             device_id: device_id.to_string(),
         };
@@ -1047,7 +1031,10 @@ impl GuiIpcClient {
     }
 
     /// Set global macro settings
-    pub async fn set_macro_settings(&self, settings: aethermap_common::MacroSettings) -> Result<(), String> {
+    pub async fn set_macro_settings(
+        &self,
+        settings: aethermap_common::MacroSettings,
+    ) -> Result<(), String> {
         let request = Request::SetMacroSettings(settings);
         match ipc_client::send_to_path(&request, &self.socket_path).await {
             Ok(Response::Ack) => Ok(()),

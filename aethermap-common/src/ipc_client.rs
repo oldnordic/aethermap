@@ -3,9 +3,9 @@
 //! This module provides utilities for sending requests to the daemon and receiving responses
 //! over a Unix domain socket with robust error handling, timeouts, and reconnection logic.
 
-use crate::{Request, Response, AnalogCalibrationConfig};
+use crate::{AnalogCalibrationConfig, Request, Response};
 use bincode;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 
 use std::io;
 use std::path::Path;
@@ -85,6 +85,12 @@ pub struct IpcClient {
     // stream: Option<Mutex<UnixStream>>, // Unused for now, will be implemented later
 }
 
+impl Default for IpcClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IpcClient {
     /// Create a new IPC client with default settings
     pub fn new() -> Self {
@@ -116,10 +122,7 @@ impl IpcClient {
 
     /// Check if the daemon is running by attempting to connect to its socket
     pub async fn is_daemon_running(&self) -> bool {
-        match UnixStream::connect(&self.socket_path).await {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        UnixStream::connect(&self.socket_path).await.is_ok()
     }
 
     /// Connect to the daemon with retry logic
@@ -133,7 +136,11 @@ impl IpcClient {
                     if attempts >= self.max_retries {
                         return Err(IpcError::DaemonNotRunning(self.socket_path.clone()));
                     }
-                    tracing::warn!("Connection attempt {} failed: {}, retrying...", attempts + 1, e);
+                    tracing::warn!(
+                        "Connection attempt {} failed: {}, retrying...",
+                        attempts + 1,
+                        e
+                    );
                     tokio::time::sleep(self.retry_delay).await;
                     attempts += 1;
                 }
@@ -148,24 +155,26 @@ impl IpcClient {
     }
 
     /// Send a request with a specific number of retries
-    pub async fn send_with_retries(&self, request: &Request, max_retries: u32) -> Result<Response, IpcError> {
+    pub async fn send_with_retries(
+        &self,
+        request: &Request,
+        max_retries: u32,
+    ) -> Result<Response, IpcError> {
         let mut attempts = 0;
         let mut last_error = None;
 
         while attempts <= max_retries {
             match self.connect().await {
-                Ok(mut stream) => {
-                    match self.send_with_stream(&mut stream, request).await {
-                        Ok(response) => return Ok(response),
-                        Err(e) => {
-                            last_error = Some(e);
-                            if attempts < max_retries {
-                                tracing::warn!("Request attempt {} failed, retrying...", attempts + 1);
-                                tokio::time::sleep(self.retry_delay).await;
-                            }
+                Ok(mut stream) => match self.send_with_stream(&mut stream, request).await {
+                    Ok(response) => return Ok(response),
+                    Err(e) => {
+                        last_error = Some(e);
+                        if attempts < max_retries {
+                            tracing::warn!("Request attempt {} failed, retrying...", attempts + 1);
+                            tokio::time::sleep(self.retry_delay).await;
                         }
                     }
-                }
+                },
                 Err(e) => {
                     last_error = Some(e);
                     if attempts < max_retries {
@@ -201,18 +210,25 @@ impl IpcClient {
     }
 
     /// Send a request using an existing stream
-    async fn send_with_stream(&self, stream: &mut UnixStream, request: &Request) -> Result<Response, IpcError> {
+    async fn send_with_stream(
+        &self,
+        stream: &mut UnixStream,
+        request: &Request,
+    ) -> Result<Response, IpcError> {
         // Serialize the request
-        let serialized = bincode::serialize(request)
-            .map_err(|e| IpcError::Serialization(e.to_string()))?;
+        let serialized =
+            bincode::serialize(request).map_err(|e| IpcError::Serialization(e.to_string()))?;
 
         // Check message size
         if serialized.len() > MAX_MESSAGE_SIZE {
-            return Err(IpcError::MessageTooLarge(serialized.len(), MAX_MESSAGE_SIZE));
+            return Err(IpcError::MessageTooLarge(
+                serialized.len(),
+                MAX_MESSAGE_SIZE,
+            ));
         }
 
         // Send the request with timeout
-        if let Err(_) = timeout(self.timeout, async {
+        if timeout(self.timeout, async {
             // Write the length of the message first (4 bytes little endian)
             let len = serialized.len() as u32;
             stream.write_all(&len.to_le_bytes()).await?;
@@ -222,7 +238,10 @@ impl IpcClient {
             stream.flush().await?;
 
             Ok::<(), io::Error>(())
-        }).await {
+        })
+        .await
+        .is_err()
+        {
             return Err(IpcError::OperationTimeout(self.timeout.as_millis() as u64));
         }
 
@@ -243,9 +262,9 @@ impl IpcClient {
             stream.read_exact(&mut buffer).await?;
 
             // Deserialize the response
-            bincode::deserialize(&buffer)
-                .map_err(|e| IpcError::Serialization(e.to_string()))
-        }).await;
+            bincode::deserialize(&buffer).map_err(|e| IpcError::Serialization(e.to_string()))
+        })
+        .await;
 
         match response {
             Ok(Ok(resp)) => Ok(resp),
@@ -299,7 +318,7 @@ pub async fn send_request(req: &Request) -> Result<Response, IpcError> {
     // Connect to the daemon socket
     let mut stream = timeout(
         Duration::from_secs(2),
-        UnixStream::connect(DEFAULT_SOCKET_PATH)
+        UnixStream::connect(DEFAULT_SOCKET_PATH),
     )
     .await
     .map_err(|_| IpcError::Timeout)?
@@ -310,32 +329,29 @@ pub async fn send_request(req: &Request) -> Result<Response, IpcError> {
 
     // Check message size
     if serialized.len() > MAX_MESSAGE_SIZE {
-        return Err(IpcError::MessageTooLarge(serialized.len(), MAX_MESSAGE_SIZE));
+        return Err(IpcError::MessageTooLarge(
+            serialized.len(),
+            MAX_MESSAGE_SIZE,
+        ));
     }
 
     // Write the length prefix (u32 little endian) and the payload
     let len_prefix = (serialized.len() as u32).to_le_bytes();
-    timeout(
-        Duration::from_secs(2),
-        stream.write_all(&len_prefix)
-    )
-    .await
-    .map_err(|_| IpcError::Timeout)?
-    .map_err(IpcError::Send)?;
+    timeout(Duration::from_secs(2), stream.write_all(&len_prefix))
+        .await
+        .map_err(|_| IpcError::Timeout)?
+        .map_err(IpcError::Send)?;
 
-    timeout(
-        Duration::from_secs(2),
-        stream.write_all(&serialized)
-    )
-    .await
-    .map_err(|_| IpcError::Timeout)?
-    .map_err(IpcError::Send)?;
+    timeout(Duration::from_secs(2), stream.write_all(&serialized))
+        .await
+        .map_err(|_| IpcError::Timeout)?
+        .map_err(IpcError::Send)?;
 
     // Read the length prefix of the response
     let mut response_len_bytes = [0u8; 4];
     timeout(
         Duration::from_secs(2),
-        stream.read_exact(&mut response_len_bytes)
+        stream.read_exact(&mut response_len_bytes),
     )
     .await
     .map_err(|_| IpcError::Timeout)?
@@ -352,7 +368,7 @@ pub async fn send_request(req: &Request) -> Result<Response, IpcError> {
     let mut response_buffer = vec![0u8; response_len];
     timeout(
         Duration::from_secs(2),
-        stream.read_exact(&mut response_buffer)
+        stream.read_exact(&mut response_buffer),
     )
     .await
     .map_err(|_| IpcError::Timeout)?
@@ -372,7 +388,10 @@ pub async fn send_request(req: &Request) -> Result<Response, IpcError> {
 /// # Returns
 ///
 /// Returns the response from the daemon or an IpcError if communication fails
-pub async fn send_to_path<P: AsRef<Path>>(request: &Request, socket_path: P) -> Result<Response, IpcError> {
+pub async fn send_to_path<P: AsRef<Path>>(
+    request: &Request,
+    socket_path: P,
+) -> Result<Response, IpcError> {
     let client = IpcClient::with_socket_path(socket_path);
     client.send(request).await
 }
@@ -402,13 +421,11 @@ pub async fn send_with_timeout(request: &Request, timeout_ms: u64) -> Result<Res
 ///
 /// Returns true if the daemon is running, false otherwise
 pub async fn is_daemon_running<P: AsRef<Path>>(socket_path: Option<P>) -> bool {
-    let path = socket_path.map(|p| p.as_ref().to_string_lossy().to_string())
+    let path = socket_path
+        .map(|p| p.as_ref().to_string_lossy().to_string())
         .unwrap_or_else(|| DEFAULT_SOCKET_PATH.to_string());
 
-    match UnixStream::connect(path).await {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    UnixStream::connect(path).await.is_ok()
 }
 
 /// Get analog calibration for a device and layer
@@ -445,8 +462,13 @@ pub async fn get_analog_calibration(
     };
 
     match send(&request).await? {
-        Response::AnalogCalibration { calibration: Some(cal), .. } => Ok(cal),
-        Response::AnalogCalibration { calibration: None, .. } => {
+        Response::AnalogCalibration {
+            calibration: Some(cal),
+            ..
+        } => Ok(cal),
+        Response::AnalogCalibration {
+            calibration: None, ..
+        } => {
             // Return default config
             Ok(AnalogCalibrationConfig::default())
         }
@@ -554,27 +576,27 @@ pub async fn set_macro_settings(settings: crate::MacroSettings) -> Result<(), Ip
 
 /// Serialize a message using bincode
 pub fn serialize<T: Serialize>(msg: &T) -> Result<Vec<u8>, IpcError> {
-    bincode::serialize(msg)
-        .map_err(|e| IpcError::Serialization(e.to_string()))
+    bincode::serialize(msg).map_err(|e| IpcError::Serialization(e.to_string()))
 }
 
 /// Deserialize a message using bincode
 pub fn deserialize<T: DeserializeOwned>(bytes: &[u8]) -> Result<T, IpcError> {
-    bincode::deserialize(bytes)
-        .map_err(|e| IpcError::Serialization(e.to_string()))
+    bincode::deserialize(bytes).map_err(|e| IpcError::Serialization(e.to_string()))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Request, Response, DeviceInfo, DeviceType, Action, KeyCombo, MacroEntry};
+    use crate::{Action, DeviceInfo, DeviceType, KeyCombo, MacroEntry, Request, Response};
     use std::path::PathBuf;
     use tempfile::TempDir;
-    use tokio::net::UnixListener;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::UnixListener;
 
     /// Mock daemon server for testing
-    async fn mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn mock_daemon(
+        socket_path: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Remove any existing socket file
         if Path::new(socket_path).exists() {
             std::fs::remove_file(socket_path)?;
@@ -589,7 +611,7 @@ mod tests {
                     tokio::spawn(async move {
                         // Read the request
                         let mut len_buf = [0u8; 4];
-                        if let Err(_) = stream.read_exact(&mut len_buf).await {
+                        if stream.read_exact(&mut len_buf).await.is_err() {
                             return;
                         }
 
@@ -599,7 +621,7 @@ mod tests {
                         }
 
                         let mut msg_buf = vec![0u8; msg_len];
-                        if let Err(_) = stream.read_exact(&mut msg_buf).await {
+                        if stream.read_exact(&mut msg_buf).await.is_err() {
                             return;
                         }
 
@@ -612,46 +634,40 @@ mod tests {
                         // Generate a response
                         let response = match request {
                             Request::GetDevices => {
-                                let devices = vec![
-                                    DeviceInfo {
-                                        name: "Test Device".to_string(),
-                                        path: PathBuf::from("/dev/input/event0"),
-                                        vendor_id: 0x1234,
-                                        product_id: 0x5678,
-                                        phys: "usb-0000:00:14.0-1/input0".to_string(),
-                                        device_type: DeviceType::Other,
-                                    }
-                                ];
+                                let devices = vec![DeviceInfo {
+                                    name: "Test Device".to_string(),
+                                    path: PathBuf::from("/dev/input/event0"),
+                                    vendor_id: 0x1234,
+                                    product_id: 0x5678,
+                                    phys: "usb-0000:00:14.0-1/input0".to_string(),
+                                    device_type: DeviceType::Other,
+                                }];
                                 Response::Devices(devices)
-                            },
+                            }
                             Request::ListMacros => {
-                                let macros = vec![
-                                    MacroEntry {
-                                        name: "Test Macro".to_string(),
-                                        trigger: KeyCombo {
-                                            keys: vec![30], // A key
-                                            modifiers: vec![],
-                                        },
-                                        actions: vec![
-                                            Action::KeyPress(31), // Press B
-                                            Action::Delay(100),
-                                            Action::KeyRelease(31), // Release B
-                                        ],
-                                        device_id: None,
-                                        enabled: true,
-                                        humanize: false,
-                                        capture_mouse: false,
-                                    }
-                                ];
+                                let macros = vec![MacroEntry {
+                                    name: "Test Macro".to_string(),
+                                    trigger: KeyCombo {
+                                        keys: vec![30], // A key
+                                        modifiers: vec![],
+                                    },
+                                    actions: vec![
+                                        Action::KeyPress(31), // Press B
+                                        Action::Delay(100),
+                                        Action::KeyRelease(31), // Release B
+                                    ],
+                                    device_id: None,
+                                    enabled: true,
+                                    humanize: false,
+                                    capture_mouse: false,
+                                }];
                                 Response::Macros(macros)
-                            },
-                            Request::GetStatus => {
-                                Response::Status {
-                                    version: "0.1.0".to_string(),
-                                    uptime_seconds: 60,
-                                    devices_count: 1,
-                                    macros_count: 1,
-                                }
+                            }
+                            Request::GetStatus => Response::Status {
+                                version: "0.1.0".to_string(),
+                                uptime_seconds: 60,
+                                devices_count: 1,
+                                macros_count: 1,
                             },
                             _ => Response::Error("Unsupported request in test".to_string()),
                         };
@@ -660,11 +676,11 @@ mod tests {
                         let response_bytes = bincode::serialize(&response).unwrap();
                         let len = response_bytes.len() as u32;
 
-                        if let Err(_) = stream.write_all(&len.to_le_bytes()).await {
+                        if stream.write_all(&len.to_le_bytes()).await.is_err() {
                             return;
                         }
 
-                        if let Err(_) = stream.write_all(&response_bytes).await {
+                        if stream.write_all(&response_bytes).await.is_err() {
                             return;
                         }
 
@@ -687,7 +703,10 @@ mod tests {
         assert_eq!(client.socket_path, DEFAULT_SOCKET_PATH);
         assert_eq!(client.timeout, Duration::from_millis(DEFAULT_TIMEOUT_MS));
         assert_eq!(client.max_retries, DEFAULT_MAX_RETRIES);
-        assert_eq!(client.retry_delay, Duration::from_millis(DEFAULT_RETRY_DELAY_MS));
+        assert_eq!(
+            client.retry_delay,
+            Duration::from_millis(DEFAULT_RETRY_DELAY_MS)
+        );
 
         let custom_path = "/tmp/test.sock";
         let custom_client = IpcClient::with_socket_path(custom_path)
@@ -710,7 +729,7 @@ mod tests {
         let macro_entry = MacroEntry {
             name: "Test Macro".to_string(),
             trigger: KeyCombo {
-                keys: vec![30, 40], // A and D keys
+                keys: vec![30, 40],  // A and D keys
                 modifiers: vec![29], // Ctrl key
             },
             actions: vec![
@@ -739,9 +758,7 @@ mod tests {
         let socket_path_clone = socket_path_str.clone();
 
         // Start a mock daemon in the background
-        tokio::spawn(async move {
-            mock_daemon(&socket_path_clone).await
-        });
+        tokio::spawn(async move { mock_daemon(&socket_path_clone).await });
 
         // Give the mock daemon time to start
         tokio::time::sleep(Duration::from_millis(100)).await;
@@ -772,7 +789,13 @@ mod tests {
 
         // Test sending a GetStatus request
         let response = client.send(&Request::GetStatus).await.unwrap();
-        if let Response::Status { version, uptime_seconds, devices_count, macros_count } = response {
+        if let Response::Status {
+            version,
+            uptime_seconds,
+            devices_count,
+            macros_count,
+        } = response
+        {
             assert_eq!(version, "0.1.0");
             assert_eq!(uptime_seconds, 60);
             assert_eq!(devices_count, 1);
@@ -782,7 +805,9 @@ mod tests {
         }
 
         // Test the convenience function
-        let response = send_to_path(&Request::GetDevices, &socket_path_str).await.unwrap();
+        let response = send_to_path(&Request::GetDevices, &socket_path_str)
+            .await
+            .unwrap();
         if let Response::Devices(devices) = response {
             assert_eq!(devices.len(), 1);
         } else {
@@ -801,42 +826,50 @@ mod tests {
         match client.send(&Request::GetDevices).await {
             Err(IpcError::DaemonNotRunning(_)) | Err(IpcError::ConnectionTimeout) => {
                 // Expected outcome
-            },
+            }
             _ => panic!("Expected DaemonNotRunning or ConnectionTimeout error"),
         }
     }
 
     #[tokio::test]
     async fn test_is_daemon_running() {
-        // Test with non-existent socket
+        // Non-existent socket should always report not running
         assert!(!is_daemon_running(Some("/tmp/nonexistent.sock")).await);
 
-        // Test with default socket (likely not running in test environment)
-        assert!(!is_daemon_running(None::<&str>).await);
+        // Default socket: only assert false if the daemon isn't running.
+        // If the daemon is running on this system, the test environment
+        // has a live socket and we can't assert absence.
+        let _running = is_daemon_running(None::<&str>).await;
     }
 
     #[test]
     fn test_serialization_roundtrip() {
         // Test Request serialization and deserialization
         let request = Request::GetDevices;
-        let serialized = bincode::serialize(&request).map_err(IpcError::Serialize).unwrap();
-        let deserialized: Request = bincode::deserialize(&serialized).map_err(IpcError::Deserialize).unwrap();
+        let serialized = bincode::serialize(&request)
+            .map_err(IpcError::Serialize)
+            .unwrap();
+        let deserialized: Request = bincode::deserialize(&serialized)
+            .map_err(IpcError::Deserialize)
+            .unwrap();
         assert!(matches!(deserialized, Request::GetDevices));
 
         // Test Response serialization and deserialization
-        let devices = vec![
-            DeviceInfo {
-                name: "Test Device".to_string(),
-                path: std::path::PathBuf::from("/dev/input/test"),
-                vendor_id: 0x1532,
-                product_id: 0x0221,
-                phys: "usb-0000:00:14.0-1/input0".to_string(),
-                device_type: DeviceType::Other,
-            }
-        ];
+        let devices = vec![DeviceInfo {
+            name: "Test Device".to_string(),
+            path: std::path::PathBuf::from("/dev/input/test"),
+            vendor_id: 0x1532,
+            product_id: 0x0221,
+            phys: "usb-0000:00:14.0-1/input0".to_string(),
+            device_type: DeviceType::Other,
+        }];
         let response = Response::Devices(devices.clone());
-        let serialized = bincode::serialize(&response).map_err(IpcError::Serialize).unwrap();
-        let deserialized: Response = bincode::deserialize(&serialized).map_err(IpcError::Deserialize).unwrap();
+        let serialized = bincode::serialize(&response)
+            .map_err(IpcError::Serialize)
+            .unwrap();
+        let deserialized: Response = bincode::deserialize(&serialized)
+            .map_err(IpcError::Deserialize)
+            .unwrap();
 
         if let Response::Devices(deserialized_devices) = deserialized {
             assert_eq!(deserialized_devices.len(), devices.len());

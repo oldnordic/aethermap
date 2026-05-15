@@ -3,8 +3,8 @@ use std::fmt;
 use std::path::PathBuf;
 
 // Re-export common dependencies
-pub use serde;
 pub use bincode;
+pub use serde;
 pub use tokio;
 pub use tracing;
 
@@ -51,15 +51,18 @@ pub struct DeviceInfo {
 
 impl fmt::Display for DeviceInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} (VID: {:04X}, PID: {:04X}, Type: {})",
-               self.name, self.vendor_id, self.product_id, self.device_type)
+        write!(
+            f,
+            "{} (VID: {:04X}, PID: {:04X}, Type: {})",
+            self.name, self.vendor_id, self.product_id, self.device_type
+        )
     }
 }
 
 /// Represents a key combination for macro triggers
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct KeyCombo {
-    pub keys: Vec<u16>, // Key codes
+    pub keys: Vec<u16>,      // Key codes
     pub modifiers: Vec<u16>, // Modifier key codes
 }
 
@@ -144,10 +147,7 @@ pub enum Action {
     /// Analog stick movement with normalized value
     /// axis_code: 61000-61005 (ABS_X, ABS_Y, etc.)
     /// normalized: -1.0 to 1.0 (device-independent)
-    AnalogMove {
-        axis_code: u16,
-        normalized: f32,
-    },
+    AnalogMove { axis_code: u16, normalized: f32 },
 }
 
 impl fmt::Display for Action {
@@ -162,7 +162,10 @@ impl fmt::Display for Action {
             Action::MouseRelease(btn) => write!(f, "MouseRelease({})", btn),
             Action::MouseMove(x, y) => write!(f, "MouseMove({}, {})", x, y),
             Action::MouseScroll(amount) => write!(f, "MouseScroll({})", amount),
-            Action::AnalogMove { axis_code, normalized } => {
+            Action::AnalogMove {
+                axis_code,
+                normalized,
+            } => {
                 let axis_name = match axis_code {
                     61000 => "X",
                     61001 => "Y",
@@ -225,7 +228,7 @@ pub struct RemapEntry {
 /// This structure provides detailed capability information for a device,
 /// allowing the GUI to enable/disable relevant UI elements based on actual
 /// device hardware capabilities.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct DeviceCapabilities {
     /// Device has analog stick (absolute X/Y axes)
     pub has_analog_stick: bool,
@@ -243,13 +246,14 @@ pub struct DeviceCapabilities {
 /// Layer activation mode
 ///
 /// Determines how a layer becomes active and inactive.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum LayerMode {
     /// Layer is active while a modifier key is held
     ///
     /// When the modifier key is released, the layer deactivates.
     /// This is the typical behavior for "layer shift" keys.
+    #[default]
     Hold,
 
     /// Layer toggles on/off with each press
@@ -257,12 +261,6 @@ pub enum LayerMode {
     /// First press activates the layer, second press deactivates it.
     /// This is useful for "layer lock" functionality.
     Toggle,
-}
-
-impl Default for LayerMode {
-    fn default() -> Self {
-        LayerMode::Hold
-    }
 }
 
 impl fmt::Display for LayerMode {
@@ -303,7 +301,7 @@ pub struct CommonLayerConfig {
 
 /// Default layer color (blue for layer 1, can be customized)
 fn default_layer_color() -> (u8, u8, u8) {
-    (0, 0, 255)  // Blue
+    (0, 0, 255) // Blue
 }
 
 /// Layer configuration information for IPC
@@ -331,17 +329,6 @@ pub struct LayerConfigInfo {
     /// LED zone to display layer color
     #[serde(default)]
     pub led_zone: Option<LedZone>,
-}
-
-impl Default for DeviceCapabilities {
-    fn default() -> Self {
-        Self {
-            has_analog_stick: false,
-            has_hat_switch: false,
-            joystick_button_count: 0,
-            led_zones: Vec::new(),
-        }
-    }
 }
 
 /// Analog calibration configuration for IPC
@@ -426,9 +413,7 @@ pub enum Request {
     ListMacros,
 
     /// Delete a macro by name
-    DeleteMacro {
-        name: String,
-    },
+    DeleteMacro { name: String },
 
     /// Reload configuration from disk
     ReloadConfig,
@@ -450,86 +435,64 @@ pub enum Request {
     StopRecording,
 
     /// Test a macro execution
-    TestMacro {
-        name: String,
-    },
+    TestMacro { name: String },
 
     /// Get daemon status and version
     GetStatus,
 
     /// Save current macros to a profile
-    SaveProfile {
-        name: String,
-    },
+    SaveProfile { name: String },
 
     /// Load macros from a profile
-    LoadProfile {
-        name: String,
-    },
+    LoadProfile { name: String },
 
     /// List available profiles
     ListProfiles,
 
     /// Delete a profile
-    DeleteProfile {
-        name: String,
-    },
+    DeleteProfile { name: String },
 
     /// Generate an authentication token
-    GenerateToken {
-        client_id: String,
-    },
+    GenerateToken { client_id: String },
 
     /// Authenticate with a token
-    Authenticate {
-        token: String,
-    },
+    Authenticate { token: String },
 
     /// Execute a macro by name
-    ExecuteMacro {
-        name: String,
-    },
+    ExecuteMacro { name: String },
 
     /// Grab a device exclusively for input interception
-    GrabDevice {
-        device_path: String,
-    },
+    GrabDevice { device_path: String },
 
     /// Release exclusive access to a device
-    UngrabDevice {
-        device_path: String,
-    },
+    UngrabDevice { device_path: String },
 
     /// Get available profiles for a specific device
     GetDeviceProfiles {
-        device_id: String,  // vendor:product format
+        device_id: String, // vendor:product format
     },
 
     /// Activate a remap profile for a device
     ActivateProfile {
-        device_id: String,    // vendor:product format
+        device_id: String, // vendor:product format
         profile_name: String,
     },
 
     /// Deactivate the current remap profile for a device
     DeactivateProfile {
-        device_id: String,    // vendor:product format
+        device_id: String, // vendor:product format
     },
 
     /// Get the currently active profile for a device
     GetActiveProfile {
-        device_id: String,    // vendor:product format
+        device_id: String, // vendor:product format
     },
 
     /// Query active remap configuration for a device
-    GetActiveRemaps {
-        device_path: String,
-    },
+    GetActiveRemaps { device_path: String },
 
     /// List available remap profiles for a device
-    ListRemapProfiles {
-        device_path: String,
-    },
+    ListRemapProfiles { device_path: String },
 
     /// Activate a remap profile for a device
     ActivateRemapProfile {
@@ -538,19 +501,13 @@ pub enum Request {
     },
 
     /// Deactivate current remap profile for a device
-    DeactivateRemapProfile {
-        device_path: String,
-    },
+    DeactivateRemapProfile { device_path: String },
 
     /// Get device capabilities and features
-    GetDeviceCapabilities {
-        device_path: String,
-    },
+    GetDeviceCapabilities { device_path: String },
 
     /// Get the currently active layer for a device
-    GetActiveLayer {
-        device_id: String,
-    },
+    GetActiveLayer { device_id: String },
 
     /// Set layer configuration for a device
     SetLayerConfig {
@@ -567,77 +524,63 @@ pub enum Request {
     },
 
     /// List all configured layers for a device
-    ListLayers {
-        device_id: String,
-    },
+    ListLayers { device_id: String },
 
     /// Set analog sensitivity for a device
     SetAnalogSensitivity {
         device_id: String,
-        sensitivity: f32,  // 0.1-5.0 range
+        sensitivity: f32, // 0.1-5.0 range
     },
 
     /// Get analog sensitivity for a device
-    GetAnalogSensitivity {
-        device_id: String,
-    },
+    GetAnalogSensitivity { device_id: String },
 
     /// Set analog response curve for a device
     SetAnalogResponseCurve {
         device_id: String,
-        curve: String,  // "linear" or "exponential" or "exponential(<exponent>)"
+        curve: String, // "linear" or "exponential" or "exponential(<exponent>)"
     },
 
     /// Get analog response curve for a device
-    GetAnalogResponseCurve {
-        device_id: String,
-    },
+    GetAnalogResponseCurve { device_id: String },
 
     /// Set analog deadzone for a device (both X and Y axes)
     SetAnalogDeadzone {
         device_id: String,
-        percentage: u8,  // 0-100
+        percentage: u8, // 0-100
     },
 
     /// Get analog deadzone for a device (returns X-axis percentage)
-    GetAnalogDeadzone {
-        device_id: String,
-    },
+    GetAnalogDeadzone { device_id: String },
 
     /// Set per-axis analog deadzone for a device
     SetAnalogDeadzoneXY {
         device_id: String,
-        x_percentage: u8,  // 0-100
-        y_percentage: u8,  // 0-100
+        x_percentage: u8, // 0-100
+        y_percentage: u8, // 0-100
     },
 
     /// Get per-axis analog deadzone for a device
-    GetAnalogDeadzoneXY {
-        device_id: String,
-    },
+    GetAnalogDeadzoneXY { device_id: String },
 
     /// Set per-axis outer deadzone (max clamp) for a device
     SetAnalogOuterDeadzoneXY {
         device_id: String,
-        x_percentage: u8,  // 0-100
-        y_percentage: u8,  // 0-100
+        x_percentage: u8, // 0-100
+        y_percentage: u8, // 0-100
     },
 
     /// Get per-axis outer deadzone for a device
-    GetAnalogOuterDeadzoneXY {
-        device_id: String,
-    },
+    GetAnalogOuterDeadzoneXY { device_id: String },
 
     /// Set D-pad emulation mode for a device
     SetAnalogDpadMode {
         device_id: String,
-        mode: String,  // "disabled", "eight_way", "four_way"
+        mode: String, // "disabled", "eight_way", "four_way"
     },
 
     /// Get D-pad emulation mode for a device
-    GetAnalogDpadMode {
-        device_id: String,
-    },
+    GetAnalogDpadMode { device_id: String },
 
     /// Set LED color for a specific zone
     SetLedColor {
@@ -649,21 +592,16 @@ pub enum Request {
     },
 
     /// Get LED color for a specific zone
-    GetLedColor {
-        device_id: String,
-        zone: LedZone,
-    },
+    GetLedColor { device_id: String, zone: LedZone },
 
     /// Get all LED colors for a device
-    GetAllLedColors {
-        device_id: String,
-    },
+    GetAllLedColors { device_id: String },
 
     /// Set LED brightness for a device (global or per-zone)
     SetLedBrightness {
         device_id: String,
-        zone: Option<LedZone>,  // None = global brightness
-        brightness: u8,  // 0-100
+        zone: Option<LedZone>, // None = global brightness
+        brightness: u8,        // 0-100
     },
 
     /// Get LED brightness for a device
@@ -679,13 +617,11 @@ pub enum Request {
     },
 
     /// Get LED pattern for a device
-    GetLedPattern {
-        device_id: String,
-    },
+    GetLedPattern { device_id: String },
 
     /// Notify daemon that window focus changed (for auto-profile switching)
     FocusChanged {
-        app_id: String,              // e.g., "org.alacritty", "firefox"
+        app_id: String,               // e.g., "org.alacritty", "firefox"
         window_title: Option<String>, // May be empty on some compositors
     },
 
@@ -696,9 +632,7 @@ pub enum Request {
     },
 
     /// List all registered hotkey bindings for a device
-    ListHotkeys {
-        device_id: String,
-    },
+    ListHotkeys { device_id: String },
 
     /// Remove a hotkey binding
     RemoveHotkey {
@@ -708,18 +642,13 @@ pub enum Request {
     },
 
     /// Set global auto-switch rules for profile switching
-    SetAutoSwitchRules {
-        rules: Vec<AutoSwitchRule>,
-    },
+    SetAutoSwitchRules { rules: Vec<AutoSwitchRule> },
 
     /// Get all auto-switch rules
     GetAutoSwitchRules,
 
     /// Get analog calibration for a device and layer
-    GetAnalogCalibration {
-        device_id: String,
-        layer_id: usize,
-    },
+    GetAnalogCalibration { device_id: String, layer_id: usize },
 
     /// Set analog calibration for a device and layer
     SetAnalogCalibration {
@@ -729,14 +658,10 @@ pub enum Request {
     },
 
     /// Subscribe to analog input updates for a device
-    SubscribeAnalogInput {
-        device_id: String,
-    },
+    SubscribeAnalogInput { device_id: String },
 
     /// Unsubscribe from analog input updates
-    UnsubscribeAnalogInput {
-        device_id: String,
-    },
+    UnsubscribeAnalogInput { device_id: String },
 
     /// Set global macro timing and jitter settings
     SetMacroSettings(MacroSettings),
@@ -749,10 +674,11 @@ pub enum Request {
 ///
 /// Determines how analog stick input is converted to output events.
 /// Used in LayerConfig to specify per-layer analog mode selection.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum AnalogMode {
     /// No output (analog disabled)
+    #[default]
     Disabled,
     /// D-pad mode - 8-way directional keys (arrows)
     Dpad,
@@ -779,12 +705,6 @@ impl fmt::Display for AnalogMode {
     }
 }
 
-impl Default for AnalogMode {
-    fn default() -> Self {
-        AnalogMode::Disabled
-    }
-}
-
 impl AnalogMode {
     /// All analog modes for pick_list widget
     pub const ALL: [AnalogMode; 6] = [
@@ -801,10 +721,11 @@ impl AnalogMode {
 ///
 /// Controls how analog stick input is converted in Camera mode.
 /// Used in LayerConfig to specify camera output behavior per layer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum CameraOutputMode {
     /// Emit REL_WHEEL events for scrolling
+    #[default]
     Scroll,
     /// Emit key repeat events (PageUp/PageDown/arrows)
     Keys,
@@ -819,18 +740,9 @@ impl fmt::Display for CameraOutputMode {
     }
 }
 
-impl Default for CameraOutputMode {
-    fn default() -> Self {
-        CameraOutputMode::Scroll
-    }
-}
-
 impl CameraOutputMode {
     /// All camera output modes for pick_list widget
-    pub const ALL: [CameraOutputMode; 2] = [
-        CameraOutputMode::Scroll,
-        CameraOutputMode::Keys,
-    ];
+    pub const ALL: [CameraOutputMode; 2] = [CameraOutputMode::Scroll, CameraOutputMode::Keys];
 }
 
 /// LED pattern types for visual effects
@@ -893,30 +805,19 @@ pub enum Response {
     },
 
     /// Notification that recording has started
-    RecordingStarted {
-        device_path: String,
-        name: String,
-    },
+    RecordingStarted { device_path: String, name: String },
 
     /// Notification that recording has stopped
-    RecordingStopped {
-        macro_entry: MacroEntry,
-    },
+    RecordingStopped { macro_entry: MacroEntry },
 
     /// List of available profiles
     Profiles(Vec<String>),
 
     /// Profile load confirmation
-    ProfileLoaded {
-        name: String,
-        macros_count: usize,
-    },
+    ProfileLoaded { name: String, macros_count: usize },
 
     /// Profile save confirmation
-    ProfileSaved {
-        name: String,
-        macros_count: usize,
-    },
+    ProfileSaved { name: String, macros_count: usize },
 
     /// Error response
     Error(String),
@@ -940,9 +841,7 @@ pub enum Response {
     },
 
     /// Profile deactivation confirmation
-    ProfileDeactivated {
-        device_id: String,
-    },
+    ProfileDeactivated { device_id: String },
 
     /// Current active profile for a device
     ActiveProfile {
@@ -970,9 +869,7 @@ pub enum Response {
     },
 
     /// Remap profile deactivation confirmation
-    RemapProfileDeactivated {
-        device_path: String,
-    },
+    RemapProfileDeactivated { device_path: String },
 
     /// Device capability information
     DeviceCapabilities {
@@ -988,10 +885,7 @@ pub enum Response {
     },
 
     /// Layer configuration confirmation
-    LayerConfigured {
-        device_id: String,
-        layer_id: usize,
-    },
+    LayerConfigured { device_id: String, layer_id: usize },
 
     /// List of configured layers for a device
     LayerList {
@@ -1000,40 +894,22 @@ pub enum Response {
     },
 
     /// Analog sensitivity set confirmation
-    AnalogSensitivitySet {
-        device_id: String,
-        sensitivity: f32,
-    },
+    AnalogSensitivitySet { device_id: String, sensitivity: f32 },
 
     /// Analog sensitivity response
-    AnalogSensitivity {
-        device_id: String,
-        sensitivity: f32,
-    },
+    AnalogSensitivity { device_id: String, sensitivity: f32 },
 
     /// Analog response curve set confirmation
-    AnalogResponseCurveSet {
-        device_id: String,
-        curve: String,
-    },
+    AnalogResponseCurveSet { device_id: String, curve: String },
 
     /// Analog response curve response
-    AnalogResponseCurve {
-        device_id: String,
-        curve: String,
-    },
+    AnalogResponseCurve { device_id: String, curve: String },
 
     /// Analog deadzone set confirmation
-    AnalogDeadzoneSet {
-        device_id: String,
-        percentage: u8,
-    },
+    AnalogDeadzoneSet { device_id: String, percentage: u8 },
 
     /// Analog deadzone response
-    AnalogDeadzone {
-        device_id: String,
-        percentage: u8,
-    },
+    AnalogDeadzone { device_id: String, percentage: u8 },
 
     /// Per-axis deadzone set confirmation
     AnalogDeadzoneXYSet {
@@ -1064,16 +940,10 @@ pub enum Response {
     },
 
     /// D-pad mode set confirmation
-    AnalogDpadModeSet {
-        device_id: String,
-        mode: String,
-    },
+    AnalogDpadModeSet { device_id: String, mode: String },
 
     /// D-pad mode response
-    AnalogDpadMode {
-        device_id: String,
-        mode: String,
-    },
+    AnalogDpadMode { device_id: String, mode: String },
 
     /// LED color set confirmation
     LedColorSet {
@@ -1122,9 +992,7 @@ pub enum Response {
     },
 
     /// Acknowledgment of focus change event
-    FocusChangedAck {
-        app_id: String,
-    },
+    FocusChangedAck { app_id: String },
 
     /// Hotkey registration successful
     HotkeyRegistered {
@@ -1150,9 +1018,7 @@ pub enum Response {
     AutoSwitchRulesAck,
 
     /// Auto-switch rules response
-    AutoSwitchRules {
-        rules: Vec<AutoSwitchRule>,
-    },
+    AutoSwitchRules { rules: Vec<AutoSwitchRule> },
 
     /// Analog calibration response
     AnalogCalibration {
@@ -1167,8 +1033,8 @@ pub enum Response {
     /// Analog input update (streamed to subscribers)
     AnalogInputUpdate {
         device_id: String,
-        axis_x: f32,  // -1.0 to 1.0
-        axis_y: f32,  // -1.0 to 1.0
+        axis_x: f32, // -1.0 to 1.0
+        axis_y: f32, // -1.0 to 1.0
     },
 
     /// Analog subscription acknowledgment
@@ -1227,7 +1093,7 @@ mod tests {
         let macro_entry = MacroEntry {
             name: "Test Macro".to_string(),
             trigger: KeyCombo {
-                keys: vec![30, 40], // A and D keys
+                keys: vec![30, 40],  // A and D keys
                 modifiers: vec![29], // Ctrl key
             },
             actions: vec![
@@ -1350,8 +1216,14 @@ mod tests {
         assert!(matches!(deserialized.actions[0], Action::KeyPress(30)));
         assert!(matches!(deserialized.actions[1], Action::MousePress(0x110)));
         assert!(matches!(deserialized.actions[2], Action::Delay(50)));
-        assert!(matches!(deserialized.actions[3], Action::MouseRelease(0x110)));
-        assert!(matches!(deserialized.actions[4], Action::MouseMove(100, 200)));
+        assert!(matches!(
+            deserialized.actions[3],
+            Action::MouseRelease(0x110)
+        ));
+        assert!(matches!(
+            deserialized.actions[4],
+            Action::MouseMove(100, 200)
+        ));
         assert!(matches!(deserialized.actions[5], Action::MouseScroll(3)));
         assert!(matches!(deserialized.actions[6], Action::KeyRelease(30)));
     }
@@ -1366,8 +1238,8 @@ mod tests {
         };
         let serialized = serialize(&caps);
         let deserialized: DeviceCapabilities = deserialize(&serialized).unwrap();
-        assert_eq!(deserialized.has_analog_stick, true);
-        assert_eq!(deserialized.has_hat_switch, true);
+        assert!(deserialized.has_analog_stick);
+        assert!(deserialized.has_hat_switch);
         assert_eq!(deserialized.joystick_button_count, 26);
         assert_eq!(deserialized.led_zones.len(), 2);
     }
@@ -1379,7 +1251,10 @@ mod tests {
         };
         let serialized = serialize(&request);
         let deserialized: Request = deserialize(&serialized).unwrap();
-        assert!(matches!(deserialized, Request::GetDeviceCapabilities { .. }));
+        assert!(matches!(
+            deserialized,
+            Request::GetDeviceCapabilities { .. }
+        ));
         if let Request::GetDeviceCapabilities { device_path } = deserialized {
             assert_eq!(device_path, "/dev/input/event0");
         }
@@ -1423,7 +1298,7 @@ mod tests {
             name: "Gaming".to_string(),
             mode: LayerMode::Toggle,
             remap_count: 5,
-            led_color: (0, 0, 255),  // Default blue
+            led_color: (0, 0, 255), // Default blue
             led_zone: None,
         };
 
@@ -1463,7 +1338,12 @@ mod tests {
         let deserialized: Response = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Response::ActiveLayer { .. }));
-        if let Response::ActiveLayer { device_id, layer_id, layer_name } = deserialized {
+        if let Response::ActiveLayer {
+            device_id,
+            layer_id,
+            layer_name,
+        } = deserialized
+        {
             assert_eq!(device_id, "1532:0220");
             assert_eq!(layer_id, 2);
             assert_eq!(layer_name, "Gaming");
@@ -1489,7 +1369,12 @@ mod tests {
         let deserialized: Request = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Request::SetLayerConfig { .. }));
-        if let Request::SetLayerConfig { device_id, layer_id, config } = deserialized {
+        if let Request::SetLayerConfig {
+            device_id,
+            layer_id,
+            config,
+        } = deserialized
+        {
             assert_eq!(device_id, "1532:0220");
             assert_eq!(layer_id, 1);
             assert_eq!(config.name, "Work");
@@ -1509,7 +1394,12 @@ mod tests {
         let deserialized: Request = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Request::ActivateLayer { .. }));
-        if let Request::ActivateLayer { device_id, layer_id, mode } = deserialized {
+        if let Request::ActivateLayer {
+            device_id,
+            layer_id,
+            mode,
+        } = deserialized
+        {
             assert_eq!(device_id, "1532:0220");
             assert_eq!(layer_id, 2);
             assert_eq!(mode, LayerMode::Toggle);
@@ -1578,7 +1468,11 @@ mod tests {
         let deserialized: Response = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Response::LayerConfigured { .. }));
-        if let Response::LayerConfigured { device_id, layer_id } = deserialized {
+        if let Response::LayerConfigured {
+            device_id,
+            layer_id,
+        } = deserialized
+        {
             assert_eq!(device_id, "1532:0220");
             assert_eq!(layer_id, 1);
         }
@@ -1596,7 +1490,11 @@ mod tests {
         let deserialized: Request = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Request::FocusChanged { .. }));
-        if let Request::FocusChanged { app_id, window_title } = deserialized {
+        if let Request::FocusChanged {
+            app_id,
+            window_title,
+        } = deserialized
+        {
             assert_eq!(app_id, "org.alacritty");
             assert_eq!(window_title, Some("Alacritty: ~/Projects".to_string()));
         }
@@ -1611,7 +1509,11 @@ mod tests {
         let deserialized: Request = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Request::FocusChanged { .. }));
-        if let Request::FocusChanged { app_id, window_title } = deserialized {
+        if let Request::FocusChanged {
+            app_id,
+            window_title,
+        } = deserialized
+        {
             assert_eq!(app_id, "org.mozilla.firefox");
             assert_eq!(window_title, None);
         }
@@ -1626,7 +1528,11 @@ mod tests {
         let deserialized: Request = deserialize(&serialized).unwrap();
 
         assert!(matches!(deserialized, Request::FocusChanged { .. }));
-        if let Request::FocusChanged { app_id, window_title } = deserialized {
+        if let Request::FocusChanged {
+            app_id,
+            window_title,
+        } = deserialized
+        {
             assert_eq!(app_id, "firefox");
             assert_eq!(window_title, Some("Mozilla Firefox".to_string()));
         }
@@ -1683,6 +1589,9 @@ mod tests {
         let deserialized: AnalogCalibrationConfig = deserialize(&serialized).unwrap();
 
         assert_eq!(deserialized.analog_mode, AnalogMode::Camera);
-        assert_eq!(deserialized.camera_output_mode, Some(CameraOutputMode::Keys));
+        assert_eq!(
+            deserialized.camera_output_mode,
+            Some(CameraOutputMode::Keys)
+        );
     }
 }

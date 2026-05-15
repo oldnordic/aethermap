@@ -1,6 +1,6 @@
+use super::palette::*;
 use iced::widget::{button, container, rule, text_input};
 use iced::{border, Color, Theme};
-use super::palette::*;
 
 pub fn card(_theme: &Theme) -> container::Appearance {
     container::Appearance {
@@ -16,21 +16,19 @@ pub fn card(_theme: &Theme) -> container::Appearance {
 }
 
 pub fn sidebar_item(active: bool) -> impl Fn(&Theme) -> button::Appearance {
-    move |_theme: &Theme| {
-        button::Appearance {
-            background: if active {
-                Some(BG_ELEVATED.into())
-            } else {
-                Some(Color::TRANSPARENT.into())
-            },
-            text_color: if active { ACCENT } else { TEXT_SECONDARY },
-            border: border::Border {
-                color: if active { ACCENT } else { Color::TRANSPARENT },
-                width: if active { 2.0 } else { 0.0 },
-                radius: [0.0, RADIUS_INPUT, RADIUS_INPUT, 0.0].into(),
-            },
-            ..Default::default()
-        }
+    move |_theme: &Theme| button::Appearance {
+        background: if active {
+            Some(BG_ELEVATED.into())
+        } else {
+            Some(Color::TRANSPARENT.into())
+        },
+        text_color: if active { ACCENT } else { TEXT_SECONDARY },
+        border: border::Border {
+            color: if active { ACCENT } else { Color::TRANSPARENT },
+            width: if active { 2.0 } else { 0.0 },
+            radius: [0.0, RADIUS_INPUT, RADIUS_INPUT, 0.0].into(),
+        },
+        ..Default::default()
     }
 }
 

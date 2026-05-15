@@ -1,10 +1,10 @@
-use iced::{
-    widget::{button, column, container, pick_list, row, text, text_input, Space, Column},
-    Element, Length, Alignment,
-};
-use aethermap_common::{DeviceInfo, DeviceType, LayerMode};
-use crate::gui::{State, Message};
+use crate::gui::{Message, State};
 use crate::theme;
+use aethermap_common::{DeviceInfo, DeviceType, LayerMode};
+use iced::{
+    widget::{button, column, container, pick_list, row, text, text_input, Column, Space},
+    Alignment, Element, Length,
+};
 
 pub fn view_devices_tab(state: &State) -> Element<'_, Message> {
     let header = row![
@@ -70,7 +70,7 @@ pub fn view_devices_tab(state: &State) -> Element<'_, Message> {
             .align_items(Alignment::Center)
             .into(),
             Space::with_height(20).into(),
-            crate::views::keypad::view(state).into(),
+            crate::views::keypad::view(state),
         ];
 
         if let Some(ref device_path) = state.keypad_view_device {
@@ -82,18 +82,16 @@ pub fn view_devices_tab(state: &State) -> Element<'_, Message> {
                         Space::with_height(8),
                         profile_quick_toggles(state, device_path),
                     ]
-                    .spacing(4)
+                    .spacing(4),
                 )
                 .padding(16)
                 .width(Length::Fill)
                 .style(theme::styles::card)
-                .into()
+                .into(),
             );
         }
 
-        return column(keypad_content)
-            .spacing(10)
-            .into();
+        return column(keypad_content).spacing(10).into();
     }
 
     let device_list = if state.devices.is_empty() {
@@ -113,16 +111,16 @@ pub fn view_devices_tab(state: &State) -> Element<'_, Message> {
         list
     };
 
-    column![
-        header,
-        Space::with_height(20),
-        device_list,
-    ]
-    .spacing(10)
-    .into()
+    column![header, Space::with_height(20), device_list,]
+        .spacing(10)
+        .into()
 }
 
-pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize) -> Element<'a, Message> {
+pub fn view_device_card<'a>(
+    state: &'a State,
+    device: &'a DeviceInfo,
+    idx: usize,
+) -> Element<'a, Message> {
     let device_path = device.path.to_string_lossy().to_string();
     let is_grabbed = state.grabbed_devices.contains(&device_path);
     let is_selected = state.selected_device == Some(idx);
@@ -136,11 +134,9 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
     };
 
     let status_badge = if is_grabbed {
-        container(
-            text("GRABBED").size(10)
-        )
-        .padding([4, 8])
-        .style(theme::styles::card)
+        container(text("GRABBED").size(10))
+            .padding([4, 8])
+            .style(theme::styles::card)
     } else {
         container(text("").size(10))
     };
@@ -162,113 +158,126 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
         Some(
             button("Configure Keypad")
                 .on_press(Message::ShowKeypadView(device_path.clone()))
-                .style(iced::theme::Button::Secondary)
+                .style(iced::theme::Button::Secondary),
         )
     } else {
         None
     };
 
-    let led_button = if device.device_type == DeviceType::Keypad || device.device_type == DeviceType::Gamepad {
-        Some(
-            button("Configure LEDs")
-                .on_press(Message::OpenLedConfig(device_id.clone()))
-                .style(iced::theme::Button::Secondary)
-        )
-    } else {
-        None
-    };
+    let led_button =
+        if device.device_type == DeviceType::Keypad || device.device_type == DeviceType::Gamepad {
+            Some(
+                button("Configure LEDs")
+                    .on_press(Message::OpenLedConfig(device_id.clone()))
+                    .style(iced::theme::Button::Secondary),
+            )
+        } else {
+            None
+        };
 
     let auto_switch_button = Some(
         button("Auto-Switch Rules")
             .on_press(Message::ShowAutoSwitchRules(device_id.clone()))
-            .style(iced::theme::Button::Secondary)
+            .style(iced::theme::Button::Secondary),
     );
 
     let hotkey_button = Some(
         button("Hotkey Bindings")
             .on_press(Message::ShowHotkeyBindings(device_id.clone()))
-            .style(iced::theme::Button::Secondary)
+            .style(iced::theme::Button::Secondary),
     );
 
-    let analog_button = if device.device_type == DeviceType::Keypad ||
-                         device.device_type == DeviceType::Gamepad {
-        Some(
-            button("Analog Calibration")
-                .on_press(Message::OpenAnalogCalibration {
-                    device_id: device_id.clone(),
-                    layer_id: state.active_layers.get(&device_id).copied().unwrap_or(0),
-                })
-                .style(iced::theme::Button::Secondary)
-        )
-    } else {
-        None
-    };
+    let analog_button =
+        if device.device_type == DeviceType::Keypad || device.device_type == DeviceType::Gamepad {
+            Some(
+                button("Analog Calibration")
+                    .on_press(Message::OpenAnalogCalibration {
+                        device_id: device_id.clone(),
+                        layer_id: state.active_layers.get(&device_id).copied().unwrap_or(0),
+                    })
+                    .style(iced::theme::Button::Secondary),
+            )
+        } else {
+            None
+        };
 
-    let card_content = column![
-        row![
-            text(icon).size(28),
-            Space::with_width(12),
-            column![
-                row![
-                    text(format!("{}{}", select_indicator, device.name)).size(16),
-                    Space::with_width(8),
-                    text(match device.device_type {
-                        DeviceType::Keyboard => "Keyboard",
-                        DeviceType::Mouse => "Mouse",
-                        DeviceType::Gamepad => "Gamepad",
-                        DeviceType::Keypad => "Keypad",
-                        DeviceType::Other => "Other",
-                    }).size(12).style(iced::theme::Text::Color(iced::Color::from_rgb(0.6, 0.6, 0.6))),
+    let card_content =
+        column![
+            row![
+                text(icon).size(28),
+                Space::with_width(12),
+                column![
+                    row![
+                        text(format!("{}{}", select_indicator, device.name)).size(16),
+                        Space::with_width(8),
+                        text(match device.device_type {
+                            DeviceType::Keyboard => "Keyboard",
+                            DeviceType::Mouse => "Mouse",
+                            DeviceType::Gamepad => "Gamepad",
+                            DeviceType::Keypad => "Keypad",
+                            DeviceType::Other => "Other",
+                        })
+                        .size(12)
+                        .style(iced::theme::Text::Color(
+                            iced::Color::from_rgb(0.6, 0.6, 0.6)
+                        )),
+                    ],
+                    text(format!(
+                        "VID:{:04X} PID:{:04X} | {}",
+                        device.vendor_id, device.product_id, device_path
+                    ))
+                    .size(11),
                 ],
-                text(format!(
-                    "VID:{:04X} PID:{:04X} | {}",
-                    device.vendor_id, device.product_id, device_path
-                )).size(11),
+                Space::with_width(Length::Fill),
+                status_badge,
+            ]
+            .align_items(Alignment::Center),
+            Space::with_height(12),
+            row![
+                button("Select")
+                    .on_press(Message::SelectDevice(idx))
+                    .style(iced::theme::Button::Text),
+                Space::with_width(Length::Fill),
+                action_button,
             ],
-            Space::with_width(Length::Fill),
-            status_badge,
-        ]
-        .align_items(Alignment::Center),
-        Space::with_height(12),
-        row![
-            button("Select")
-                .on_press(Message::SelectDevice(idx))
-                .style(iced::theme::Button::Text),
-            Space::with_width(Length::Fill),
-            action_button,
-        ],
-        Space::with_height(8),
-        crate::views::profiles::view_profile_selector(state, device),
-        crate::views::profiles::view_remap_profile_switcher(state, &device_path),
-        Space::with_height(4),
-        container(
-            column![
-                text("Profiles").size(11).style(iced::theme::Text::Color(iced::Color::from_rgb(0.5, 0.5, 0.5))),
-                Space::with_height(4),
-                profile_quick_toggles(state, &device_path),
+            Space::with_height(8),
+            crate::views::profiles::view_profile_selector(state, device),
+            crate::views::profiles::view_remap_profile_switcher(state, &device_path),
+            Space::with_height(4),
+            container(
+                column![
+                    text("Profiles").size(11).style(iced::theme::Text::Color(
+                        iced::Color::from_rgb(0.5, 0.5, 0.5)
+                    )),
+                    Space::with_height(4),
+                    profile_quick_toggles(state, &device_path),
+                ]
+                .spacing(4)
+            )
+            .padding([8, 0])
+            .width(Length::Fill),
+            Space::with_height(8),
+            row![
+                text("Layer:").size(12),
+                Space::with_width(8),
+                layer_indicator(state, &device_id),
+                Space::with_width(Length::Fill),
+                layer_activation_buttons(state, &device_id),
             ]
             .spacing(4)
-        )
-        .padding([8, 0])
-        .width(Length::Fill),
-        Space::with_height(8),
-        row![
-            text("Layer:").size(12),
-            Space::with_width(8),
-            layer_indicator(state, &device_id),
-            Space::with_width(Length::Fill),
-            layer_activation_buttons(state, &device_id),
+            .align_items(Alignment::Center),
         ]
-        .spacing(4)
-        .align_items(Alignment::Center),
-    ]
-    .spacing(8);
+        .spacing(8);
 
     let mut card_elements: Vec<Element<'_, Message>> = vec![card_content.into()];
 
     // D-pad mode selector for devices with analog sticks
     if device.device_type == DeviceType::Gamepad || device.device_type == DeviceType::Keypad {
-        let current_mode = state.analog_dpad_modes.get(&device_id).cloned().unwrap_or_else(|| "disabled".to_string());
+        let current_mode = state
+            .analog_dpad_modes
+            .get(&device_id)
+            .cloned()
+            .unwrap_or_else(|| "disabled".to_string());
 
         card_elements.push(Space::with_height(4).into());
         card_elements.push(
@@ -276,21 +285,30 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
                 text("D-pad:").size(12),
                 Space::with_width(4),
                 button("Off")
-                    .on_press(Message::SetAnalogDpadMode(device_id.clone(), "disabled".to_string()))
+                    .on_press(Message::SetAnalogDpadMode(
+                        device_id.clone(),
+                        "disabled".to_string()
+                    ))
                     .style(if current_mode == "disabled" {
                         iced::theme::Button::Primary
                     } else {
                         iced::theme::Button::Text
                     }),
                 button("8-Way")
-                    .on_press(Message::SetAnalogDpadMode(device_id.clone(), "eight_way".to_string()))
+                    .on_press(Message::SetAnalogDpadMode(
+                        device_id.clone(),
+                        "eight_way".to_string()
+                    ))
                     .style(if current_mode == "eight_way" {
                         iced::theme::Button::Primary
                     } else {
                         iced::theme::Button::Text
                     }),
                 button("4-Way")
-                    .on_press(Message::SetAnalogDpadMode(device_id.clone(), "four_way".to_string()))
+                    .on_press(Message::SetAnalogDpadMode(
+                        device_id.clone(),
+                        "four_way".to_string()
+                    ))
                     .style(if current_mode == "four_way" {
                         iced::theme::Button::Primary
                     } else {
@@ -299,11 +317,19 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
             ]
             .spacing(4)
             .align_items(Alignment::Center)
-            .into()
+            .into(),
         );
 
-        let (deadzone_x, deadzone_y) = state.analog_deadzones_xy.get(&device_id).cloned().unwrap_or((43, 43));
-        let (outer_deadzone_x, outer_deadzone_y) = state.analog_outer_deadzones_xy.get(&device_id).cloned().unwrap_or((100, 100));
+        let (deadzone_x, deadzone_y) = state
+            .analog_deadzones_xy
+            .get(&device_id)
+            .cloned()
+            .unwrap_or((43, 43));
+        let (outer_deadzone_x, outer_deadzone_y) = state
+            .analog_outer_deadzones_xy
+            .get(&device_id)
+            .cloned()
+            .unwrap_or((100, 100));
 
         card_elements.push(Space::with_height(8).into());
 
@@ -330,7 +356,7 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
                 .align_items(Alignment::Center),
             ]
             .spacing(4)
-            .into()
+            .into(),
         );
 
         card_elements.push(Space::with_height(4).into());
@@ -357,33 +383,53 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
                 .align_items(Alignment::Center),
             ]
             .spacing(4)
-            .into()
+            .into(),
         );
     }
 
     if let Some(keypad_btn) = keypad_button {
         card_elements.push(Space::with_height(4).into());
-        card_elements.push(row![Space::with_width(Length::Fill), keypad_btn,].spacing(4).into());
+        card_elements.push(
+            row![Space::with_width(Length::Fill), keypad_btn,]
+                .spacing(4)
+                .into(),
+        );
     }
 
     if let Some(led_btn) = led_button {
         card_elements.push(Space::with_height(4).into());
-        card_elements.push(row![Space::with_width(Length::Fill), led_btn,].spacing(4).into());
+        card_elements.push(
+            row![Space::with_width(Length::Fill), led_btn,]
+                .spacing(4)
+                .into(),
+        );
     }
 
     if let Some(auto_btn) = auto_switch_button {
         card_elements.push(Space::with_height(4).into());
-        card_elements.push(row![Space::with_width(Length::Fill), auto_btn,].spacing(4).into());
+        card_elements.push(
+            row![Space::with_width(Length::Fill), auto_btn,]
+                .spacing(4)
+                .into(),
+        );
     }
 
     if let Some(hotkey_btn) = hotkey_button {
         card_elements.push(Space::with_height(4).into());
-        card_elements.push(row![Space::with_width(Length::Fill), hotkey_btn,].spacing(4).into());
+        card_elements.push(
+            row![Space::with_width(Length::Fill), hotkey_btn,]
+                .spacing(4)
+                .into(),
+        );
     }
 
     if let Some(analog_btn) = analog_button {
         card_elements.push(Space::with_height(4).into());
-        card_elements.push(row![Space::with_width(Length::Fill), analog_btn,].spacing(4).into());
+        card_elements.push(
+            row![Space::with_width(Length::Fill), analog_btn,]
+                .spacing(4)
+                .into(),
+        );
     }
 
     let card_content = column(card_elements).spacing(4);
@@ -397,26 +443,22 @@ pub fn view_device_card<'a>(state: &'a State, device: &'a DeviceInfo, idx: usize
 
 fn layer_indicator<'a>(state: &'a State, device_id: &str) -> Element<'a, Message> {
     if let Some(&layer_id) = state.active_layers.get(device_id) {
-        let layer_name = state.layer_configs
+        let layer_name = state
+            .layer_configs
             .get(device_id)
             .and_then(|layers| layers.iter().find(|l| l.layer_id == layer_id))
             .map(|l| l.name.as_str())
             .unwrap_or("Unknown");
 
-        container(
-            text(format!("Layer {}: {}", layer_id, layer_name))
-                .size(12)
-        )
-        .padding([4, 8])
-        .style(theme::styles::card)
-        .into()
+        container(text(format!("Layer {}: {}", layer_id, layer_name)).size(12))
+            .padding([4, 8])
+            .style(theme::styles::card)
+            .into()
     } else {
-        container(
-            text("Layer 0: Base").size(12)
-        )
-        .padding([4, 8])
-        .style(theme::styles::card)
-        .into()
+        container(text("Layer 0: Base").size(12))
+            .padding([4, 8])
+            .style(theme::styles::card)
+            .into()
     }
 }
 
@@ -432,20 +474,22 @@ fn profile_quick_toggles<'a>(state: &'a State, device_path: &str) -> Element<'a,
         let buttons: Vec<Element<'_, Message>> = profile_list
             .iter()
             .map(|profile| {
-                let is_active = active_profile.as_ref().map(|s| s.as_str()) == Some(profile.name.as_str());
+                let is_active =
+                    active_profile.as_ref().map(|s| s.as_str()) == Some(profile.name.as_str());
                 let button_style = if is_active {
                     iced::theme::Button::Primary
                 } else {
                     iced::theme::Button::Secondary
                 };
 
-                button(
-                    text(&profile.name).size(11)
-                )
-                .on_press(Message::ActivateRemapProfile(device_path.to_string(), profile.name.clone()))
-                .style(button_style)
-                .padding([6, 10])
-                .into()
+                button(text(&profile.name).size(11))
+                    .on_press(Message::ActivateRemapProfile(
+                        device_path.to_string(),
+                        profile.name.clone(),
+                    ))
+                    .style(button_style)
+                    .padding([6, 10])
+                    .into()
             })
             .collect();
 
@@ -456,7 +500,7 @@ fn profile_quick_toggles<'a>(state: &'a State, device_path: &str) -> Element<'a,
                     .on_press(Message::DeactivateRemapProfile(device_path.to_string()))
                     .style(iced::theme::Button::Text)
                     .padding([6, 10])
-                    .into()
+                    .into(),
             );
         }
 
@@ -491,17 +535,15 @@ fn layer_activation_buttons<'a>(state: &'a State, device_id: &str) -> Element<'a
                     iced::theme::Button::Text
                 };
 
-                button(
-                    text(format!("L{}", layer.layer_id)).size(11)
-                )
-                .on_press(Message::LayerActivateRequested(
-                    device_id.to_string(),
-                    layer.layer_id,
-                    LayerMode::Toggle,
-                ))
-                .style(button_style)
-                .padding([4, 8])
-                .into()
+                button(text(format!("L{}", layer.layer_id)).size(11))
+                    .on_press(Message::LayerActivateRequested(
+                        device_id.to_string(),
+                        layer.layer_id,
+                        LayerMode::Toggle,
+                    ))
+                    .style(button_style)
+                    .padding([4, 8])
+                    .into()
             })
             .collect();
 
@@ -536,7 +578,11 @@ fn deadzone_buttons(device_id: &str, is_y_axis: bool, current: u8) -> Element<'s
     row(buttons).spacing(2).into()
 }
 
-fn outer_deadzone_buttons(device_id: &str, is_y_axis: bool, current: u8) -> Element<'static, Message> {
+fn outer_deadzone_buttons(
+    device_id: &str,
+    is_y_axis: bool,
+    current: u8,
+) -> Element<'static, Message> {
     let percentages = [80, 85, 90, 95, 100];
     let buttons: Vec<Element<'_, Message>> = percentages
         .iter()
@@ -583,13 +629,18 @@ pub fn layer_settings_view<'a>(state: &'a State, device_id: &str) -> Element<'a,
                 };
 
                 row![
-                    text(format!("L{}", layer.layer_id)).size(12).width(Length::Fixed(30.0)),
+                    text(format!("L{}", layer.layer_id))
+                        .size(12)
+                        .width(Length::Fixed(30.0)),
                     text(&layer.name).size(12).width(Length::Fixed(100.0)),
                     text(mode_text).size(12).width(Length::Fixed(60.0)),
                     text(format!("{} remaps", layer.remap_count)).size(11),
                     Space::with_width(Length::Fill),
                     button(text("Edit").size(11))
-                        .on_press(Message::OpenLayerConfigDialog(device_id.to_string(), layer.layer_id))
+                        .on_press(Message::OpenLayerConfigDialog(
+                            device_id.to_string(),
+                            layer.layer_id
+                        ))
                         .style(iced::theme::Button::Text)
                         .padding([4, 8]),
                 ]
@@ -601,20 +652,14 @@ pub fn layer_settings_view<'a>(state: &'a State, device_id: &str) -> Element<'a,
 
         let add_button = if layer_list.len() < 8 {
             Some(
-                button(
-                    row![
-                        text("+").size(14),
-                        text("Add Layer").size(12),
-                    ]
-                    .spacing(4)
-                )
-                .on_press(Message::OpenLayerConfigDialog(
-                    device_id.to_string(),
-                    layer_list.len(),
-                ))
-                .style(iced::theme::Button::Secondary)
-                .padding([6, 12])
-                .into()
+                button(row![text("+").size(14), text("Add Layer").size(12),].spacing(4))
+                    .on_press(Message::OpenLayerConfigDialog(
+                        device_id.to_string(),
+                        layer_list.len(),
+                    ))
+                    .style(iced::theme::Button::Secondary)
+                    .padding([6, 12])
+                    .into(),
             )
         } else {
             None
@@ -657,13 +702,17 @@ pub fn layer_config_dialog(state: &State) -> Option<Element<'_, Message>> {
                     .width(Length::Fixed(250.0)),
                 Space::with_height(12),
                 text("Activation Mode:").size(12),
-                pick_list(mode_options, Some(current_mode_str.to_string()), |selected| {
-                    let new_mode = match selected.as_str() {
-                        "Toggle" => LayerMode::Toggle,
-                        _ => LayerMode::Hold,
-                    };
-                    Message::LayerConfigModeChanged(new_mode)
-                })
+                pick_list(
+                    mode_options,
+                    Some(current_mode_str.to_string()),
+                    |selected| {
+                        let new_mode = match selected.as_str() {
+                            "Toggle" => LayerMode::Toggle,
+                            _ => LayerMode::Hold,
+                        };
+                        Message::LayerConfigModeChanged(new_mode)
+                    }
+                )
                 .width(Length::Fixed(250.0))
                 .padding(8),
                 Space::with_height(20),
@@ -680,23 +729,18 @@ pub fn layer_config_dialog(state: &State) -> Option<Element<'_, Message>> {
                 ]
                 .spacing(8),
             ]
-            .spacing(4)
+            .spacing(4),
         )
         .padding(24)
         .width(Length::Fixed(300.0))
         .style(theme::styles::card);
 
         Some(
-            container(
-                container(dialog)
-                    .width(Length::Fill)
-                    .center_x()
-                    .center_y()
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(iced::theme::Container::Transparent)
-            .into()
+            container(container(dialog).width(Length::Fill).center_x().center_y())
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .style(iced::theme::Container::Transparent)
+                .into(),
         )
     } else {
         None

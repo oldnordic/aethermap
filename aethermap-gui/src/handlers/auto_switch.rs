@@ -1,8 +1,8 @@
-use iced::Command;
-use aethermap_common::{Request, Response};
+use crate::gui::{AutoSwitchRule, AutoSwitchRulesView, Message, State};
 use aethermap_common::ipc_client::IpcClient;
 use aethermap_common::AutoSwitchRule as CommonAutoSwitchRule;
-use crate::gui::{State, Message, AutoSwitchRule, AutoSwitchRulesView};
+use aethermap_common::{Request, Response};
+use iced::Command;
 
 pub fn show(state: &mut State, device_id: String) -> Command<Message> {
     state.auto_switch_view = Some(AutoSwitchRulesView {
@@ -14,10 +14,9 @@ pub fn show(state: &mut State, device_id: String) -> Command<Message> {
         new_layer_id: String::new(),
     });
     let device_id_clone = device_id.clone();
-    Command::perform(
-        async move { device_id_clone },
-        |id| Message::LoadAutoSwitchRules(id)
-    )
+    Command::perform(async move { device_id_clone }, |id| {
+        Message::LoadAutoSwitchRules(id)
+    })
 }
 
 pub fn close(state: &mut State) -> Command<Message> {
@@ -32,14 +31,15 @@ pub fn load(state: &State) -> Command<Message> {
             let client = IpcClient::with_socket_path(&socket_path);
             let request = Request::GetAutoSwitchRules;
             match client.send(&request).await {
-                Ok(Response::AutoSwitchRules { rules }) => {
-                    Ok(rules.into_iter().map(|r| AutoSwitchRule {
+                Ok(Response::AutoSwitchRules { rules }) => Ok(rules
+                    .into_iter()
+                    .map(|r| AutoSwitchRule {
                         app_id: r.app_id,
                         profile_name: r.profile_name,
                         device_id: r.device_id,
                         layer_id: r.layer_id,
-                    }).collect())
-                }
+                    })
+                    .collect()),
                 Ok(Response::Error(msg)) => Err(msg),
                 Err(e) => Err(format!("IPC error: {}", e)),
                 _ => Err("Unexpected response".to_string()),
@@ -50,14 +50,17 @@ pub fn load(state: &State) -> Command<Message> {
 }
 
 pub fn loaded(state: &mut State, rules: Vec<AutoSwitchRule>) -> Command<Message> {
-    state.auto_switch_view.as_mut().map(|view| {
+    if let Some(view) = state.auto_switch_view.as_mut() {
         view.rules = rules;
-    });
+    }
     Command::none()
 }
 
 pub fn load_error(state: &mut State, error: String) -> Command<Message> {
-    state.add_notification(&format!("Failed to load auto-switch rules: {}", error), true);
+    state.add_notification(
+        &format!("Failed to load auto-switch rules: {}", error),
+        true,
+    );
     Command::none()
 }
 
@@ -78,31 +81,31 @@ pub fn edit(state: &mut State, index: usize) -> Command<Message> {
 }
 
 pub fn app_id_changed(state: &mut State, value: String) -> Command<Message> {
-    state.auto_switch_view.as_mut().map(|view| {
+    if let Some(view) = state.auto_switch_view.as_mut() {
         view.new_app_id = value;
-    });
+    }
     Command::none()
 }
 
 pub fn profile_name_changed(state: &mut State, value: String) -> Command<Message> {
-    state.auto_switch_view.as_mut().map(|view| {
+    if let Some(view) = state.auto_switch_view.as_mut() {
         view.new_profile_name = value;
-    });
+    }
     Command::none()
 }
 
 pub fn layer_id_changed(state: &mut State, value: String) -> Command<Message> {
-    state.auto_switch_view.as_mut().map(|view| {
+    if let Some(view) = state.auto_switch_view.as_mut() {
         view.new_layer_id = value;
-    });
+    }
     Command::none()
 }
 
 pub fn use_current_app(state: &mut State) -> Command<Message> {
     if let Some(ref focus) = state.current_focus {
-        state.auto_switch_view.as_mut().map(|view| {
+        if let Some(view) = state.auto_switch_view.as_mut() {
             view.new_app_id = focus.clone();
-        });
+        }
     }
     Command::none()
 }
@@ -136,7 +139,8 @@ pub fn save(state: &mut State) -> Command<Message> {
 
         Command::perform(
             async move {
-                let common_rules: Vec<CommonAutoSwitchRule> = rules.into_iter()
+                let common_rules: Vec<CommonAutoSwitchRule> = rules
+                    .into_iter()
                     .map(|r| CommonAutoSwitchRule {
                         app_id: r.app_id,
                         profile_name: r.profile_name,
@@ -146,7 +150,9 @@ pub fn save(state: &mut State) -> Command<Message> {
                     .collect();
 
                 let client = IpcClient::with_socket_path(socket_path);
-                let request = Request::SetAutoSwitchRules { rules: common_rules };
+                let request = Request::SetAutoSwitchRules {
+                    rules: common_rules,
+                };
                 match client.send(&request).await {
                     Ok(Response::AutoSwitchRulesAck) => Ok(()),
                     Ok(Response::Error(msg)) => Err(msg),
@@ -157,7 +163,7 @@ pub fn save(state: &mut State) -> Command<Message> {
             |result| match result {
                 Ok(()) => Message::ShowNotification("Auto-switch rules saved".to_string(), false),
                 Err(e) => Message::ShowNotification(format!("Failed to save rules: {}", e), true),
-            }
+            },
         )
     } else {
         Command::none()
@@ -171,11 +177,14 @@ pub fn delete(state: &mut State, index: usize) -> Command<Message> {
             rules.remove(index);
             let socket_path = state.socket_path.clone();
 
-            state.auto_switch_view.as_mut().map(|v| v.rules = rules.clone());
+            if let Some(v) = state.auto_switch_view.as_mut() {
+                v.rules = rules.clone();
+            }
 
             return Command::perform(
                 async move {
-                    let common_rules: Vec<CommonAutoSwitchRule> = rules.into_iter()
+                    let common_rules: Vec<CommonAutoSwitchRule> = rules
+                        .into_iter()
                         .map(|r| CommonAutoSwitchRule {
                             app_id: r.app_id,
                             profile_name: r.profile_name,
@@ -185,7 +194,9 @@ pub fn delete(state: &mut State, index: usize) -> Command<Message> {
                         .collect();
 
                     let client = IpcClient::with_socket_path(&socket_path);
-                    let request = Request::SetAutoSwitchRules { rules: common_rules };
+                    let request = Request::SetAutoSwitchRules {
+                        rules: common_rules,
+                    };
                     match client.send(&request).await {
                         Ok(Response::AutoSwitchRulesAck) => Ok(()),
                         Ok(Response::Error(msg)) => Err(msg),
@@ -195,8 +206,10 @@ pub fn delete(state: &mut State, index: usize) -> Command<Message> {
                 },
                 |result| match result {
                     Ok(()) => Message::ShowNotification("Rule deleted".to_string(), false),
-                    Err(e) => Message::ShowNotification(format!("Failed to delete rule: {}", e), true),
-                }
+                    Err(e) => {
+                        Message::ShowNotification(format!("Failed to delete rule: {}", e), true)
+                    }
+                },
             );
         }
     }

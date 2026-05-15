@@ -18,7 +18,7 @@
 
 use std::collections::HashMap;
 use tokio::sync::mpsc;
-use tracing::{info, debug, warn, error};
+use tracing::{debug, error, info, warn};
 
 /// Device hotplug event
 ///
@@ -121,14 +121,12 @@ pub fn format_device_id(vendor_id: u16, product_id: u16) -> String {
 /// This function blocks on udev socket iteration, which is why it must
 /// run in a `spawn_blocking` task.
 fn run_udev_monitor(tx: mpsc::Sender<DeviceEvent>) -> Result<(), Box<dyn std::error::Error>> {
-    use udev::{MonitorBuilder, EventType};
+    use udev::{EventType, MonitorBuilder};
 
     info!("Starting udev monitor for input subsystem");
 
     // Create udev monitor for input devices
-    let socket = MonitorBuilder::new()?
-        .match_subsystem("input")?
-        .listen()?;
+    let socket = MonitorBuilder::new()?.match_subsystem("input")?.listen()?;
 
     debug!("Udev monitor listening on netlink socket");
 
@@ -153,10 +151,7 @@ fn run_udev_monitor(tx: mpsc::Sender<DeviceEvent>) -> Result<(), Box<dyn std::er
                     // Store mapping for remove events
                     device_map.insert(devnode.clone(), device_id.clone());
 
-                    let event = DeviceEvent::Add {
-                        devnode,
-                        device_id,
-                    };
+                    let event = DeviceEvent::Add { devnode, device_id };
 
                     if let Err(e) = tx.blocking_send(event) {
                         warn!("Failed to send device add event: {}", e);
@@ -174,10 +169,7 @@ fn run_udev_monitor(tx: mpsc::Sender<DeviceEvent>) -> Result<(), Box<dyn std::er
 
                 // Look up device ID from our tracking map
                 if let Some(device_id) = device_map.remove(&devnode) {
-                    let event = DeviceEvent::Remove {
-                        devnode,
-                        device_id,
-                    };
+                    let event = DeviceEvent::Remove { devnode, device_id };
 
                     if let Err(e) = tx.blocking_send(event) {
                         warn!("Failed to send device remove event: {}", e);
@@ -246,7 +238,10 @@ pub async fn handle_device_remove(
     device_id: &str,
     _state: &tokio::sync::RwLock<crate::DaemonState>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    info!("Device {} removed - LED state preserved in memory", device_id);
+    info!(
+        "Device {} removed - LED state preserved in memory",
+        device_id
+    );
 
     // LED state is already in DaemonState.led_state HashMap
     // No explicit save needed - state persists in memory
@@ -276,7 +271,10 @@ pub async fn handle_device_add(
     device_id: &str,
     state: &tokio::sync::RwLock<crate::DaemonState>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    info!("Device {} added - checking LED state restoration", device_id);
+    info!(
+        "Device {} added - checking LED state restoration",
+        device_id
+    );
 
     // Check if this device has saved LED state
     let has_led_state = {
@@ -309,7 +307,9 @@ pub async fn handle_device_add(
 
                 // Store controller in DaemonState
                 let mut state_guard = state.write().await;
-                state_guard.set_led_controller(Some(std::sync::Arc::new(led_controller))).await;
+                state_guard
+                    .set_led_controller(Some(std::sync::Arc::new(led_controller)))
+                    .await;
             }
             Err(e) => {
                 warn!("Failed to open LED controller for {}: {}", device_id, e);

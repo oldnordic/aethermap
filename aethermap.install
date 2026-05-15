@@ -1,26 +1,20 @@
 post_install() {
-    systemd-sysusers aethermap.conf
-    udevadm control --reload-rules
-    
-    # Set directory permissions
-    chown -R aethermap:aethermap /etc/aethermap
-    mkdir -p /var/cache/aethermap
-    chown -R aethermap:aethermap /var/cache/aethermap
-
-    echo "The aethermap daemon runs as the 'aethermap' user."
-    echo "Start the service with: systemctl start aethermapd"
-    echo "Enable it on boot with: systemctl enable aethermapd"
-    echo "Then run: aethermap-gui"
+    echo ":: Aethermap installed. To get started:"
+    echo "   1. Add your user to the 'input' group: sudo usermod -aG input \$USER"
+    echo "   2. Enable the daemon: sudo systemctl enable --now aethermapd"
+    echo "   3. Launch the GUI: aethermap-gui"
+    echo ""
+    echo "   Config files: /etc/aethermap/"
+    echo "   The udev rule for /dev/uinput access is installed automatically."
+    echo "   Log out and back in for group changes to take effect."
 }
 
 post_upgrade() {
-    udevadm control --reload-rules
-    chown -R aethermap:aethermap /etc/aethermap
-    mkdir -p /var/cache/aethermap
-    chown -R aethermap:aethermap /var/cache/aethermap
-    echo "Restart the aethermap service: systemctl restart aethermapd"
+    systemctl is-active --quiet aethermapd && systemctl restart aethermapd || true
 }
 
 post_remove() {
-    systemctl disable --now aethermapd 2>/dev/null || true
+    echo ":: Aethermap removed."
+    echo "   Config files in /etc/aethermap/ were preserved."
+    echo "   Remove them manually if desired: rm -rf /etc/aethermap"
 }

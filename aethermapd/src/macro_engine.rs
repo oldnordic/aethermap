@@ -1,12 +1,12 @@
+use rand::RngExt;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use tracing::{debug, error, info, warn};
-use rand::{Rng, RngExt};
 
-use aethermap_common::{Action, KeyCombo, MacroEntry};
 use crate::injector::Injector;
+use aethermap_common::{Action, KeyCombo, MacroEntry};
 
 // Type alias for our error type that implements Send + Sync
 pub type EngineResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -22,6 +22,12 @@ pub struct ExecutionState {
     pub stop: Arc<tokio::sync::RwLock<bool>>,
 }
 
+impl Drop for MacroEngine {
+    fn drop(&mut self) {
+        self._cleanup_task.abort();
+    }
+}
+
 /// Macro engine that manages and executes macros
 pub struct MacroEngine {
     macros: Arc<RwLock<HashMap<String, MacroEntry>>>,
@@ -31,6 +37,7 @@ pub struct MacroEngine {
     cleanup_tx: mpsc::Sender<String>, // Channel for cleanup notifications
     _cleanup_task: tokio::task::JoinHandle<()>, // Keep cleanup task alive
     max_concurrent_macros: usize,
+    #[allow(dead_code)]
     default_delay: u32,
     macro_settings: Arc<RwLock<aethermap_common::MacroSettings>>,
     mouse_deltas: Arc<RwLock<HashMap<String, (i32, i32)>>>,
@@ -39,6 +46,7 @@ pub struct MacroEngine {
 
 impl MacroEngine {
     /// Create a new macro engine with default configuration
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self::with_config(10, 10)
     }
@@ -147,7 +155,7 @@ impl MacroEngine {
         macros.insert(macro_entry.name.clone(), macro_entry.clone());
 
         // Update active combos
-        self.update_active_combos().await;
+        self.update_active_combos_from(&macros).await;
 
         info!("Added macro: {}", macro_entry.name);
         Ok(())
@@ -166,7 +174,7 @@ impl MacroEngine {
         macros.remove(name);
 
         // Update active combos
-        self.update_active_combos().await;
+        self.update_active_combos_from(&macros).await;
 
         info!("Removed macro: {}", name);
         Ok(true)
@@ -185,7 +193,12 @@ impl MacroEngine {
     }
 
     /// Start recording a new macro
-    pub async fn start_recording(&self, name: String, device_path: String, capture_mouse: bool) -> EngineResult<()> {
+    pub async fn start_recording(
+        &self,
+        name: String,
+        device_path: String,
+        capture_mouse: bool,
+    ) -> EngineResult<()> {
         let mut recording = self.recording.write().await;
 
         // Check if already recording
@@ -236,7 +249,12 @@ impl MacroEngine {
     /// Process an input event and add it to the recording if recording
     /// Process an input event
     /// Returns true if the event was consumed (by recording or macro), false otherwise
-    pub async fn process_input_event(&self, key_code: u16, is_pressed: bool, device_path: &str) -> EngineResult<bool> {
+    pub async fn process_input_event(
+        &self,
+        key_code: u16,
+        is_pressed: bool,
+        device_path: &str,
+    ) -> EngineResult<bool> {
         // First check if we're recording
         {
             let mut recording = self.recording.write().await;
@@ -266,7 +284,10 @@ impl MacroEngine {
                             macro_entry.actions.push(Action::KeyRelease(key_code));
                         }
                     }
-                    debug!("Recorded input event: key_code={}, pressed={}", key_code, is_pressed);
+                    debug!(
+                        "Recorded input event: key_code={}, pressed={}",
+                        key_code, is_pressed
+                    );
                     return Ok(true); // Event consumed by recording
                 }
             }
@@ -282,7 +303,12 @@ impl MacroEngine {
     }
 
     /// Process a relative movement event (mouse move) and add it to the recording if active
-    pub async fn process_relative_event(&self, axis: u16, delta: i32, device_path: &str) -> EngineResult<()> {
+    pub async fn process_relative_event(
+        &self,
+        axis: u16,
+        delta: i32,
+        device_path: &str,
+    ) -> EngineResult<()> {
         let mut recording = self.recording.write().await;
 
         if let Some(macro_entry) = recording.as_mut() {
@@ -322,8 +348,7 @@ impl MacroEngine {
     }
 
     /// Update the list of active key combos
-    async fn update_active_combos(&self) {
-        let macros = self.macros.read().await;
+    async fn update_active_combos_from(&self, macros: &HashMap<String, MacroEntry>) {
         let mut active_combos = self.active_combos.write().await;
 
         // Clear the current list
@@ -339,7 +364,11 @@ impl MacroEngine {
 
     /// Check if any macro should be triggered
     /// Returns true if a macro was triggered (event was consumed), false otherwise
-    pub async fn check_macro_triggers(&self, key_code: u16, device_path: &str) -> EngineResult<bool> {
+    pub async fn check_macro_triggers(
+        &self,
+        key_code: u16,
+        device_path: &str,
+    ) -> EngineResult<bool> {
         let macros = self.macros.read().await;
         let executing_count = self.executing.read().await.len();
 
@@ -416,7 +445,12 @@ impl MacroEngine {
     ///
     /// # Returns
     /// Ok(()) if successful, Err if recording failed
-    pub async fn process_analog_event(&self, axis_code: u16, raw_value: i32, device_path: &str) -> EngineResult<()> {
+    pub async fn process_analog_event(
+        &self,
+        axis_code: u16,
+        raw_value: i32,
+        device_path: &str,
+    ) -> EngineResult<()> {
         // Normalize the analog value
         let normalized = Self::normalize_analog(raw_value);
 
@@ -438,8 +472,10 @@ impl MacroEngine {
                         axis_code,
                         normalized,
                     });
-                    debug!("Recorded analog event: axis_code={}, raw={}, normalized={:.2}",
-                           axis_code, raw_value, normalized);
+                    debug!(
+                        "Recorded analog event: axis_code={}, raw={}, normalized={:.2}",
+                        axis_code, raw_value, normalized
+                    );
                     return Ok(());
                 }
             }
@@ -448,7 +484,6 @@ impl MacroEngine {
         // Not recording or wrong device
         Ok(())
     }
-
 
     /// Calculate the actual delay to apply based on humanization settings
     pub fn calculate_delay(&self, base_ms: u32, settings: &aethermap_common::MacroSettings) -> u32 {
@@ -543,7 +578,8 @@ impl MacroEngine {
                                 0.0
                             };
 
-                            let total_delay = ms as f32 + settings.latency_offset_ms as f32 + jitter;
+                            let total_delay =
+                                ms as f32 + settings.latency_offset_ms as f32 + jitter;
                             total_delay.max(0.0) as u32
                         } else {
                             ms
@@ -580,7 +616,10 @@ impl MacroEngine {
                             error!("Failed to inject mouse scroll: {}", e);
                         }
                     }
-                    Action::AnalogMove { axis_code, normalized } => {
+                    Action::AnalogMove {
+                        axis_code,
+                        normalized,
+                    } => {
                         // Denormalize and inject analog event
                         let raw_value = Self::denormalize_analog(normalized);
                         if let Err(e) = injector_ref.analog_move(axis_code, raw_value).await {
@@ -592,7 +631,10 @@ impl MacroEngine {
 
             // Send cleanup notification
             let _ = cleanup_tx.send(macro_name.clone()).await;
-            debug!("Macro {} execution completed and cleanup notification sent", macro_name);
+            debug!(
+                "Macro {} execution completed and cleanup notification sent",
+                macro_name
+            );
         });
 
         info!("Started executing macro: {}", macro_entry.name);
@@ -624,7 +666,11 @@ impl MacroEngine {
     ///
     /// This method allows executing individual actions without creating a full macro.
     /// Used by the IPC module when executing macros that have been retrieved.
-    pub async fn execute_action(&self, action: &aethermap_common::Action, injector: &(dyn crate::injector::Injector + Send + Sync)) -> EngineResult<()> {
+    pub async fn execute_action(
+        &self,
+        action: &aethermap_common::Action,
+        injector: &(dyn crate::injector::Injector + Send + Sync),
+    ) -> EngineResult<()> {
         // Use the injector directly since we have a reference to it
         match action {
             aethermap_common::Action::KeyPress(code) => {
@@ -678,7 +724,10 @@ impl MacroEngine {
                     return Err(format!("Mouse scroll failed: {}", e).into());
                 }
             }
-            aethermap_common::Action::AnalogMove { axis_code, normalized } => {
+            aethermap_common::Action::AnalogMove {
+                axis_code,
+                normalized,
+            } => {
                 // Denormalize and inject analog event
                 let raw_value = Self::denormalize_analog(*normalized);
                 if let Err(e) = injector.analog_move(*axis_code, raw_value).await {
@@ -702,6 +751,7 @@ mod tests {
     struct MockInjector;
 
     impl MockInjector {
+        #[allow(dead_code)]
         fn new() -> Arc<Self> {
             Arc::new(Self)
         }
@@ -713,39 +763,68 @@ mod tests {
             Ok(())
         }
 
-        async fn key_press(&self, _key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn key_press(
+            &self,
+            _key_code: u16,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn key_release(&self, _key_code: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn key_release(
+            &self,
+            _key_code: u16,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn mouse_press(&self, _button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn mouse_press(
+            &self,
+            _button: u16,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn mouse_release(&self, _button: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn mouse_release(
+            &self,
+            _button: u16,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn mouse_move(&self, _x: i32, _y: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn mouse_move(
+            &self,
+            _x: i32,
+            _y: i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn mouse_scroll(&self, _amount: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn mouse_scroll(
+            &self,
+            _amount: i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn type_string(&self, _text: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn type_string(
+            &self,
+            _text: &str,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn execute_command(&self, _command: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn execute_command(
+            &self,
+            _command: &str,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
 
-        async fn analog_move(&self, _axis_code: u16, _value: i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn analog_move(
+            &self,
+            _axis_code: u16,
+            _value: i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
     }
@@ -816,12 +895,25 @@ mod tests {
         let engine = MacroEngine::new();
 
         // Start recording
-        engine.start_recording("Test Recording".to_string(), "/dev/input/event0".to_string(), false).await.unwrap();
+        engine
+            .start_recording(
+                "Test Recording".to_string(),
+                "/dev/input/event0".to_string(),
+                false,
+            )
+            .await
+            .unwrap();
         assert!(engine.is_recording().await);
 
         // Process some events
-        engine.process_input_event(30, true, "/dev/input/event0").await.unwrap(); // A down
-        engine.process_input_event(30, false, "/dev/input/event0").await.unwrap(); // A up
+        engine
+            .process_input_event(30, true, "/dev/input/event0")
+            .await
+            .unwrap(); // A down
+        engine
+            .process_input_event(30, false, "/dev/input/event0")
+            .await
+            .unwrap(); // A up
 
         // Stop recording
         let macro_entry = engine.stop_recording().await.unwrap().unwrap();
@@ -838,38 +930,55 @@ mod tests {
 
         // Note: This test is disabled for now because we can't use MockInjector with set_injector anymore
         // In a real test, we would need to create a UinputInjector
-        // For now, we'll just test that's macro engine creates without error
-        assert!(true); // Placeholder assertion to indicate test purpose
+        // For now, we'll just test that macro engine creates without error
     }
 
     #[test]
     fn test_normalize_analog() {
         // Test minimum value
         let result = MacroEngine::normalize_analog(-32768);
-        assert!((result - (-1.0)).abs() < 0.001, "Min value should normalize to -1.0");
+        assert!(
+            (result - (-1.0)).abs() < 0.001,
+            "Min value should normalize to -1.0"
+        );
 
         // Test center value
         let result = MacroEngine::normalize_analog(0);
-        assert!((result - 0.0).abs() < 0.001, "Center value should normalize to 0.0");
+        assert!(
+            (result - 0.0).abs() < 0.001,
+            "Center value should normalize to 0.0"
+        );
 
         // Test maximum value
         let result = MacroEngine::normalize_analog(32767);
-        assert!((result - 1.0).abs() < 0.001, "Max value should normalize to 1.0");
+        assert!(
+            (result - 1.0).abs() < 0.001,
+            "Max value should normalize to 1.0"
+        );
 
         // Test mid-range value
         let result = MacroEngine::normalize_analog(16383);
-        assert!((result - 0.4999).abs() < 0.01, "Mid value should normalize to ~0.5");
+        assert!(
+            (result - 0.4999).abs() < 0.01,
+            "Mid value should normalize to ~0.5"
+        );
 
         // Test negative mid-range value
         let result = MacroEngine::normalize_analog(-16384);
-        assert!((result - (-0.5000)).abs() < 0.01, "Negative mid value should normalize to ~-0.5");
+        assert!(
+            (result - (-0.5000)).abs() < 0.01,
+            "Negative mid value should normalize to ~-0.5"
+        );
     }
 
     #[test]
     fn test_denormalize_analog() {
         // Test minimum normalized value
         let result = MacroEngine::denormalize_analog(-1.0);
-        assert_eq!(result, -32768, "Normalized -1.0 should denormalize to -32768");
+        assert_eq!(
+            result, -32768,
+            "Normalized -1.0 should denormalize to -32768"
+        );
 
         // Test center value
         let result = MacroEngine::denormalize_analog(0.0);
@@ -881,30 +990,40 @@ mod tests {
 
         // Test mid-range value
         let result = MacroEngine::denormalize_analog(0.5);
-        assert!((result - 16383).abs() < 2, "Normalized 0.5 should denormalize to ~16383");
+        assert!(
+            (result - 16383).abs() < 2,
+            "Normalized 0.5 should denormalize to ~16383"
+        );
 
         // Test negative mid-range value
         let result = MacroEngine::denormalize_analog(-0.5);
-        assert!((result - (-16384)).abs() < 2, "Normalized -0.5 should denormalize to ~-16384");
+        assert!(
+            (result - (-16384)).abs() < 2,
+            "Normalized -0.5 should denormalize to ~-16384"
+        );
     }
 
     #[test]
     fn test_analog_roundtrip() {
         // Test that normalize -> denormalize preserves values (within 1% tolerance)
         let test_values = vec![
-            -32768, -30000, -20000, -16384, -10000, -5000, -1000,
-            0, 1000, 5000, 10000, 16383, 20000, 30000, 32767
+            -32768, -30000, -20000, -16384, -10000, -5000, -1000, 0, 1000, 5000, 10000, 16383,
+            20000, 30000, 32767,
         ];
 
         for raw_value in test_values {
             let normalized = MacroEngine::normalize_analog(raw_value);
             let denormalized = MacroEngine::denormalize_analog(normalized);
-            let error_percent = ((denormalized - raw_value) as f32).abs() / (raw_value.abs() as f32 + 1.0) * 100.0;
+            let error_percent =
+                ((denormalized - raw_value) as f32).abs() / (raw_value.abs() as f32 + 1.0) * 100.0;
 
             assert!(
                 error_percent < 1.0 || (denormalized - raw_value).abs() < 100,
                 "Roundtrip error too large for {}: normalized={:.4}, denormalized={}, error={:.2}%",
-                raw_value, normalized, denormalized, error_percent
+                raw_value,
+                normalized,
+                denormalized,
+                error_percent
             );
         }
     }
@@ -914,13 +1033,29 @@ mod tests {
         let engine = MacroEngine::new();
 
         // Start recording
-        engine.start_recording("Analog Test".to_string(), "/dev/input/event0".to_string(), false).await.unwrap();
+        engine
+            .start_recording(
+                "Analog Test".to_string(),
+                "/dev/input/event0".to_string(),
+                false,
+            )
+            .await
+            .unwrap();
         assert!(engine.is_recording().await);
 
         // Process analog events
-        engine.process_analog_event(61000, 32767, "/dev/input/event0").await.unwrap(); // X axis max
-        engine.process_analog_event(61001, 0, "/dev/input/event0").await.unwrap(); // Y axis center
-        engine.process_analog_event(61000, -32768, "/dev/input/event0").await.unwrap(); // X axis min
+        engine
+            .process_analog_event(61000, 32767, "/dev/input/event0")
+            .await
+            .unwrap(); // X axis max
+        engine
+            .process_analog_event(61001, 0, "/dev/input/event0")
+            .await
+            .unwrap(); // Y axis center
+        engine
+            .process_analog_event(61000, -32768, "/dev/input/event0")
+            .await
+            .unwrap(); // X axis min
 
         // Stop recording
         let macro_entry = engine.stop_recording().await.unwrap().unwrap();
@@ -928,25 +1063,46 @@ mod tests {
         assert_eq!(macro_entry.actions.len(), 3);
 
         // Verify first action
-        if let Action::AnalogMove { axis_code, normalized } = &macro_entry.actions[0] {
+        if let Action::AnalogMove {
+            axis_code,
+            normalized,
+        } = &macro_entry.actions[0]
+        {
             assert_eq!(*axis_code, 61000);
-            assert!((normalized - 1.0).abs() < 0.01, "X axis max should normalize to ~1.0");
+            assert!(
+                (normalized - 1.0).abs() < 0.01,
+                "X axis max should normalize to ~1.0"
+            );
         } else {
             panic!("Expected AnalogMove action");
         }
 
         // Verify second action
-        if let Action::AnalogMove { axis_code, normalized } = &macro_entry.actions[1] {
+        if let Action::AnalogMove {
+            axis_code,
+            normalized,
+        } = &macro_entry.actions[1]
+        {
             assert_eq!(*axis_code, 61001);
-            assert!((normalized - 0.0).abs() < 0.01, "Y axis center should normalize to ~0.0");
+            assert!(
+                (normalized - 0.0).abs() < 0.01,
+                "Y axis center should normalize to ~0.0"
+            );
         } else {
             panic!("Expected AnalogMove action");
         }
 
         // Verify third action
-        if let Action::AnalogMove { axis_code, normalized } = &macro_entry.actions[2] {
+        if let Action::AnalogMove {
+            axis_code,
+            normalized,
+        } = &macro_entry.actions[2]
+        {
             assert_eq!(*axis_code, 61000);
-            assert!((normalized - (-1.0)).abs() < 0.01, "X axis min should normalize to ~-1.0");
+            assert!(
+                (normalized - (-1.0)).abs() < 0.01,
+                "X axis min should normalize to ~-1.0"
+            );
         } else {
             panic!("Expected AnalogMove action");
         }
@@ -957,17 +1113,30 @@ mod tests {
         let engine = MacroEngine::new();
 
         // Start recording with mouse capture enabled
-        engine.start_recording("Mouse Button Test".to_string(), "/dev/input/event0".to_string(), true).await.unwrap();
+        engine
+            .start_recording(
+                "Mouse Button Test".to_string(),
+                "/dev/input/event0".to_string(),
+                true,
+            )
+            .await
+            .unwrap();
         assert!(engine.is_recording().await);
 
         // Process mouse button events (using key codes 272 for BTN_LEFT)
-        engine.process_input_event(272, true, "/dev/input/event0").await.unwrap(); // Left click down
-        engine.process_input_event(272, false, "/dev/input/event0").await.unwrap(); // Left click up
+        engine
+            .process_input_event(272, true, "/dev/input/event0")
+            .await
+            .unwrap(); // Left click down
+        engine
+            .process_input_event(272, false, "/dev/input/event0")
+            .await
+            .unwrap(); // Left click up
 
         // Stop recording
         let macro_entry = engine.stop_recording().await.unwrap().unwrap();
         assert_eq!(macro_entry.name, "Mouse Button Test");
-        
+
         // Should have 2 actions: MousePress and MouseRelease
         assert_eq!(macro_entry.actions.len(), 2);
         assert!(matches!(macro_entry.actions[0], Action::MousePress(272)));
@@ -979,21 +1148,34 @@ mod tests {
         let engine = MacroEngine::new();
 
         // Start recording with mouse capture enabled
-        engine.start_recording("Mouse Move Test".to_string(), "/dev/input/event0".to_string(), true).await.unwrap();
+        engine
+            .start_recording(
+                "Mouse Move Test".to_string(),
+                "/dev/input/event0".to_string(),
+                true,
+            )
+            .await
+            .unwrap();
 
         // Process relative mouse movement
-        engine.process_relative_event(0, 10, "/dev/input/event0").await.unwrap(); // REL_X +10
-        engine.process_relative_event(1, -5, "/dev/input/event0").await.unwrap(); // REL_Y -5
+        engine
+            .process_relative_event(0, 10, "/dev/input/event0")
+            .await
+            .unwrap(); // REL_X +10
+        engine
+            .process_relative_event(1, -5, "/dev/input/event0")
+            .await
+            .unwrap(); // REL_Y -5
 
         // Stop recording
         let macro_entry = engine.stop_recording().await.unwrap().unwrap();
         assert_eq!(macro_entry.name, "Mouse Move Test");
-        
+
         // Should have 2 actions: MouseMove(10, 0) and MouseMove(0, -5)
         // Or if accumulated into one: MouseMove(10, -5)
         // Based on our implementation, it records as they arrive if delta != 0.
         assert_eq!(macro_entry.actions.len(), 2);
-        
+
         if let Action::MouseMove(x, y) = macro_entry.actions[0] {
             assert_eq!(x, 10);
             assert_eq!(y, 0);
@@ -1022,9 +1204,15 @@ mod tests {
                 modifiers: vec![],
             },
             actions: vec![
-                Action::AnalogMove { axis_code: 61000, normalized: 1.0 },
+                Action::AnalogMove {
+                    axis_code: 61000,
+                    normalized: 1.0,
+                },
                 Action::Delay(10),
-                Action::AnalogMove { axis_code: 61001, normalized: -0.5 },
+                Action::AnalogMove {
+                    axis_code: 61001,
+                    normalized: -0.5,
+                },
             ],
             device_id: None,
             enabled: true,
@@ -1050,25 +1238,34 @@ mod tests {
             jitter_pct: 0.1, // 10%
             capture_mouse: false,
         };
-        
+
         let base_delay = 100;
         // Expected range:
         // Base_ms + Latency_Offset + (Random_Jitter * Base_ms)
         // Min: 100 + 10 + (-0.1 * 100) = 110 - 10 = 100
         // Max: 100 + 10 + (0.1 * 100) = 110 + 10 = 120
-        
+
         let mut min_seen = 200;
         let mut max_seen = 0;
-        
+
         for _ in 0..1000 {
             let delay = engine.calculate_delay(base_delay, &settings);
             assert!(delay >= 100, "Delay {} should be >= 100", delay);
             assert!(delay <= 120, "Delay {} should be <= 120", delay);
-            if delay < min_seen { min_seen = delay; }
-            if delay > max_seen { max_seen = delay; }
+            if delay < min_seen {
+                min_seen = delay;
+            }
+            if delay > max_seen {
+                max_seen = delay;
+            }
         }
-        
+
         // With 1000 iterations, we should see some variation
-        assert!(max_seen > min_seen, "Should see variation in delay: {} - {}", min_seen, max_seen);
+        assert!(
+            max_seen > min_seen,
+            "Should see variation in delay: {} - {}",
+            min_seen,
+            max_seen
+        );
     }
 }

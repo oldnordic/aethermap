@@ -3,9 +3,9 @@
 //! Provides real-time visualization of analog stick position with
 //! deadzone overlay and range indicators.
 
+use iced::mouse;
 use iced::widget::canvas::{self, event, Cache, Frame, Geometry, Path, Program, Stroke};
 use iced::{Color, Point, Rectangle};
-use iced::mouse;
 use std::sync::Arc;
 
 /// Deadzone shape (matches gui.rs enum)

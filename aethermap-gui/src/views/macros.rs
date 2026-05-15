@@ -1,10 +1,13 @@
-use iced::{
-    widget::{button, checkbox, column, container, row, scrollable, slider, text, text_input, Space, Column},
-    Element, Length, Alignment,
-};
-use aethermap_common::Action;
-use crate::gui::{State, Message};
+use crate::gui::{Message, State};
 use crate::theme;
+use aethermap_common::Action;
+use iced::{
+    widget::{
+        button, checkbox, column, container, row, scrollable, slider, text, text_input, Column,
+        Space,
+    },
+    Alignment, Element, Length,
+};
 
 fn format_action_with_icon(action: &Action) -> String {
     match action {
@@ -17,7 +20,10 @@ fn format_action_with_icon(action: &Action) -> String {
         Action::MouseScroll(amount) => format!("🔄 Scroll {}", amount),
         Action::Execute(cmd) => format!("▶️ Execute {}", cmd),
         Action::Type(text) => format!("⌨️ Type {}", text),
-        Action::AnalogMove { axis_code, normalized } => {
+        Action::AnalogMove {
+            axis_code,
+            normalized,
+        } => {
             let axis_name = match axis_code {
                 61000 => "X",
                 61001 => "Y",
@@ -47,10 +53,7 @@ pub fn view(state: &State) -> Element<'_, Message> {
     column![
         header,
         Space::with_height(20),
-        row![
-            recording_section,
-            settings_section,
-        ].spacing(20),
+        row![recording_section, settings_section,].spacing(20),
         Space::with_height(20),
         text("MACRO LIBRARY").size(18),
         Space::with_height(10),
@@ -61,10 +64,13 @@ pub fn view(state: &State) -> Element<'_, Message> {
 }
 
 fn view_recording_panel(state: &State) -> Element<'_, Message> {
-    let name_input = text_input("Enter macro name (e.g., 'Quick Reload')", &state.new_macro_name)
-        .on_input(Message::UpdateMacroName)
-        .padding(12)
-        .size(14);
+    let name_input = text_input(
+        "Enter macro name (e.g., 'Quick Reload')",
+        &state.new_macro_name,
+    )
+    .on_input(Message::UpdateMacroName)
+    .padding(12)
+    .size(14);
 
     let record_button = if state.recording {
         let indicator = if state.recording_pulse { "●" } else { "○" };
@@ -74,7 +80,7 @@ fn view_recording_panel(state: &State) -> Element<'_, Message> {
                 Space::with_width(8),
                 text("STOP RECORDING").size(14),
             ]
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .on_press(Message::StopRecording)
         .style(iced::theme::Button::Destructive)
@@ -86,7 +92,7 @@ fn view_recording_panel(state: &State) -> Element<'_, Message> {
                 Space::with_width(8),
                 text("START RECORDING").size(14),
             ]
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .on_press(Message::StartRecording)
         .style(iced::theme::Button::Primary)
@@ -111,9 +117,10 @@ fn view_recording_panel(state: &State) -> Element<'_, Message> {
                 text(format!(
                     "Recording '{}' - Press keys on grabbed device...",
                     state.recording_macro_name.as_deref().unwrap_or("")
-                )).size(13),
+                ))
+                .size(13),
             ]
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .padding(12)
         .width(Length::Fill)
@@ -142,19 +149,28 @@ fn view_recording_panel(state: &State) -> Element<'_, Message> {
 }
 
 fn view_macro_settings_panel(state: &State) -> Element<'_, Message> {
-    let latency_label = text(format!("Latency Offset: {}ms", state.macro_settings.latency_offset_ms)).size(14);
+    let latency_label = text(format!(
+        "Latency Offset: {}ms",
+        state.macro_settings.latency_offset_ms
+    ))
+    .size(14);
     let latency_slider = slider(
         0..=200,
         state.macro_settings.latency_offset_ms,
         Message::LatencyChanged,
     );
 
-    let jitter_label = text(format!("Jitter: {:.0}%", state.macro_settings.jitter_pct * 100.0)).size(14);
+    let jitter_label = text(format!(
+        "Jitter: {:.0}%",
+        state.macro_settings.jitter_pct * 100.0
+    ))
+    .size(14);
     let jitter_slider = slider(
         0.0..=0.5,
         state.macro_settings.jitter_pct,
         Message::JitterChanged,
-    ).step(0.01);
+    )
+    .step(0.01);
 
     let capture_mouse_checkbox = checkbox(
         "Capture Mouse (Macro playback moves mouse)",
@@ -196,7 +212,7 @@ fn view_macro_list(state: &State) -> Element<'_, Message> {
                 text("Record your first macro above").size(12),
             ]
             .spacing(8)
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .padding(20)
         .width(Length::Fill)
@@ -207,17 +223,26 @@ fn view_macro_list(state: &State) -> Element<'_, Message> {
     let mut list: Column<Message> = column![].spacing(8);
 
     for macro_entry in &state.macros {
-        let is_recent = state.recently_updated_macros.contains_key(&macro_entry.name);
+        let is_recent = state
+            .recently_updated_macros
+            .contains_key(&macro_entry.name);
         let name_prefix = if is_recent { "★ " } else { "⚡ " };
 
-        let action_preview: Vec<Element<'_, Message>> = macro_entry.actions
+        let action_preview: Vec<Element<'_, Message>> = macro_entry
+            .actions
             .iter()
             .take(3)
             .map(|action| view_macro_action(action))
             .collect();
 
         let more_indicator = if macro_entry.actions.len() > 3 {
-            Some(text(format!("+ {} more actions...", macro_entry.actions.len() - 3)).size(10))
+            Some(
+                text(format!(
+                    "+ {} more actions...",
+                    macro_entry.actions.len() - 3
+                ))
+                .size(10),
+            )
         } else {
             None
         };
@@ -230,11 +255,14 @@ fn view_macro_list(state: &State) -> Element<'_, Message> {
                         "{} actions | {} trigger keys | {}",
                         macro_entry.actions.len(),
                         macro_entry.trigger.keys.len(),
-                        if macro_entry.enabled { "enabled" } else { "disabled" }
-                    )).size(11),
-                    column(action_preview)
-                        .spacing(2)
-                        .padding([4, 0]),
+                        if macro_entry.enabled {
+                            "enabled"
+                        } else {
+                            "disabled"
+                        }
+                    ))
+                    .size(11),
+                    column(action_preview).spacing(2).padding([4, 0]),
                     more_indicator.unwrap_or_else(|| text("").size(10)),
                 ]
                 .spacing(4),
@@ -247,7 +275,7 @@ fn view_macro_list(state: &State) -> Element<'_, Message> {
                     .style(iced::theme::Button::Destructive),
             ]
             .spacing(8)
-            .align_items(Alignment::Center)
+            .align_items(Alignment::Center),
         )
         .padding(12)
         .width(Length::Fill)

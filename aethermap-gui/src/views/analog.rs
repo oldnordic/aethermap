@@ -1,16 +1,19 @@
-use std::sync::Arc;
-use std::time::Instant;
-use iced::{
-    widget::{button, column, container, pick_list, row, scrollable, slider, text, Space, Canvas},
-    Element, Length, Alignment, Color,
-};
-use aethermap_common::{AnalogMode, CameraOutputMode};
 use crate::gui::Message;
 use crate::theme;
-use crate::widgets::{AnalogVisualizer, CurveGraph, analog_visualizer::DeadzoneShape as WidgetDeadzoneShape};
+use crate::widgets::{
+    analog_visualizer::DeadzoneShape as WidgetDeadzoneShape, AnalogVisualizer, CurveGraph,
+};
+use aethermap_common::{AnalogMode, CameraOutputMode};
+use iced::{
+    widget::{button, container, pick_list, scrollable, slider, text},
+    Color, Element, Length,
+};
+use std::sync::Arc;
+use std::time::Instant;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum DeadzoneShape {
+    #[default]
     Circular,
     Square,
 }
@@ -28,14 +31,9 @@ impl DeadzoneShape {
     pub const ALL: [DeadzoneShape; 2] = [DeadzoneShape::Circular, DeadzoneShape::Square];
 }
 
-impl Default for DeadzoneShape {
-    fn default() -> Self {
-        Self::Circular
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SensitivityCurve {
+    #[default]
     Linear,
     Quadratic,
     Exponential,
@@ -57,12 +55,6 @@ impl SensitivityCurve {
         SensitivityCurve::Quadratic,
         SensitivityCurve::Exponential,
     ];
-}
-
-impl Default for SensitivityCurve {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -158,7 +150,12 @@ impl Default for AnalogCalibrationView {
 }
 
 impl AnalogCalibrationView {
-    fn checkbox_button<'a>(&'a self, label: &str, is_checked: bool, msg: fn(bool) -> Message) -> Element<'a, Message> {
+    fn checkbox_button<'a>(
+        &'a self,
+        label: &str,
+        is_checked: bool,
+        msg: fn(bool) -> Message,
+    ) -> Element<'a, Message> {
         let btn = if is_checked {
             button(text(format!("[X] {}", label)).size(14))
         } else {
@@ -169,8 +166,8 @@ impl AnalogCalibrationView {
             .into()
     }
 
-    pub fn view(&self) -> Element<Message> {
-        use iced::widget::{horizontal_rule as rule, Row, Column, container, Canvas};
+    pub fn view(&self) -> Element<'_, Message> {
+        use iced::widget::{container, horizontal_rule as rule, Canvas, Column, Row};
 
         let title = text("Analog Calibration").size(24);
         let info = Column::new()
@@ -196,39 +193,29 @@ impl AnalogCalibrationView {
                         cache: Arc::clone(&self.visualizer_cache),
                     })
                     .width(Length::Fixed(250.0))
-                    .height(Length::Fixed(250.0))
+                    .height(Length::Fixed(250.0)),
                 )
                 .width(Length::Fixed(270.0))
                 .height(Length::Fixed(270.0))
                 .center_x()
-                .center_y()
+                .center_y(),
             );
 
         let mode_section = Column::new()
             .spacing(10)
             .push(text("Output Mode").size(18))
-            .push(
-                Row::new()
-                    .spacing(10)
-                    .push(text("Mode:"))
-                    .push(pick_list(
-                        &AnalogMode::ALL[..],
-                        Some(self.analog_mode_selected),
-                        Message::AnalogModeChanged,
-                    ))
-            );
+            .push(Row::new().spacing(10).push(text("Mode:")).push(pick_list(
+                &AnalogMode::ALL[..],
+                Some(self.analog_mode_selected),
+                Message::AnalogModeChanged,
+            )));
 
         let mode_section = if self.analog_mode_selected == AnalogMode::Camera {
-            mode_section.push(
-                Row::new()
-                    .spacing(10)
-                    .push(text("Camera:"))
-                    .push(pick_list(
-                        &CameraOutputMode::ALL[..],
-                        Some(self.camera_mode_selected),
-                        Message::CameraModeChanged,
-                    ))
-            )
+            mode_section.push(Row::new().spacing(10).push(text("Camera:")).push(pick_list(
+                &CameraOutputMode::ALL[..],
+                Some(self.camera_mode_selected),
+                Message::CameraModeChanged,
+            )))
         } else {
             mode_section
         };
@@ -241,18 +228,20 @@ impl AnalogCalibrationView {
                     .spacing(10)
                     .push(text("Size:"))
                     .push(text(format!("{:.0}%", self.calibration.deadzone * 100.0)))
-                    .push(slider(0.0..=1.0, self.calibration.deadzone, Message::AnalogDeadzoneChanged).step(0.01))
+                    .push(
+                        slider(
+                            0.0..=1.0,
+                            self.calibration.deadzone,
+                            Message::AnalogDeadzoneChanged,
+                        )
+                        .step(0.01),
+                    ),
             )
-            .push(
-                Row::new()
-                    .spacing(10)
-                    .push(text("Shape:"))
-                    .push(pick_list(
-                        &DeadzoneShape::ALL[..],
-                        Some(self.deadzone_shape_selected),
-                        Message::AnalogDeadzoneShapeChanged,
-                    ))
-            );
+            .push(Row::new().spacing(10).push(text("Shape:")).push(pick_list(
+                &DeadzoneShape::ALL[..],
+                Some(self.deadzone_shape_selected),
+                Message::AnalogDeadzoneShapeChanged,
+            )));
 
         let sensitivity_section = Column::new()
             .spacing(10)
@@ -261,19 +250,24 @@ impl AnalogCalibrationView {
                 Row::new()
                     .spacing(10)
                     .push(text("Multiplier:"))
-                    .push(text(format!("{:.1}", self.calibration.sensitivity_multiplier)))
-                    .push(slider(0.1..=5.0, self.calibration.sensitivity_multiplier, Message::AnalogSensitivityChanged).step(0.1))
+                    .push(text(format!(
+                        "{:.1}",
+                        self.calibration.sensitivity_multiplier
+                    )))
+                    .push(
+                        slider(
+                            0.1..=5.0,
+                            self.calibration.sensitivity_multiplier,
+                            Message::AnalogSensitivityChanged,
+                        )
+                        .step(0.1),
+                    ),
             )
-            .push(
-                Row::new()
-                    .spacing(10)
-                    .push(text("Curve:"))
-                    .push(pick_list(
-                        &SensitivityCurve::ALL[..],
-                        Some(self.sensitivity_curve_selected),
-                        Message::AnalogSensitivityCurveChanged,
-                    ))
-            )
+            .push(Row::new().spacing(10).push(text("Curve:")).push(pick_list(
+                &SensitivityCurve::ALL[..],
+                Some(self.sensitivity_curve_selected),
+                Message::AnalogSensitivityCurveChanged,
+            )))
             .push(text(format!("Curve: {}", self.sensitivity_curve_selected)).size(14))
             .push(
                 container(
@@ -282,10 +276,10 @@ impl AnalogCalibrationView {
                         multiplier: self.calibration.sensitivity_multiplier,
                     })
                     .width(Length::Fixed(300.0))
-                    .height(Length::Fixed(200.0))
+                    .height(Length::Fixed(200.0)),
                 )
                 .width(Length::Fixed(320.0))
-                .center_x()
+                .center_x(),
             );
 
         let range_section = Column::new()
@@ -296,14 +290,22 @@ impl AnalogCalibrationView {
                     .spacing(10)
                     .push(text("Min:"))
                     .push(text(self.calibration.range_min.to_string()))
-                    .push(slider(-32768..=0, self.calibration.range_min, Message::AnalogRangeMinChanged))
+                    .push(slider(
+                        -32768..=0,
+                        self.calibration.range_min,
+                        Message::AnalogRangeMinChanged,
+                    )),
             )
             .push(
                 Row::new()
                     .spacing(10)
                     .push(text("Max:"))
                     .push(text(self.calibration.range_max.to_string()))
-                    .push(slider(0..=32767, self.calibration.range_max, Message::AnalogRangeMaxChanged))
+                    .push(slider(
+                        0..=32767,
+                        self.calibration.range_max,
+                        Message::AnalogRangeMaxChanged,
+                    )),
             );
 
         let inversion_section = Column::new()
@@ -312,8 +314,16 @@ impl AnalogCalibrationView {
             .push(
                 Row::new()
                     .spacing(20)
-                    .push(self.checkbox_button("Invert X", self.invert_x_checked, Message::AnalogInvertXToggled))
-                    .push(self.checkbox_button("Invert Y", self.invert_y_checked, Message::AnalogInvertYToggled))
+                    .push(self.checkbox_button(
+                        "Invert X",
+                        self.invert_x_checked,
+                        Message::AnalogInvertXToggled,
+                    ))
+                    .push(self.checkbox_button(
+                        "Invert Y",
+                        self.invert_y_checked,
+                        Message::AnalogInvertYToggled,
+                    )),
             );
 
         let buttons = Row::new()
@@ -322,7 +332,7 @@ impl AnalogCalibrationView {
             .push(
                 button("Close")
                     .on_press(Message::CloseAnalogCalibration)
-                    .style(iced::theme::Button::Secondary)
+                    .style(iced::theme::Button::Secondary),
             );
 
         let content = if let Some(error) = &self.error {
@@ -394,7 +404,7 @@ mod tests {
         assert_eq!(view.calibration.deadzone, 0.15);
         assert_eq!(view.stick_x, 0.0);
         assert_eq!(view.stick_y, 0.0);
-        assert_eq!(view.loading, false);
+        assert!(!view.loading);
         assert!(view.error.is_none());
     }
 
@@ -435,8 +445,8 @@ mod tests {
         assert_eq!(view.stick_y, -0.3);
         assert_eq!(view.analog_mode_selected, AnalogMode::Mouse);
         assert_eq!(view.camera_mode_selected, CameraOutputMode::Keys);
-        assert_eq!(view.invert_x_checked, true);
-        assert_eq!(view.invert_y_checked, false);
+        assert!(view.invert_x_checked);
+        assert!(!view.invert_y_checked);
     }
 
     #[test]
@@ -449,8 +459,8 @@ mod tests {
         assert_eq!(config.sensitivity_multiplier, 1.0);
         assert_eq!(config.range_min, -32768);
         assert_eq!(config.range_max, 32767);
-        assert_eq!(config.invert_x, false);
-        assert_eq!(config.invert_y, false);
+        assert!(!config.invert_x);
+        assert!(!config.invert_y);
         assert_eq!(config.exponent, 2.0);
     }
 

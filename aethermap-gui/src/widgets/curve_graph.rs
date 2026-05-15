@@ -4,9 +4,9 @@
 //! Shows input (0-1) on X-axis and output (0-1) on Y-axis with the selected
 //! curve shape plotted.
 
+use iced::mouse;
 use iced::widget::canvas::{self, event, Frame, Geometry, Path, Program, Stroke};
 use iced::{Color, Point, Rectangle};
-use iced::mouse;
 
 use crate::gui::SensitivityCurve;
 
@@ -89,15 +89,11 @@ impl<Message> Program<Message> for CurveGraph {
         );
         frame.stroke(
             &x_axis,
-            Stroke::default()
-                .with_color(Color::WHITE)
-                .with_width(2.0),
+            Stroke::default().with_color(Color::WHITE).with_width(2.0),
         );
         frame.stroke(
             &y_axis,
-            Stroke::default()
-                .with_color(Color::WHITE)
-                .with_width(2.0),
+            Stroke::default().with_color(Color::WHITE).with_width(2.0),
         );
 
         // Generate curve points (51 points for smooth curve: 0.0, 0.02, 0.04, ..., 1.0)
@@ -153,9 +149,15 @@ mod tests {
     #[test]
     fn test_apply_curve_linear() {
         // Linear: output = input
-        assert!((CurveGraph::apply_curve(0.0, &SensitivityCurve::Linear) - 0.0).abs() < f32::EPSILON);
-        assert!((CurveGraph::apply_curve(0.5, &SensitivityCurve::Linear) - 0.5).abs() < f32::EPSILON);
-        assert!((CurveGraph::apply_curve(1.0, &SensitivityCurve::Linear) - 1.0).abs() < f32::EPSILON);
+        assert!(
+            (CurveGraph::apply_curve(0.0, &SensitivityCurve::Linear) - 0.0).abs() < f32::EPSILON
+        );
+        assert!(
+            (CurveGraph::apply_curve(0.5, &SensitivityCurve::Linear) - 0.5).abs() < f32::EPSILON
+        );
+        assert!(
+            (CurveGraph::apply_curve(1.0, &SensitivityCurve::Linear) - 1.0).abs() < f32::EPSILON
+        );
     }
 
     #[test]
@@ -205,16 +207,29 @@ mod tests {
     #[test]
     fn test_apply_curve_zero() {
         // Zero input should always produce zero output
-        assert!((CurveGraph::apply_curve(0.0, &SensitivityCurve::Linear) - 0.0).abs() < f32::EPSILON);
-        assert!((CurveGraph::apply_curve(0.0, &SensitivityCurve::Quadratic) - 0.0).abs() < f32::EPSILON);
-        assert!((CurveGraph::apply_curve(0.0, &SensitivityCurve::Exponential) - 0.0).abs() < f32::EPSILON);
+        assert!(
+            (CurveGraph::apply_curve(0.0, &SensitivityCurve::Linear) - 0.0).abs() < f32::EPSILON
+        );
+        assert!(
+            (CurveGraph::apply_curve(0.0, &SensitivityCurve::Quadratic) - 0.0).abs() < f32::EPSILON
+        );
+        assert!(
+            (CurveGraph::apply_curve(0.0, &SensitivityCurve::Exponential) - 0.0).abs()
+                < f32::EPSILON
+        );
     }
 
     #[test]
     fn test_apply_curve_full_deflection() {
         // Full deflection (1.0) tests
         assert_eq!(CurveGraph::apply_curve(1.0, &SensitivityCurve::Linear), 1.0);
-        assert_eq!(CurveGraph::apply_curve(1.0, &SensitivityCurve::Quadratic), 1.0);
-        assert_eq!(CurveGraph::apply_curve(1.0, &SensitivityCurve::Exponential), 1.0);
+        assert_eq!(
+            CurveGraph::apply_curve(1.0, &SensitivityCurve::Quadratic),
+            1.0
+        );
+        assert_eq!(
+            CurveGraph::apply_curve(1.0, &SensitivityCurve::Exponential),
+            1.0
+        );
     }
 }

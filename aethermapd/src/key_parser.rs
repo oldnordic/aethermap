@@ -91,7 +91,7 @@ impl KeyParser {
             let name = format!("f{}", i);
             // Map function key number to actual evdev code
             let code = match i {
-                1..=10 => 59 + i as u16 - 1,   // F1-F10: 59-68
+                1..=10 => 59 + i as u16 - 1,    // F1-F10: 59-68
                 11..=12 => 87 + i as u16 - 11,  // F11-F12: 87-88
                 13..=20 => 183 + i as u16 - 13, // F13-F20: 183-190
                 21..=24 => 194 + i as u16 - 21, // F21-F24: 194-197
@@ -237,9 +237,7 @@ impl KeyParser {
         Self::insert_all_variants(&mut name_to_key, "hat_left", 0x100 + 28);
         Self::insert_all_variants(&mut name_to_key, "hat_right", 0x100 + 29);
 
-        Self {
-            name_to_key,
-        }
+        Self { name_to_key }
     }
 
     /// Helper to insert a key with all common naming variants
@@ -500,7 +498,10 @@ mod tests {
 
         let result = parser.parse("nonexistent_key");
         assert!(result.is_err());
-        assert_eq!(result, Err(ParseError::UnknownKey("nonexistent_key".to_string())));
+        assert_eq!(
+            result,
+            Err(ParseError::UnknownKey("nonexistent_key".to_string()))
+        );
     }
 
     #[test]
@@ -517,12 +518,10 @@ mod tests {
 
         // Verify at least 30 common keys can be parsed
         let common_keys = vec![
-            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
-            "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-            "u", "v", "w", "x", "y", "z", // 26 letters
+            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q",
+            "r", "s", "t", "u", "v", "w", "x", "y", "z", // 26 letters
             "0", "1", "2", "3", "4", // 30
-            "5", "6", "7", "8", "9",
-            "ctrl", "shift", "alt", "enter", "space",
+            "5", "6", "7", "8", "9", "ctrl", "shift", "alt", "enter", "space",
         ];
 
         let mut parsed_count = 0;
@@ -532,7 +531,11 @@ mod tests {
             }
         }
 
-        assert!(parsed_count >= 30, "Expected at least 30 keys, found {}", parsed_count);
+        assert!(
+            parsed_count >= 30,
+            "Expected at least 30 keys, found {}",
+            parsed_count
+        );
     }
 
     #[test]
@@ -587,16 +590,17 @@ mod tests {
         // Verify JOY_BTN_0 through JOY_BTN_25 all parse correctly
         for i in 0..=25 {
             let name = format!("joy_btn_{}", i);
-            assert!(
-                parser.parse(&name).is_ok(),
-                "Failed to parse {}",
-                name
-            );
+            assert!(parser.parse(&name).is_ok(), "Failed to parse {}", name);
 
             // Verify correct code
             let expected_code = 0x100u16 + i;
             let result = parser.parse(&name);
-            assert_eq!(result, Ok(Key::new(expected_code)), "Wrong code for {}", name);
+            assert_eq!(
+                result,
+                Ok(Key::new(expected_code)),
+                "Wrong code for {}",
+                name
+            );
         }
     }
 }

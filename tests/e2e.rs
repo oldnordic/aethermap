@@ -10,9 +10,8 @@
 //! and injected events to ensure reproducibility and avoid requiring actual hardware.
 
 use aethermap_common::{
-    ipc_client::IpcClient,
-    DeviceInfo, Request, Response, Action, MacroEntry, KeyCombo,
-    serialize, deserialize,
+    deserialize, ipc_client::IpcClient, serialize, Action, DeviceInfo, KeyCombo, MacroEntry,
+    Request, Response,
 };
 use std::{
     collections::HashMap,
@@ -21,18 +20,13 @@ use std::{
     time::Duration,
 };
 use tempfile::TempDir;
-use tokio::{
-    net::UnixListener,
-    sync::{RwLock},
-    time::sleep,
-    task::JoinHandle,
-};
-use tracing::{debug, info, error};
-use tracing_subscriber;
+use tokio::{net::UnixListener, sync::RwLock, task::JoinHandle, time::sleep};
+use tracing::{debug, error, info};
 
 /// Test environment with mock daemon
 struct TestEnvironment {
-    /// Temporary directory for test files
+    /// Temporary directory for test files (kept alive for cleanup)
+    #[allow(dead_code)]
     temp_dir: TempDir,
     /// Path to the test socket
     socket_path: PathBuf,
@@ -84,7 +78,9 @@ impl TestEnvironment {
     }
 
     /// Start a mock daemon in a background task
-    async fn start_daemon(socket_path: &Path) -> Result<JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
+    async fn start_daemon(
+        socket_path: &Path,
+    ) -> Result<JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         let socket_path = socket_path.to_string_lossy().to_string();
 
         // Spawn the daemon task
@@ -98,7 +94,9 @@ impl TestEnvironment {
     }
 
     /// Run a mock daemon that implements the same IPC protocol as the real daemon
-    async fn run_mock_daemon(socket_path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn run_mock_daemon(
+        socket_path: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Clean up any existing socket
         if Path::new(socket_path).exists() {
             std::fs::remove_file(socket_path)?;
@@ -141,9 +139,10 @@ impl TestEnvironment {
                     let recording_state = Arc::clone(&recording_state);
 
                     tokio::spawn(async move {
-                        if let Err(e) = Self::handle_client_connection(
-                                stream, devices, macros, recording_state
-                        ).await {
+                        if let Err(e) =
+                            Self::handle_client_connection(stream, devices, macros, recording_state)
+                                .await
+                        {
                             error!("Error handling client connection: {}", e);
                         }
                     });
@@ -179,12 +178,7 @@ impl TestEnvironment {
         debug!("Received request: {:?}", request);
 
         // Process the request and generate a response
-        let response = Self::process_request(
-            request,
-            devices,
-            macros,
-            recording_state
-        ).await;
+        let response = Self::process_request(request, devices, macros, recording_state).await;
 
         // Serialize the response
         let response_bytes = serialize(&response);
@@ -208,14 +202,15 @@ impl TestEnvironment {
         recording_state: Arc<RwLock<Option<(String, bool)>>>,
     ) -> Response {
         match request {
-            Request::GetDevices => {
-                Response::Devices(devices)
-            }
+            Request::GetDevices => Response::Devices(devices),
             Request::ListMacros => {
                 let macros = macros.read().await;
                 Response::Macros(macros.values().cloned().collect())
             }
-            Request::SetMacro { device_path: _, macro_entry } => {
+            Request::SetMacro {
+                device_path: _,
+                macro_entry,
+            } => {
                 let mut macros = macros.write().await;
                 macros.insert(macro_entry.name.clone(), macro_entry);
                 Response::Ack
@@ -239,7 +234,11 @@ impl TestEnvironment {
                     Response::Error("Invalid authentication token".to_string())
                 }
             }
-            Request::RecordMacro { device_path, name, capture_mouse } => {
+            Request::RecordMacro {
+                device_path,
+                name,
+                capture_mouse,
+            } => {
                 let mut state = recording_state.write().await;
                 *state = Some((name.clone(), capture_mouse));
                 Response::RecordingStarted { device_path, name }
@@ -279,32 +278,34 @@ impl TestEnvironment {
                     Response::Error(format!("Macro '{}' not found", name))
                 }
             }
-            Request::SaveProfile { name } => {
-                Response::ProfileSaved { name, macros_count: macros.read().await.len() }
-            }
+            Request::SaveProfile { name } => Response::ProfileSaved {
+                name,
+                macros_count: macros.read().await.len(),
+            },
             Request::LoadProfile { name } => {
                 // In a real implementation, this would load from disk
                 // For tests, we'll just create an empty profile
-                Response::ProfileLoaded { name, macros_count: 0 }
+                Response::ProfileLoaded {
+                    name,
+                    macros_count: 0,
+                }
             }
-            Request::ListProfiles => {
-                Response::Profiles(vec!["default".to_string(), "test".to_string(), "Test Profile".to_string()])
-            }
+            Request::ListProfiles => Response::Profiles(vec![
+                "default".to_string(),
+                "test".to_string(),
+                "Test Profile".to_string(),
+            ]),
             Request::DeleteProfile { name: _ } => {
                 // In a real implementation, this would delete from disk
                 Response::Ack
             }
-            Request::GetStatus => {
-                Response::Status {
-                    version: "0.1.0-test".to_string(),
-                    uptime_seconds: 300,
-                    devices_count: devices.len(),
-                    macros_count: macros.read().await.len(),
-                }
-            }
-            _ => {
-                Response::Error("Unsupported request in test mode".to_string())
-            }
+            Request::GetStatus => Response::Status {
+                version: "0.1.0-test".to_string(),
+                uptime_seconds: 300,
+                devices_count: devices.len(),
+                macros_count: macros.read().await.len(),
+            },
+            _ => Response::Error("Unsupported request in test mode".to_string()),
         }
     }
 }
@@ -349,11 +350,14 @@ async fn test_macro_recording_playback() -> Result<(), Box<dyn std::error::Error
     let test_env = TestEnvironment::new().await?;
 
     // Test 1: Record a macro
-    let record_response = test_env.client.send(&Request::RecordMacro {
-        device_path: "/dev/input/test0".to_string(),
-        name: "Test Macro".to_string(),
-        capture_mouse: false,
-    }).await?;
+    let record_response = test_env
+        .client
+        .send(&Request::RecordMacro {
+            device_path: "/dev/input/test0".to_string(),
+            name: "Test Macro".to_string(),
+            capture_mouse: false,
+        })
+        .await?;
 
     // Verify recording started
     match record_response {
@@ -390,9 +394,12 @@ async fn test_macro_recording_playback() -> Result<(), Box<dyn std::error::Error
     }
 
     // Test 4: Play macro
-    let play_response = test_env.client.send(&Request::TestMacro {
-        name: "Test Macro".to_string(),
-    }).await?;
+    let play_response = test_env
+        .client
+        .send(&Request::TestMacro {
+            name: "Test Macro".to_string(),
+        })
+        .await?;
 
     // Verify playback started
     assert!(matches!(play_response, Response::Ack));
@@ -429,10 +436,13 @@ async fn test_macro_management() -> Result<(), Box<dyn std::error::Error + Send 
     };
 
     // Test 1: Set macro
-    let set_response = test_env.client.send(&Request::SetMacro {
-        device_path: "/dev/input/test".to_string(),
-        macro_entry: test_macro.clone(),
-    }).await?;
+    let set_response = test_env
+        .client
+        .send(&Request::SetMacro {
+            device_path: "/dev/input/test".to_string(),
+            macro_entry: test_macro.clone(),
+        })
+        .await?;
 
     assert!(matches!(set_response, Response::Ack));
 
@@ -449,9 +459,12 @@ async fn test_macro_management() -> Result<(), Box<dyn std::error::Error + Send 
     }
 
     // Test 3: Delete macro
-    let delete_response = test_env.client.send(&Request::DeleteMacro {
-        name: test_macro.name,
-    }).await?;
+    let delete_response = test_env
+        .client
+        .send(&Request::DeleteMacro {
+            name: test_macro.name,
+        })
+        .await?;
 
     assert!(matches!(delete_response, Response::Ack));
 
@@ -483,7 +496,7 @@ async fn test_profile_management() -> Result<(), Box<dyn std::error::Error + Sen
             modifiers: vec![],
         },
         actions: vec![
-            Action::KeyPress(31), // Press B
+            Action::KeyPress(31),   // Press B
             Action::KeyRelease(31), // Release B
         ],
         device_id: None,
@@ -493,15 +506,21 @@ async fn test_profile_management() -> Result<(), Box<dyn std::error::Error + Sen
     };
 
     // Set the macro
-    test_env.client.send(&Request::SetMacro {
-        device_path: "/dev/input/test".to_string(),
-        macro_entry: test_macro,
-    }).await?;
+    test_env
+        .client
+        .send(&Request::SetMacro {
+            device_path: "/dev/input/test".to_string(),
+            macro_entry: test_macro,
+        })
+        .await?;
 
     // Test 1: Save profile
-    let save_response = test_env.client.send(&Request::SaveProfile {
-        name: "Test Profile".to_string(),
-    }).await?;
+    let save_response = test_env
+        .client
+        .send(&Request::SaveProfile {
+            name: "Test Profile".to_string(),
+        })
+        .await?;
 
     match save_response {
         Response::ProfileSaved { name, macros_count } => {
@@ -524,9 +543,12 @@ async fn test_profile_management() -> Result<(), Box<dyn std::error::Error + Sen
     }
 
     // Test 3: Load profile
-    let load_response = test_env.client.send(&Request::LoadProfile {
-        name: "Test Profile".to_string(),
-    }).await?;
+    let load_response = test_env
+        .client
+        .send(&Request::LoadProfile {
+            name: "Test Profile".to_string(),
+        })
+        .await?;
 
     match load_response {
         Response::ProfileLoaded { name, macros_count } => {
@@ -538,9 +560,12 @@ async fn test_profile_management() -> Result<(), Box<dyn std::error::Error + Sen
     }
 
     // Test 4: Delete profile
-    let delete_response = test_env.client.send(&Request::DeleteProfile {
-        name: "Test Profile".to_string(),
-    }).await?;
+    let delete_response = test_env
+        .client
+        .send(&Request::DeleteProfile {
+            name: "Test Profile".to_string(),
+        })
+        .await?;
 
     assert!(matches!(delete_response, Response::Ack));
 
@@ -555,9 +580,12 @@ async fn test_authentication() -> Result<(), Box<dyn std::error::Error + Send + 
     let test_env = TestEnvironment::new().await?;
 
     // Test 1: Generate token
-    let token_response = test_env.client.send(&Request::GenerateToken {
-        client_id: "test-client".to_string(),
-    }).await?;
+    let token_response = test_env
+        .client
+        .send(&Request::GenerateToken {
+            client_id: "test-client".to_string(),
+        })
+        .await?;
 
     let token = match token_response {
         Response::Token(token) => token,
@@ -567,16 +595,20 @@ async fn test_authentication() -> Result<(), Box<dyn std::error::Error + Send + 
     assert!(token.starts_with("test-token-test-client"));
 
     // Test 2: Authenticate with token
-    let auth_response = test_env.client.send(&Request::Authenticate {
-        token,
-    }).await?;
+    let auth_response = test_env
+        .client
+        .send(&Request::Authenticate { token })
+        .await?;
 
     assert!(matches!(auth_response, Response::Authenticated));
 
     // Test 3: Authenticate with invalid token
-    let auth_response = test_env.client.send(&Request::Authenticate {
-        token: "invalid-token".to_string(),
-    }).await?;
+    let auth_response = test_env
+        .client
+        .send(&Request::Authenticate {
+            token: "invalid-token".to_string(),
+        })
+        .await?;
 
     match auth_response {
         Response::Error(message) => {
@@ -599,7 +631,12 @@ async fn test_daemon_status() -> Result<(), Box<dyn std::error::Error + Send + S
     let status_response = test_env.client.send(&Request::GetStatus).await?;
 
     match status_response {
-        Response::Status { version, uptime_seconds, devices_count, macros_count } => {
+        Response::Status {
+            version,
+            uptime_seconds,
+            devices_count,
+            macros_count,
+        } => {
             assert_eq!(version, "0.1.0-test");
             assert!(uptime_seconds > 0);
             assert_eq!(devices_count, 2);
@@ -619,9 +656,12 @@ async fn test_error_handling() -> Result<(), Box<dyn std::error::Error + Send + 
     let test_env = TestEnvironment::new().await?;
 
     // Test 1: Try to execute a non-existent macro
-    let play_response = test_env.client.send(&Request::TestMacro {
-        name: "Non-existent Macro".to_string(),
-    }).await?;
+    let play_response = test_env
+        .client
+        .send(&Request::TestMacro {
+            name: "Non-existent Macro".to_string(),
+        })
+        .await?;
 
     match play_response {
         Response::Error(message) => {
@@ -710,10 +750,13 @@ async fn test_large_payload() -> Result<(), Box<dyn std::error::Error + Send + S
     };
 
     // Set large macro
-    let set_response = test_env.client.send(&Request::SetMacro {
-        device_path: "/dev/input/test".to_string(),
-        macro_entry: large_macro,
-    }).await?;
+    let set_response = test_env
+        .client
+        .send(&Request::SetMacro {
+            device_path: "/dev/input/test".to_string(),
+            macro_entry: large_macro,
+        })
+        .await?;
 
     assert!(matches!(set_response, Response::Ack));
 

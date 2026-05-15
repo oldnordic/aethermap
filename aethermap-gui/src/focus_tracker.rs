@@ -3,10 +3,10 @@
 //! This module provides window focus tracking via xdg-desktop-portal.
 //! Focus changes are detected and can be used to trigger profile switching.
 
+use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use serde::{Deserialize, Serialize};
 
 /// A window focus change event
 ///
@@ -121,12 +121,10 @@ impl FocusTracker {
     /// is unavailable, returns a tracker that will gracefully handle
     /// all operations as no-ops.
     pub async fn new() -> Self {
-        let portal = tokio::task::spawn(async {
-            FocusPortal::try_new().await
-        })
-        .await
-        .ok()
-        .and_then(|r| r);
+        let portal = tokio::task::spawn(async { FocusPortal::try_new().await })
+            .await
+            .ok()
+            .and_then(|r| r);
 
         Self {
             portal: portal.map(Arc::new),
@@ -202,8 +200,7 @@ impl FocusTracker {
 impl Default for FocusTracker {
     fn default() -> Self {
         // Create a runtime for the async new() call
-        let rt = tokio::runtime::Runtime::new()
-            .expect("Failed to create tokio runtime");
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
 
         rt.block_on(Self::new())
     }

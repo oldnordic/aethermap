@@ -1,11 +1,3 @@
 # Aethermap udev rules
-# Allows aethermap daemon to access input devices and uinput
-
-# Grant access to uinput device
-KERNEL=="uinput", MODE="0660", GROUP="input", TAG+="uaccess"
-
-# Grant access to Razer devices (VID 1532)
-SUBSYSTEM=="input", ATTRS{idVendor}=="1532", MODE="0660", GROUP="input", TAG+="uaccess"
-
-# Allow non-root users in 'input' group to grab devices
-SUBSYSTEM=="input", KERNEL=="event*", MODE="0660", GROUP="input"
+# Allow input group members to create uinput devices
+KERNEL=="uinput", MODE="0660", GROUP="input"

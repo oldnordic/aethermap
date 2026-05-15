@@ -1,19 +1,17 @@
-use iced::{
-    widget::{
-        column, container, row, scrollable,
-        horizontal_rule, vertical_rule,
-    },
-    Element, Length, Subscription, Theme, Application, Command,
-};
-use std::sync::Arc;
 use crate::theme::{aether_dark, aether_light};
 use crate::views;
+use iced::{
+    widget::{column, container, horizontal_rule, row, scrollable, vertical_rule},
+    Application, Command, Element, Length, Subscription, Theme,
+};
 
 // Import custom widgets
-use aethermap_common::{DeviceInfo, DeviceCapabilities, DeviceType, LayerConfigInfo, LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapProfileInfo, RemapEntry, AnalogMode, CameraOutputMode};
-use aethermap_common::ipc_client::IpcClient;
+use aethermap_common::{
+    AnalogMode, CameraOutputMode, DeviceCapabilities, DeviceInfo, DeviceType, LayerConfigInfo,
+    LayerMode, LedPattern, LedZone, MacroEntry, MacroSettings, RemapEntry, RemapProfileInfo,
+};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::PathBuf;
-use std::collections::{VecDeque, HashMap, HashSet};
 use std::time::{Duration, Instant};
 
 // Import focus_tracker types - need to use path from lib.rs root
@@ -46,13 +44,15 @@ pub struct Notification {
     pub timestamp: Instant,
 }
 
-pub use views::keypad::{KeypadButton, azeron_keypad_layout};
+pub use views::keypad::{azeron_keypad_layout, KeypadButton};
 
 pub use views::auto_switch::{AutoSwitchRule, AutoSwitchRulesView};
 
 pub use views::hotkeys::{HotkeyBinding, HotkeyBindingsView};
 
-pub use views::analog::{DeadzoneShape, SensitivityCurve, CalibrationConfig, AnalogCalibrationView};
+pub use views::analog::{
+    AnalogCalibrationView, CalibrationConfig, DeadzoneShape, SensitivityCurve,
+};
 
 pub use views::led::LedState;
 
@@ -488,15 +488,23 @@ impl Application for State {
                 // Load analog settings for the selected device if it has analog stick
                 if let Some(device) = self.devices.get(idx) {
                     let device_id = format!("{:04x}:{:04x}", device.vendor_id, device.product_id);
-                    if device.device_type == DeviceType::Gamepad || device.device_type == DeviceType::Keypad {
+                    if device.device_type == DeviceType::Gamepad
+                        || device.device_type == DeviceType::Keypad
+                    {
                         let device_id_clone1 = device_id.clone();
                         let device_id_clone2 = device_id.clone();
                         let device_id_clone3 = device_id.clone();
                         return Command::batch(vec![
                             Command::none(),
-                            Command::perform(async move { device_id_clone1 }, |id| Message::AnalogDpadModeRequested(id)),
-                            Command::perform(async move { device_id_clone2 }, |id| Message::AnalogDeadzoneXYRequested(id)),
-                            Command::perform(async move { device_id_clone3 }, |id| Message::AnalogOuterDeadzoneXYRequested(id)),
+                            Command::perform(async move { device_id_clone1 }, |id| {
+                                Message::AnalogDpadModeRequested(id)
+                            }),
+                            Command::perform(async move { device_id_clone2 }, |id| {
+                                Message::AnalogDeadzoneXYRequested(id)
+                            }),
+                            Command::perform(async move { device_id_clone3 }, |id| {
+                                Message::AnalogOuterDeadzoneXYRequested(id)
+                            }),
                         ]);
                     }
                 }
@@ -545,7 +553,10 @@ impl Application for State {
                 if available {
                     self.add_notification("Focus tracking enabled", false);
                 } else {
-                    self.add_notification("Focus tracking unavailable (portal not connected)", true);
+                    self.add_notification(
+                        "Focus tracking unavailable (portal not connected)",
+                        true,
+                    );
                 }
                 Command::none()
             }
@@ -575,21 +586,15 @@ impl Application for State {
             Message::ShowAutoSwitchRules(device_id) => {
                 crate::handlers::auto_switch::show(self, device_id)
             }
-            Message::CloseAutoSwitchRules => {
-                crate::handlers::auto_switch::close(self)
-            }
-            Message::LoadAutoSwitchRules(_device_id) => {
-                crate::handlers::auto_switch::load(self)
-            }
+            Message::CloseAutoSwitchRules => crate::handlers::auto_switch::close(self),
+            Message::LoadAutoSwitchRules(_device_id) => crate::handlers::auto_switch::load(self),
             Message::AutoSwitchRulesLoaded(Ok(rules)) => {
                 crate::handlers::auto_switch::loaded(self, rules)
             }
             Message::AutoSwitchRulesLoaded(Err(error)) => {
                 crate::handlers::auto_switch::load_error(self, error)
             }
-            Message::EditAutoSwitchRule(index) => {
-                crate::handlers::auto_switch::edit(self, index)
-            }
+            Message::EditAutoSwitchRule(index) => crate::handlers::auto_switch::edit(self, index),
             Message::AutoSwitchAppIdChanged(value) => {
                 crate::handlers::auto_switch::app_id_changed(self, value)
             }
@@ -599,12 +604,8 @@ impl Application for State {
             Message::AutoSwitchLayerIdChanged(value) => {
                 crate::handlers::auto_switch::layer_id_changed(self, value)
             }
-            Message::AutoSwitchUseCurrentApp => {
-                crate::handlers::auto_switch::use_current_app(self)
-            }
-            Message::SaveAutoSwitchRule => {
-                crate::handlers::auto_switch::save(self)
-            }
+            Message::AutoSwitchUseCurrentApp => crate::handlers::auto_switch::use_current_app(self),
+            Message::SaveAutoSwitchRule => crate::handlers::auto_switch::save(self),
             Message::DeleteAutoSwitchRule(index) => {
                 crate::handlers::auto_switch::delete(self, index)
             }
@@ -613,9 +614,7 @@ impl Application for State {
             Message::ShowHotkeyBindings(device_id) => {
                 crate::handlers::hotkeys::show(self, device_id)
             }
-            Message::CloseHotkeyBindings => {
-                crate::handlers::hotkeys::close(self)
-            }
+            Message::CloseHotkeyBindings => crate::handlers::hotkeys::close(self),
             Message::LoadHotkeyBindings(device_id) => {
                 crate::handlers::hotkeys::load(self, device_id)
             }
@@ -625,35 +624,28 @@ impl Application for State {
             Message::HotkeyBindingsLoaded(Err(error)) => {
                 crate::handlers::hotkeys::load_error(self, error)
             }
-            Message::EditHotkeyBinding(index) => {
-                crate::handlers::hotkeys::edit(self, index)
-            }
+            Message::EditHotkeyBinding(index) => crate::handlers::hotkeys::edit(self, index),
             Message::ToggleHotkeyModifier(modifier) => {
                 crate::handlers::hotkeys::toggle_modifier(self, modifier)
             }
-            Message::HotkeyKeyChanged(value) => {
-                crate::handlers::hotkeys::key_changed(self, value)
-            }
+            Message::HotkeyKeyChanged(value) => crate::handlers::hotkeys::key_changed(self, value),
             Message::HotkeyProfileNameChanged(value) => {
                 crate::handlers::hotkeys::profile_name_changed(self, value)
             }
             Message::HotkeyLayerIdChanged(value) => {
                 crate::handlers::hotkeys::layer_id_changed(self, value)
             }
-            Message::SaveHotkeyBinding => {
-                crate::handlers::hotkeys::save(self)
-            }
-            Message::DeleteHotkeyBinding(index) => {
-                crate::handlers::hotkeys::delete(self, index)
-            }
+            Message::SaveHotkeyBinding => crate::handlers::hotkeys::save(self),
+            Message::DeleteHotkeyBinding(index) => crate::handlers::hotkeys::delete(self, index),
             Message::HotkeyBindingsUpdated(bindings) => {
                 crate::handlers::hotkeys::bindings_updated(self, bindings)
             }
 
             // Analog Calibration Management
-            Message::OpenAnalogCalibration { device_id, layer_id } => {
-                crate::handlers::analog::open(self, device_id, layer_id)
-            }
+            Message::OpenAnalogCalibration {
+                device_id,
+                layer_id,
+            } => crate::handlers::analog::open(self, device_id, layer_id),
             Message::AnalogCalibrationLoaded(Ok(calibration)) => {
                 crate::handlers::analog::loaded(self, calibration)
             }
@@ -690,21 +682,13 @@ impl Application for State {
             Message::CameraModeChanged(mode) => {
                 crate::handlers::analog::camera_mode_changed(self, mode)
             }
-            Message::ApplyAnalogCalibration => {
-                crate::handlers::analog::apply(self)
-            }
-            Message::AnalogCalibrationApplied(Ok(())) => {
-                crate::handlers::analog::applied_ok(self)
-            }
+            Message::ApplyAnalogCalibration => crate::handlers::analog::apply(self),
+            Message::AnalogCalibrationApplied(Ok(())) => crate::handlers::analog::applied_ok(self),
             Message::AnalogCalibrationApplied(Err(error)) => {
                 crate::handlers::analog::applied_error(self, error)
             }
-            Message::CloseAnalogCalibration => {
-                crate::handlers::analog::close(self)
-            }
-            Message::AnalogInputUpdated(x, y) => {
-                crate::handlers::analog::input_updated(self, x, y)
-            }
+            Message::CloseAnalogCalibration => crate::handlers::analog::close(self),
+            Message::AnalogInputUpdated(x, y) => crate::handlers::analog::input_updated(self, x, y),
 
             Message::LoadDevices => {
                 let socket_path = self.socket_path.clone();
@@ -729,18 +713,10 @@ impl Application for State {
                 self.add_notification(&format!("Error: {}", e), true);
                 Command::none()
             }
-            Message::LoadMacros => {
-                crate::handlers::macros::load(self)
-            }
-            Message::MacrosLoaded(Ok(macros)) => {
-                crate::handlers::macros::loaded(self, macros)
-            }
-            Message::MacrosLoaded(Err(e)) => {
-                crate::handlers::macros::load_error(self, e)
-            }
-            Message::LoadMacroSettings => {
-                crate::handlers::macros::load_settings(self)
-            }
+            Message::LoadMacros => crate::handlers::macros::load(self),
+            Message::MacrosLoaded(Ok(macros)) => crate::handlers::macros::loaded(self, macros),
+            Message::MacrosLoaded(Err(e)) => crate::handlers::macros::load_error(self, e),
+            Message::LoadMacroSettings => crate::handlers::macros::load_settings(self),
             Message::MacroSettingsLoaded(Ok(settings)) => {
                 crate::handlers::macros::settings_loaded(self, settings)
             }
@@ -750,57 +726,35 @@ impl Application for State {
             Message::SetMacroSettings(settings) => {
                 crate::handlers::macros::set_settings(self, settings)
             }
-            Message::LatencyChanged(ms) => {
-                crate::handlers::macros::latency_changed(self, ms)
-            }
-            Message::JitterChanged(pct) => {
-                crate::handlers::macros::jitter_changed(self, pct)
-            }
+            Message::LatencyChanged(ms) => crate::handlers::macros::latency_changed(self, ms),
+            Message::JitterChanged(pct) => crate::handlers::macros::jitter_changed(self, pct),
             Message::CaptureMouseToggled(enabled) => {
                 crate::handlers::macros::capture_mouse_toggled(self, enabled)
             }
-            Message::PlayMacro(macro_name) => {
-                crate::handlers::macros::play(self, macro_name)
-            }
-            Message::MacroPlayed(Ok(name)) => {
-                crate::handlers::macros::played_ok(self, name)
-            }
-            Message::MacroPlayed(Err(e)) => {
-                crate::handlers::macros::played_error(self, e)
-            }
-            Message::UpdateMacroName(name) => {
-                crate::handlers::macros::update_name(self, name)
-            }
+            Message::PlayMacro(macro_name) => crate::handlers::macros::play(self, macro_name),
+            Message::MacroPlayed(Ok(name)) => crate::handlers::macros::played_ok(self, name),
+            Message::MacroPlayed(Err(e)) => crate::handlers::macros::played_error(self, e),
+            Message::UpdateMacroName(name) => crate::handlers::macros::update_name(self, name),
             Message::UpdateProfileName(name) => {
                 crate::handlers::macros::update_profile_name(self, name)
             }
-            Message::StartRecording => {
-                crate::handlers::macros::start_recording(self)
-            }
+            Message::StartRecording => crate::handlers::macros::start_recording(self),
             Message::RecordingStarted(Ok(name)) => {
                 crate::handlers::macros::recording_started_ok(self, name)
             }
             Message::RecordingStarted(Err(e)) => {
                 crate::handlers::macros::recording_started_error(self, e)
             }
-            Message::StopRecording => {
-                crate::handlers::macros::stop_recording(self)
-            }
+            Message::StopRecording => crate::handlers::macros::stop_recording(self),
             Message::RecordingStopped(Ok(macro_entry)) => {
                 crate::handlers::macros::recording_stopped_ok(self, macro_entry)
             }
             Message::RecordingStopped(Err(e)) => {
                 crate::handlers::macros::recording_stopped_error(self, e)
             }
-            Message::DeleteMacro(macro_name) => {
-                crate::handlers::macros::delete(self, macro_name)
-            }
-            Message::MacroDeleted(Ok(name)) => {
-                crate::handlers::macros::deleted_ok(self, name)
-            }
-            Message::MacroDeleted(Err(e)) => {
-                crate::handlers::macros::deleted_error(self, e)
-            }
+            Message::DeleteMacro(macro_name) => crate::handlers::macros::delete(self, macro_name),
+            Message::MacroDeleted(Ok(name)) => crate::handlers::macros::deleted_ok(self, name),
+            Message::MacroDeleted(Err(e)) => crate::handlers::macros::deleted_error(self, e),
             Message::SaveProfile => {
                 if self.profile_name.trim().is_empty() {
                     self.add_notification("Enter a profile name", true);
@@ -849,9 +803,8 @@ impl Application for State {
             }
             Message::TickAnimations => {
                 let now = Instant::now();
-                self.recently_updated_macros.retain(|_, timestamp| {
-                    now.duration_since(*timestamp) < Duration::from_secs(3)
-                });
+                self.recently_updated_macros
+                    .retain(|_, timestamp| now.duration_since(*timestamp) < Duration::from_secs(3));
                 self.recording_pulse = !self.recording_pulse;
                 // Auto-dismiss old notifications
                 while let Some(notif) = self.notifications.front() {
@@ -873,7 +826,11 @@ impl Application for State {
                 Command::perform(
                     async move {
                         let client = crate::ipc::IpcClient::new(socket_path);
-                        client.grab_device(&path_clone).await.map(|_| path_clone).map_err(|e| e.to_string())
+                        client
+                            .grab_device(&path_clone)
+                            .await
+                            .map(|_| path_clone)
+                            .map_err(|e| e.to_string())
                     },
                     Message::DeviceGrabbed,
                 )
@@ -884,14 +841,22 @@ impl Application for State {
                 Command::perform(
                     async move {
                         let client = crate::ipc::IpcClient::new(socket_path);
-                        client.ungrab_device(&path_clone).await.map(|_| path_clone).map_err(|e| e.to_string())
+                        client
+                            .ungrab_device(&path_clone)
+                            .await
+                            .map(|_| path_clone)
+                            .map_err(|e| e.to_string())
                     },
                     Message::DeviceUngrabbed,
                 )
             }
             Message::DeviceGrabbed(Ok(device_path)) => {
                 self.grabbed_devices.insert(device_path.clone());
-                if let Some(idx) = self.devices.iter().position(|d| d.path.to_string_lossy() == device_path) {
+                if let Some(idx) = self
+                    .devices
+                    .iter()
+                    .position(|d| d.path.to_string_lossy() == device_path)
+                {
                     self.selected_device = Some(idx);
                 }
                 self.add_notification("Device grabbed - ready for recording", false);
@@ -918,15 +883,24 @@ impl Application for State {
                         let client = crate::ipc::IpcClient::new(socket_path);
                         (id.clone(), client.get_device_profiles(id).await)
                     },
-                    |(device_id, result)| Message::DeviceProfilesLoaded(
-                        device_id,
-                        result.map_err(|e| e.to_string())
-                    )
+                    |(device_id, result)| {
+                        Message::DeviceProfilesLoaded(device_id, result.map_err(|e| e.to_string()))
+                    },
                 )
             }
             Message::DeviceProfilesLoaded(device_id, Ok(profiles)) => {
                 self.device_profiles.insert(device_id.clone(), profiles);
-                self.add_notification(&format!("Loaded {} profiles for {}", self.device_profiles.get(&device_id).map(|p| p.len()).unwrap_or(0), device_id), false);
+                self.add_notification(
+                    &format!(
+                        "Loaded {} profiles for {}",
+                        self.device_profiles
+                            .get(&device_id)
+                            .map(|p| p.len())
+                            .unwrap_or(0),
+                        device_id
+                    ),
+                    false,
+                );
                 Command::none()
             }
             Message::DeviceProfilesLoaded(_device_id, Err(e)) => {
@@ -944,13 +918,19 @@ impl Application for State {
                     },
                     move |result| match result {
                         Ok(()) => Message::ProfileActivated(device_id, profile_name),
-                        Err(e) => Message::ProfileError(format!("Failed to activate profile: {}", e)),
-                    }
+                        Err(e) => {
+                            Message::ProfileError(format!("Failed to activate profile: {}", e))
+                        }
+                    },
                 )
             }
             Message::ProfileActivated(device_id, profile_name) => {
-                self.active_profiles.insert(device_id.clone(), profile_name.clone());
-                self.add_notification(&format!("Activated profile '{}' on {}", profile_name, device_id), false);
+                self.active_profiles
+                    .insert(device_id.clone(), profile_name.clone());
+                self.add_notification(
+                    &format!("Activated profile '{}' on {}", profile_name, device_id),
+                    false,
+                );
                 Command::none()
             }
             Message::DeactivateProfile(device_id) => {
@@ -963,8 +943,10 @@ impl Application for State {
                     },
                     move |result| match result {
                         Ok(()) => Message::ProfileDeactivated(device_id),
-                        Err(e) => Message::ProfileError(format!("Failed to deactivate profile: {}", e)),
-                    }
+                        Err(e) => {
+                            Message::ProfileError(format!("Failed to deactivate profile: {}", e))
+                        }
+                    },
                 )
             }
             Message::ProfileDeactivated(device_id) => {
@@ -984,15 +966,24 @@ impl Application for State {
                         let client = crate::ipc::IpcClient::new(socket_path);
                         (path.clone(), client.list_remap_profiles(&path).await)
                     },
-                    |(device_path, result)| Message::RemapProfilesLoaded(
-                        device_path,
-                        result.map_err(|e| e.to_string())
-                    )
+                    |(device_path, result)| {
+                        Message::RemapProfilesLoaded(device_path, result.map_err(|e| e.to_string()))
+                    },
                 )
             }
             Message::RemapProfilesLoaded(device_path, Ok(profiles)) => {
                 self.remap_profiles.insert(device_path.clone(), profiles);
-                self.add_notification(&format!("Loaded {} remap profiles for {}", self.remap_profiles.get(&device_path).map(|p| p.len()).unwrap_or(0), device_path), false);
+                self.add_notification(
+                    &format!(
+                        "Loaded {} remap profiles for {}",
+                        self.remap_profiles
+                            .get(&device_path)
+                            .map(|p| p.len())
+                            .unwrap_or(0),
+                        device_path
+                    ),
+                    false,
+                );
                 Command::none()
             }
             Message::RemapProfilesLoaded(_device_path, Err(e)) => {
@@ -1010,18 +1001,27 @@ impl Application for State {
                     },
                     move |result| match result {
                         Ok(()) => Message::RemapProfileActivated(device_path, profile_name),
-                        Err(e) => Message::ProfileError(format!("Failed to activate remap profile: {}", e)),
-                    }
+                        Err(e) => Message::ProfileError(format!(
+                            "Failed to activate remap profile: {}",
+                            e
+                        )),
+                    },
                 )
             }
             Message::RemapProfileActivated(device_path, profile_name) => {
-                self.active_remap_profiles.insert(device_path.clone(), profile_name.clone());
-                self.add_notification(&format!("Activated remap profile '{}' on {}", profile_name, device_path), false);
+                self.active_remap_profiles
+                    .insert(device_path.clone(), profile_name.clone());
+                self.add_notification(
+                    &format!(
+                        "Activated remap profile '{}' on {}",
+                        profile_name, device_path
+                    ),
+                    false,
+                );
                 // Refresh active remaps after activation
-                Command::perform(
-                    async move { device_path.clone() },
-                    |path| Message::LoadActiveRemaps(path)
-                )
+                Command::perform(async move { device_path.clone() }, |path| {
+                    Message::LoadActiveRemaps(path)
+                })
             }
             Message::DeactivateRemapProfile(device_path) => {
                 let socket_path = self.socket_path.clone();
@@ -1033,14 +1033,20 @@ impl Application for State {
                     },
                     move |result| match result {
                         Ok(()) => Message::RemapProfileDeactivated(device_path),
-                        Err(e) => Message::ProfileError(format!("Failed to deactivate remap profile: {}", e)),
-                    }
+                        Err(e) => Message::ProfileError(format!(
+                            "Failed to deactivate remap profile: {}",
+                            e
+                        )),
+                    },
                 )
             }
             Message::RemapProfileDeactivated(device_path) => {
                 self.active_remap_profiles.remove(&device_path);
                 self.active_remaps.remove(&device_path);
-                self.add_notification(&format!("Deactivated remap profile on {}", device_path), false);
+                self.add_notification(
+                    &format!("Deactivated remap profile on {}", device_path),
+                    false,
+                );
                 Command::none()
             }
             Message::LoadActiveRemaps(device_path) => {
@@ -1051,14 +1057,14 @@ impl Application for State {
                         let client = crate::ipc::IpcClient::new(socket_path);
                         (path.clone(), client.get_active_remaps(&path).await)
                     },
-                    |(device_path, result)| Message::ActiveRemapsLoaded(
-                        device_path,
-                        result.map_err(|e| e.to_string())
-                    )
+                    |(device_path, result)| {
+                        Message::ActiveRemapsLoaded(device_path, result.map_err(|e| e.to_string()))
+                    },
                 )
             }
             Message::ActiveRemapsLoaded(device_path, Ok(Some((profile_name, remaps)))) => {
-                self.active_remaps.insert(device_path.clone(), (profile_name, remaps));
+                self.active_remaps
+                    .insert(device_path.clone(), (profile_name, remaps));
                 Command::none()
             }
             Message::ActiveRemapsLoaded(device_path, Ok(None)) => {
@@ -1069,14 +1075,22 @@ impl Application for State {
                 self.add_notification(&format!("Failed to load active remaps: {}", e), true);
                 Command::none()
             }
-            Message::RecordMouseEvent { event_type, button, x, y, delta } => {
+            Message::RecordMouseEvent {
+                event_type,
+                button,
+                x,
+                y,
+                delta,
+            } => {
                 // Mouse events are captured by daemon during recording via device grab
                 // This handler is for GUI-side mouse event logging
                 if self.recording {
                     // Log the mouse event for debugging/confirmation
                     let event_desc = match event_type.as_str() {
                         "button_press" => format!("Mouse button {} pressed", button.unwrap_or(0)),
-                        "button_release" => format!("Mouse button {} released", button.unwrap_or(0)),
+                        "button_release" => {
+                            format!("Mouse button {} released", button.unwrap_or(0))
+                        }
                         "movement" => format!("Mouse moved to ({}, {})", x, y),
                         "scroll" => format!("Mouse scrolled {}", delta),
                         _ => format!("Unknown mouse event: {}", event_type),
@@ -1103,12 +1117,17 @@ impl Application for State {
                 Command::perform(
                     async move {
                         let client = crate::ipc::IpcClient::new(socket_path);
-                        (path_clone.clone(), client.get_device_capabilities(&path_clone).await)
+                        (
+                            path_clone.clone(),
+                            client.get_device_capabilities(&path_clone).await,
+                        )
                     },
-                    |(device_path, result)| Message::DeviceCapabilitiesLoaded(
-                        device_path,
-                        result.map_err(|e| e.to_string())
-                    )
+                    |(device_path, result)| {
+                        Message::DeviceCapabilitiesLoaded(
+                            device_path,
+                            result.map_err(|e| e.to_string()),
+                        )
+                    },
                 )
             }
             Message::DeviceCapabilitiesLoaded(device_path, Ok(capabilities)) => {
@@ -1117,11 +1136,18 @@ impl Application for State {
                 // Load current remappings and update button.current_remap
                 if let Some((profile_name, remaps)) = self.active_remaps.get(&device_path) {
                     for remap in remaps {
-                        if let Some(button) = self.keypad_layout.iter_mut().find(|b| b.id == remap.from_key) {
+                        if let Some(button) = self
+                            .keypad_layout
+                            .iter_mut()
+                            .find(|b| b.id == remap.from_key)
+                        {
                             button.current_remap = Some(remap.to_key.clone());
                         }
                     }
-                    self.add_notification(&format!("Loaded remaps from profile '{}'", profile_name), false);
+                    self.add_notification(
+                        &format!("Loaded remaps from profile '{}'", profile_name),
+                        false,
+                    );
                 }
                 // Switch to Devices tab to show keypad view
                 self.active_tab = Tab::Devices;
@@ -1133,7 +1159,10 @@ impl Application for State {
             }
             Message::SelectKeypadButton(button_id) => {
                 self.selected_button = self.keypad_layout.iter().position(|b| b.id == button_id);
-                self.status = format!("Selected button: {} - Configure remapping in device profile", button_id);
+                self.status = format!(
+                    "Selected button: {} - Configure remapping in device profile",
+                    button_id
+                );
                 Command::none()
             }
             Message::LayerStateChanged(device_id, layer_id) => {
@@ -1159,7 +1188,7 @@ impl Application for State {
                             }
                         }
                         Err(e) => Message::ProfileError(format!("Failed to load layers: {}", e)),
-                    }
+                    },
                 )
             }
             Message::LayerActivateRequested(device_id, layer_id, mode) => {
@@ -1173,7 +1202,7 @@ impl Application for State {
                     move |result| match result {
                         Ok(()) => Message::LayerStateChanged(device_id, layer_id),
                         Err(e) => Message::ProfileError(format!("Failed to activate layer: {}", e)),
-                    }
+                    },
                 )
             }
             Message::LayerConfigUpdated(device_id, config) => {
@@ -1192,19 +1221,23 @@ impl Application for State {
                             // Refresh layer list after config update
                             Message::LayerConfigRequested(device_id)
                         }
-                        Err(e) => Message::ProfileError(format!("Failed to update layer config: {}", e)),
-                    }
+                        Err(e) => {
+                            Message::ProfileError(format!("Failed to update layer config: {}", e))
+                        }
+                    },
                 )
             }
             Message::OpenLayerConfigDialog(device_id, layer_id) => {
                 // Get current layer config if available
-                let current_name = self.layer_configs
+                let current_name = self
+                    .layer_configs
                     .get(&device_id)
                     .and_then(|layers| layers.iter().find(|l| l.layer_id == layer_id))
                     .map(|l| l.name.clone())
                     .unwrap_or_else(|| format!("Layer {}", layer_id));
 
-                let current_mode = self.layer_configs
+                let current_mode = self
+                    .layer_configs
                     .get(&device_id)
                     .and_then(|layers| layers.iter().find(|l| l.layer_id == layer_id))
                     .map(|l| l.mode)
@@ -1233,13 +1266,12 @@ impl Application for State {
                         mode,
                         remap_count: 0,
                         led_color: (0, 0, 255), // Default blue - TODO: allow GUI configuration
-                        led_zone: None, // Default zone - TODO: allow GUI configuration
+                        led_zone: None,         // Default zone - TODO: allow GUI configuration
                     };
                     // Return LayerConfigUpdated message to handle the async save
-                    Command::perform(
-                        async move { (device_id, config) },
-                        |(device_id, config)| Message::LayerConfigUpdated(device_id, config)
-                    )
+                    Command::perform(async move { (device_id, config) }, |(device_id, config)| {
+                        Message::LayerConfigUpdated(device_id, config)
+                    })
                 } else {
                     Command::none()
                 }
@@ -1267,7 +1299,7 @@ impl Application for State {
                                 Message::LayerListLoaded(device_id, layers)
                             }
                             Err(_) => Message::TickAnimations, // Silent fail on refresh
-                        }
+                        },
                     ));
                 }
 
@@ -1281,11 +1313,9 @@ impl Application for State {
                             (device_id.clone(), client.get_active_layer(&device_id).await)
                         },
                         |(device_id, result)| match result {
-                            Ok(Some(layer_id)) => {
-                                Message::LayerStateChanged(device_id, layer_id)
-                            }
+                            Ok(Some(layer_id)) => Message::LayerStateChanged(device_id, layer_id),
                             _ => Message::TickAnimations,
-                        }
+                        },
                     ));
                 }
 
@@ -1358,7 +1388,9 @@ impl Application for State {
                         client.get_analog_deadzone_xy(&device_id_clone).await
                     },
                     move |result| match result {
-                        Ok((x_pct, y_pct)) => Message::AnalogDeadzoneXYLoaded(device_id, (x_pct, y_pct)),
+                        Ok((x_pct, y_pct)) => {
+                            Message::AnalogDeadzoneXYLoaded(device_id, (x_pct, y_pct))
+                        }
                         Err(e) => {
                             eprintln!("Failed to get per-axis deadzone: {}", e);
                             Message::TickAnimations // Silent fail
@@ -1377,7 +1409,9 @@ impl Application for State {
                 Command::perform(
                     async move {
                         let client = crate::ipc::IpcClient::new(socket_path);
-                        client.set_analog_deadzone_xy(&device_id, x_pct, y_pct).await
+                        client
+                            .set_analog_deadzone_xy(&device_id, x_pct, y_pct)
+                            .await
                     },
                     |result| match result {
                         Ok(_) => Message::AnalogDeadzoneXYSet(Ok(())),
@@ -1410,7 +1444,9 @@ impl Application for State {
                         client.get_analog_outer_deadzone_xy(&device_id_clone).await
                     },
                     move |result| match result {
-                        Ok((x_pct, y_pct)) => Message::AnalogOuterDeadzoneXYLoaded(device_id, (x_pct, y_pct)),
+                        Ok((x_pct, y_pct)) => {
+                            Message::AnalogOuterDeadzoneXYLoaded(device_id, (x_pct, y_pct))
+                        }
                         Err(e) => {
                             eprintln!("Failed to get per-axis outer deadzone: {}", e);
                             Message::TickAnimations // Silent fail
@@ -1420,7 +1456,8 @@ impl Application for State {
             }
 
             Message::AnalogOuterDeadzoneXYLoaded(device_id, (x_pct, y_pct)) => {
-                self.analog_outer_deadzones_xy.insert(device_id, (x_pct, y_pct));
+                self.analog_outer_deadzones_xy
+                    .insert(device_id, (x_pct, y_pct));
                 Command::none()
             }
 
@@ -1429,7 +1466,9 @@ impl Application for State {
                 Command::perform(
                     async move {
                         let client = crate::ipc::IpcClient::new(socket_path);
-                        client.set_analog_outer_deadzone_xy(&device_id, x_pct, y_pct).await
+                        client
+                            .set_analog_outer_deadzone_xy(&device_id, x_pct, y_pct)
+                            .await
                     },
                     |result| match result {
                         Ok(_) => Message::AnalogOuterDeadzoneXYSet(Ok(())),
@@ -1446,46 +1485,35 @@ impl Application for State {
                     }
                     Err(e) => {
                         eprintln!("Failed to set per-axis outer deadzone: {}", e);
-                        self.add_notification(&format!("Failed to set outer deadzone: {}", e), true);
+                        self.add_notification(
+                            &format!("Failed to set outer deadzone: {}", e),
+                            true,
+                        );
                         Command::none()
                     }
                 }
             }
 
             // LED Configuration handlers
-            Message::OpenLedConfig(device_id) => {
-                crate::handlers::led::open(self, device_id)
-            }
-            Message::CloseLedConfig => {
-                crate::handlers::led::close(self)
-            }
-            Message::SelectLedZone(zone) => {
-                crate::handlers::led::select_zone(self, zone)
-            }
-            Message::RefreshLedState(device_id) => {
-                crate::handlers::led::refresh(self, device_id)
-            }
+            Message::OpenLedConfig(device_id) => crate::handlers::led::open(self, device_id),
+            Message::CloseLedConfig => crate::handlers::led::close(self),
+            Message::SelectLedZone(zone) => crate::handlers::led::select_zone(self, zone),
+            Message::RefreshLedState(device_id) => crate::handlers::led::refresh(self, device_id),
             Message::LedStateLoaded(device_id, result) => {
                 crate::handlers::led::state_loaded(self, device_id, result)
             }
             Message::SetLedColor(device_id, zone, red, green, blue) => {
                 crate::handlers::led::set_color(self, device_id, zone, red, green, blue)
             }
-            Message::LedColorSet(result) => {
-                crate::handlers::led::color_set(self, result)
-            }
+            Message::LedColorSet(result) => crate::handlers::led::color_set(self, result),
             Message::SetLedBrightness(device_id, zone, brightness) => {
                 crate::handlers::led::set_brightness(self, device_id, zone, brightness)
             }
-            Message::LedBrightnessSet(result) => {
-                crate::handlers::led::brightness_set(self, result)
-            }
+            Message::LedBrightnessSet(result) => crate::handlers::led::brightness_set(self, result),
             Message::SetLedPattern(device_id, pattern) => {
                 crate::handlers::led::set_pattern(self, device_id, pattern)
             }
-            Message::LedPatternSet(result) => {
-                crate::handlers::led::pattern_set(self, result)
-            }
+            Message::LedPatternSet(result) => crate::handlers::led::pattern_set(self, result),
             Message::LedSliderChanged(red, green, blue) => {
                 crate::handlers::led::slider_changed(self, red, green, blue)
             }
@@ -1500,12 +1528,7 @@ impl Application for State {
         let main_layout = row![
             sidebar,
             vertical_rule(1),
-            column![
-                main_content,
-                horizontal_rule(1),
-                status_bar,
-            ]
-            .height(Length::Fill)
+            column![main_content, horizontal_rule(1), status_bar,].height(Length::Fill)
         ];
 
         let base: Element<'_, Message> = container(main_layout)
@@ -1515,40 +1538,22 @@ impl Application for State {
 
         // Show layer config dialog overlay if active
         if let Some(dialog) = views::devices::layer_config_dialog(self) {
-            container(
-                column![
-                    base,
-                    dialog,
-                ]
+            container(column![base, dialog,].height(Length::Fill))
+                .width(Length::Fill)
                 .height(Length::Fill)
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
+                .into()
         } else if let Some(led_dialog) = self.view_led_config() {
             // Show LED config dialog overlay if active
-            container(
-                column![
-                    base,
-                    led_dialog,
-                ]
+            container(column![base, led_dialog,].height(Length::Fill))
+                .width(Length::Fill)
                 .height(Length::Fill)
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
+                .into()
         } else if let Some(calib_dialog) = self.view_analog_calibration() {
             // Show analog calibration dialog overlay if active
-            container(
-                column![
-                    base,
-                    calib_dialog,
-                ]
+            container(column![base, calib_dialog,].height(Length::Fill))
+                .width(Length::Fill)
                 .height(Length::Fill)
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
+                .into()
         } else {
             base
         }
@@ -1558,8 +1563,8 @@ impl Application for State {
         let timer = iced::time::every(Duration::from_millis(500)).map(|_| Message::TickAnimations);
 
         // Periodic layer state refresh (every 2 seconds)
-        let layer_refresh = iced::time::every(Duration::from_secs(2))
-            .map(|_| Message::RefreshLayers);
+        let layer_refresh =
+            iced::time::every(Duration::from_secs(2)).map(|_| Message::RefreshLayers);
 
         // Subscribe to mouse events only when recording
         // Note: In iced 0.12, mouse events are handled via the runtime event stream
@@ -1567,7 +1572,9 @@ impl Application for State {
         // This subscription tracks recording state for UI updates only
         let mouse_events = iced::event::listen_with(|event, _status| {
             match event {
-                iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)) => {
+                iced::Event::Mouse(iced::mouse::Event::ButtonPressed(
+                    iced::mouse::Button::Left,
+                )) => {
                     Some(Message::RecordMouseEvent {
                         event_type: "button_press".to_string(),
                         button: Some(0x110), // BTN_LEFT in evdev
@@ -1576,7 +1583,9 @@ impl Application for State {
                         delta: 0,
                     })
                 }
-                iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Right)) => {
+                iced::Event::Mouse(iced::mouse::Event::ButtonPressed(
+                    iced::mouse::Button::Right,
+                )) => {
                     Some(Message::RecordMouseEvent {
                         event_type: "button_press".to_string(),
                         button: Some(0x111), // BTN_RIGHT in evdev
@@ -1585,7 +1594,9 @@ impl Application for State {
                         delta: 0,
                     })
                 }
-                iced::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Middle)) => {
+                iced::Event::Mouse(iced::mouse::Event::ButtonPressed(
+                    iced::mouse::Button::Middle,
+                )) => {
                     Some(Message::RecordMouseEvent {
                         event_type: "button_press".to_string(),
                         button: Some(0x112), // BTN_MIDDLE in evdev
@@ -1640,7 +1651,9 @@ impl Application for State {
         let theme_subscription = iced::subscription::unfold(
             "ashpd-theme",
             None,
-            |state: Option<iced::futures::stream::BoxStream<'static, ashpd::desktop::settings::ColorScheme>>| async move {
+            |state: Option<
+                iced::futures::stream::BoxStream<'static, ashpd::desktop::settings::ColorScheme>,
+            >| async move {
                 use ashpd::desktop::settings::{ColorScheme, Settings};
                 use iced::futures::StreamExt;
 
@@ -1651,13 +1664,16 @@ impl Application for State {
                             Ok(s) => s,
                             Err(_) => return iced::futures::future::pending().await,
                         };
-                        let initial = settings.color_scheme().await.unwrap_or(ColorScheme::NoPreference);
+                        let initial = settings
+                            .color_scheme()
+                            .await
+                            .unwrap_or(ColorScheme::NoPreference);
                         let theme = match initial {
                             ColorScheme::PreferDark => aether_dark(),
                             ColorScheme::PreferLight => aether_light(),
                             ColorScheme::NoPreference => aether_dark(),
                         };
-                        
+
                         let s = match settings.receive_color_scheme_changed().await {
                             Ok(s) => s,
                             Err(_) => return (Message::ThemeChanged(theme), None),
@@ -1676,10 +1692,15 @@ impl Application for State {
                 } else {
                     iced::futures::future::pending().await
                 }
-            }
+            },
         );
 
-        Subscription::batch(vec![timer, layer_refresh, mouse_subscription, theme_subscription])
+        Subscription::batch(vec![
+            timer,
+            layer_refresh,
+            mouse_subscription,
+            theme_subscription,
+        ])
     }
 }
 

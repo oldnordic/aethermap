@@ -1,9 +1,9 @@
+use crate::gui::{Message, State};
+use crate::theme;
 use iced::{
     widget::{button, column, container, row, text, Space},
-    Element, Length, Alignment,
+    Alignment, Element, Length,
 };
-use crate::gui::{State, Message};
-use crate::theme;
 
 #[derive(Debug, Clone)]
 pub struct KeypadButton {
@@ -17,36 +17,195 @@ pub struct KeypadButton {
 
 pub fn azeron_keypad_layout() -> Vec<KeypadButton> {
     vec![
-        KeypadButton { id: "JOY_BTN_0".to_string(), label: "1".to_string(), row: 0, col: 0, current_remap: None },
-        KeypadButton { id: "JOY_BTN_1".to_string(), label: "2".to_string(), row: 0, col: 1, current_remap: None },
-        KeypadButton { id: "JOY_BTN_2".to_string(), label: "3".to_string(), row: 0, col: 2, current_remap: None },
-        KeypadButton { id: "JOY_BTN_3".to_string(), label: "4".to_string(), row: 0, col: 3, current_remap: None },
-        KeypadButton { id: "JOY_BTN_4".to_string(), label: "5".to_string(), row: 0, col: 4, current_remap: None },
-
-        KeypadButton { id: "JOY_BTN_5".to_string(), label: "Q".to_string(), row: 2, col: 0, current_remap: None },
-        KeypadButton { id: "JOY_BTN_6".to_string(), label: "W".to_string(), row: 2, col: 1, current_remap: None },
-        KeypadButton { id: "JOY_BTN_7".to_string(), label: "E".to_string(), row: 2, col: 2, current_remap: None },
-        KeypadButton { id: "JOY_BTN_8".to_string(), label: "R".to_string(), row: 2, col: 3, current_remap: None },
-        KeypadButton { id: "JOY_BTN_9".to_string(), label: "A".to_string(), row: 3, col: 0, current_remap: None },
-        KeypadButton { id: "JOY_BTN_10".to_string(), label: "S".to_string(), row: 3, col: 1, current_remap: None },
-        KeypadButton { id: "JOY_BTN_11".to_string(), label: "D".to_string(), row: 3, col: 2, current_remap: None },
-        KeypadButton { id: "JOY_BTN_12".to_string(), label: "F".to_string(), row: 3, col: 3, current_remap: None },
-        KeypadButton { id: "JOY_BTN_13".to_string(), label: "Z".to_string(), row: 4, col: 0, current_remap: None },
-        KeypadButton { id: "JOY_BTN_14".to_string(), label: "X".to_string(), row: 4, col: 1, current_remap: None },
-        KeypadButton { id: "JOY_BTN_15".to_string(), label: "C".to_string(), row: 4, col: 2, current_remap: None },
-        KeypadButton { id: "JOY_BTN_16".to_string(), label: "V".to_string(), row: 4, col: 3, current_remap: None },
-
-        KeypadButton { id: "JOY_BTN_17".to_string(), label: "6".to_string(), row: 0, col: 5, current_remap: None },
-        KeypadButton { id: "JOY_BTN_18".to_string(), label: "7".to_string(), row: 1, col: 5, current_remap: None },
-        KeypadButton { id: "JOY_BTN_19".to_string(), label: "8".to_string(), row: 2, col: 5, current_remap: None },
-        KeypadButton { id: "JOY_BTN_20".to_string(), label: "9".to_string(), row: 3, col: 5, current_remap: None },
-        KeypadButton { id: "JOY_BTN_21".to_string(), label: "0".to_string(), row: 4, col: 5, current_remap: None },
-
-        KeypadButton { id: "JOY_BTN_22".to_string(), label: "TL".to_string(), row: 6, col: 0, current_remap: None },
-        KeypadButton { id: "JOY_BTN_23".to_string(), label: "TM".to_string(), row: 6, col: 1, current_remap: None },
-        KeypadButton { id: "JOY_BTN_24".to_string(), label: "TR".to_string(), row: 6, col: 2, current_remap: None },
-        KeypadButton { id: "JOY_BTN_25".to_string(), label: "BL".to_string(), row: 7, col: 0, current_remap: None },
-        KeypadButton { id: "JOY_BTN_26".to_string(), label: "BR".to_string(), row: 7, col: 1, current_remap: None },
+        KeypadButton {
+            id: "JOY_BTN_0".to_string(),
+            label: "1".to_string(),
+            row: 0,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_1".to_string(),
+            label: "2".to_string(),
+            row: 0,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_2".to_string(),
+            label: "3".to_string(),
+            row: 0,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_3".to_string(),
+            label: "4".to_string(),
+            row: 0,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_4".to_string(),
+            label: "5".to_string(),
+            row: 0,
+            col: 4,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_5".to_string(),
+            label: "Q".to_string(),
+            row: 2,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_6".to_string(),
+            label: "W".to_string(),
+            row: 2,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_7".to_string(),
+            label: "E".to_string(),
+            row: 2,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_8".to_string(),
+            label: "R".to_string(),
+            row: 2,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_9".to_string(),
+            label: "A".to_string(),
+            row: 3,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_10".to_string(),
+            label: "S".to_string(),
+            row: 3,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_11".to_string(),
+            label: "D".to_string(),
+            row: 3,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_12".to_string(),
+            label: "F".to_string(),
+            row: 3,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_13".to_string(),
+            label: "Z".to_string(),
+            row: 4,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_14".to_string(),
+            label: "X".to_string(),
+            row: 4,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_15".to_string(),
+            label: "C".to_string(),
+            row: 4,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_16".to_string(),
+            label: "V".to_string(),
+            row: 4,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_17".to_string(),
+            label: "6".to_string(),
+            row: 0,
+            col: 5,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_18".to_string(),
+            label: "7".to_string(),
+            row: 1,
+            col: 5,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_19".to_string(),
+            label: "8".to_string(),
+            row: 2,
+            col: 5,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_20".to_string(),
+            label: "9".to_string(),
+            row: 3,
+            col: 5,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_21".to_string(),
+            label: "0".to_string(),
+            row: 4,
+            col: 5,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_22".to_string(),
+            label: "TL".to_string(),
+            row: 6,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_23".to_string(),
+            label: "TM".to_string(),
+            row: 6,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_24".to_string(),
+            label: "TR".to_string(),
+            row: 6,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_25".to_string(),
+            label: "BL".to_string(),
+            row: 7,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "JOY_BTN_26".to_string(),
+            label: "BR".to_string(),
+            row: 7,
+            col: 1,
+            current_remap: None,
+        },
     ]
 }
 
@@ -118,9 +277,13 @@ pub fn view(state: &State) -> Element<'_, Message> {
         let button_id = keypad_button.id.clone();
         let label = keypad_button.label.clone();
         let remap = keypad_button.current_remap.clone();
-        let is_selected = state.selected_button == Some(
-            layout.iter().position(|b| b.id == keypad_button.id).unwrap_or(usize::MAX)
-        );
+        let is_selected = state.selected_button
+            == Some(
+                layout
+                    .iter()
+                    .position(|b| b.id == keypad_button.id)
+                    .unwrap_or(usize::MAX),
+            );
 
         let button_style = if is_selected {
             iced::theme::Button::Primary
@@ -134,20 +297,21 @@ pub fn view(state: &State) -> Element<'_, Message> {
             let display_name = format_remap_target(target);
             container(
                 column![
-                    text(label).size(8).style(iced::theme::Text::Color(iced::Color::from_rgb(0.5, 0.5, 0.5))),
+                    text(label)
+                        .size(8)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb(
+                            0.5, 0.5, 0.5
+                        ))),
                     text(display_name).size(11).width(Length::Fixed(45.0)),
                 ]
                 .spacing(2)
-                .align_items(Alignment::Center)
+                .align_items(Alignment::Center),
             )
             .center_x()
             .center_y()
             .into()
         } else {
-            container(text(label).size(12))
-                .center_x()
-                .center_y()
-                .into()
+            container(text(label).size(12)).center_x().center_y().into()
         };
 
         let btn = button(button_content)
@@ -163,15 +327,13 @@ pub fn view(state: &State) -> Element<'_, Message> {
         }
     }
 
-    let hat_switch = container(
-        text("Hat\n\u{2195}").size(10)
-    )
-    .width(iced::Length::Fixed(54.0))
-    .height(iced::Length::Fixed(54.0))
-    .center_x()
-    .center_y()
-    .style(theme::styles::card)
-    .into();
+    let hat_switch = container(text("Hat\n\u{2195}").size(10))
+        .width(iced::Length::Fixed(54.0))
+        .height(iced::Length::Fixed(54.0))
+        .center_x()
+        .center_y()
+        .style(theme::styles::card)
+        .into();
 
     if rows.get_mut(5).is_some() {
         rows[5].push(hat_switch);
@@ -180,7 +342,12 @@ pub fn view(state: &State) -> Element<'_, Message> {
     let keypad_rows: Vec<Element<'_, Message>> = rows
         .into_iter()
         .filter(|r| !r.is_empty())
-        .map(|row_elements| row(row_elements).spacing(4).align_items(Alignment::Center).into())
+        .map(|row_elements| {
+            row(row_elements)
+                .spacing(4)
+                .align_items(Alignment::Center)
+                .into()
+        })
         .collect();
 
     let keypad_content = column![
@@ -191,7 +358,11 @@ pub fn view(state: &State) -> Element<'_, Message> {
     ]
     .spacing(10)
     .align_items(Alignment::Center)
-    .push(column(keypad_rows).spacing(4).align_items(Alignment::Center));
+    .push(
+        column(keypad_rows)
+            .spacing(4)
+            .align_items(Alignment::Center),
+    );
 
     container(keypad_content)
         .padding(24)

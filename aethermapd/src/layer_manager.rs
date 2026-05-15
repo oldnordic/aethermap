@@ -46,10 +46,7 @@ use crate::analog_calibration::AnalogCalibration;
 use crate::analog_processor::{AnalogMode, CameraOutputMode};
 
 /// Serialize HashMap<Key, Key> as Vec<(u16, u16)> for IPC compatibility
-fn serialize_remaps<S>(
-    remaps: &HashMap<Key, Key>,
-    serializer: S,
-) -> Result<S::Ok, S::Error>
+fn serialize_remaps<S>(remaps: &HashMap<Key, Key>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -58,9 +55,7 @@ where
 }
 
 /// Deserialize HashMap<Key, Key> from Vec<(u16, u16)> for IPC compatibility
-fn deserialize_remaps<'de, D>(
-    deserializer: D,
-) -> Result<HashMap<Key, Key>, D::Error>
+fn deserialize_remaps<'de, D>(deserializer: D) -> Result<HashMap<Key, Key>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -112,11 +107,13 @@ pub struct LayerStateSnapshot {
 /// Determines how a layer becomes active and inactive.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum LayerMode {
     /// Layer is active while a modifier key is held
     ///
     /// When the modifier key is released, the layer deactivates.
     /// This is the typical behavior for "layer shift" keys.
+    #[default]
     Hold,
 
     /// Layer toggles on/off with each press
@@ -124,12 +121,6 @@ pub enum LayerMode {
     /// First press activates the layer, second press deactivates it.
     /// This is useful for "layer lock" functionality.
     Toggle,
-}
-
-impl Default for LayerMode {
-    fn default() -> Self {
-        LayerMode::Hold
-    }
 }
 
 impl fmt::Display for LayerMode {
@@ -156,7 +147,11 @@ pub struct LayerConfig {
     ///
     /// Maps input keys to output keys for this layer only.
     /// Higher-priority layers override lower-priority layers.
-    #[serde(default, serialize_with = "serialize_remaps", deserialize_with = "deserialize_remaps")]
+    #[serde(
+        default,
+        serialize_with = "serialize_remaps",
+        deserialize_with = "deserialize_remaps"
+    )]
     pub remaps: HashMap<Key, Key>,
 
     /// How this layer is activated (hold or toggle)
@@ -194,6 +189,7 @@ pub struct LayerConfig {
     /// Controls how Camera mode emits output:
     /// - Scroll: REL_WHEEL events for document/webpage scrolling
     /// - Keys: Key repeat events (PageUp/PageDown/arrows) for 3D camera control
+    ///
     /// Only applies when analog_mode is Camera.
     #[serde(default)]
     pub camera_output_mode: CameraOutputMode,
@@ -201,7 +197,7 @@ pub struct LayerConfig {
 
 /// Default layer color (blue)
 fn default_layer_color() -> (u8, u8, u8) {
-    (0, 0, 255)  // Blue
+    (0, 0, 255) // Blue
 }
 
 impl Default for LayerConfig {
@@ -211,11 +207,11 @@ impl Default for LayerConfig {
             name: "Base".to_string(),
             remaps: HashMap::new(),
             mode: LayerMode::Hold,
-            led_color: (255, 255, 255),  // Base layer: white
+            led_color: (255, 255, 255), // Base layer: white
             led_zone: Some(crate::led_controller::LedZone::Logo),
-            analog_calibration: None,  // Use defaults by default
-            analog_mode: AnalogMode::Disabled,  // No analog output by default
-            camera_output_mode: CameraOutputMode::Scroll,  // Default to scroll for camera mode
+            analog_calibration: None,          // Use defaults by default
+            analog_mode: AnalogMode::Disabled, // No analog output by default
+            camera_output_mode: CameraOutputMode::Scroll, // Default to scroll for camera mode
         }
     }
 }
@@ -237,8 +233,8 @@ impl LayerConfig {
             led_color: (255, 255, 255),
             led_zone: None,
             analog_calibration: None,
-            analog_mode: AnalogMode::Disabled,  // No analog output by default
-            camera_output_mode: CameraOutputMode::Scroll,  // Default to scroll for camera mode
+            analog_mode: AnalogMode::Disabled, // No analog output by default
+            camera_output_mode: CameraOutputMode::Scroll, // Default to scroll for camera mode
         }
     }
 
@@ -349,33 +345,33 @@ impl DeviceLayerState {
                 name: "Base".to_string(),
                 remaps: HashMap::new(),
                 mode: LayerMode::Hold,
-                led_color: (255, 255, 255),  // Base layer: white
+                led_color: (255, 255, 255), // Base layer: white
                 led_zone: Some(crate::led_controller::LedZone::Logo),
-                analog_calibration: None,  // Use defaults
-                analog_mode: AnalogMode::Disabled,  // No analog output by default
-                camera_output_mode: CameraOutputMode::Scroll,  // Default to scroll for camera mode
+                analog_calibration: None,                     // Use defaults
+                analog_mode: AnalogMode::Disabled,            // No analog output by default
+                camera_output_mode: CameraOutputMode::Scroll, // Default to scroll for camera mode
             },
             LayerConfig {
                 layer_id: 1,
                 name: "Layer 1".to_string(),
                 remaps: HashMap::new(),
                 mode: LayerMode::Hold,
-                led_color: (0, 0, 255),      // Layer 1: blue
+                led_color: (0, 0, 255), // Layer 1: blue
                 led_zone: Some(crate::led_controller::LedZone::Logo),
-                analog_calibration: None,  // Use defaults
-                analog_mode: AnalogMode::Disabled,  // No analog output by default
-                camera_output_mode: CameraOutputMode::Scroll,  // Default to scroll for camera mode
+                analog_calibration: None,                     // Use defaults
+                analog_mode: AnalogMode::Disabled,            // No analog output by default
+                camera_output_mode: CameraOutputMode::Scroll, // Default to scroll for camera mode
             },
             LayerConfig {
                 layer_id: 2,
                 name: "Layer 2".to_string(),
                 remaps: HashMap::new(),
                 mode: LayerMode::Hold,
-                led_color: (0, 255, 0),      // Layer 2: green
+                led_color: (0, 255, 0), // Layer 2: green
                 led_zone: Some(crate::led_controller::LedZone::Logo),
-                analog_calibration: None,  // Use defaults
-                analog_mode: AnalogMode::Disabled,  // No analog output by default
-                camera_output_mode: CameraOutputMode::Scroll,  // Default to scroll for camera mode
+                analog_calibration: None,                     // Use defaults
+                analog_mode: AnalogMode::Disabled,            // No analog output by default
+                camera_output_mode: CameraOutputMode::Scroll, // Default to scroll for camera mode
             },
         ];
 
@@ -608,7 +604,9 @@ impl DeviceLayerState {
     /// * `Some(&mut LayerConfig)` - Mutable layer configuration if found
     /// * `None` - Layer ID not found
     pub fn get_layer_config_mut(&mut self, layer_id: usize) -> Option<&mut LayerConfig> {
-        self.layer_configs.iter_mut().find(|c| c.layer_id == layer_id)
+        self.layer_configs
+            .iter_mut()
+            .find(|c| c.layer_id == layer_id)
     }
 
     /// Add a new layer configuration
@@ -741,7 +739,10 @@ impl LayerManager {
 
         if !devices.contains_key(device_id) {
             info!("Creating new layer state for device {}", device_id);
-            devices.insert(device_id.to_string(), DeviceLayerState::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceLayerState::new(device_id.to_string()),
+            );
         }
 
         devices.get(device_id).cloned().unwrap()
@@ -850,20 +851,22 @@ impl LayerManager {
     /// * `layer_id` - Layer ID whose color to display
     async fn update_led_for_layer(&self, device_id: &str, layer_id: usize) {
         let Some(ref led_controller) = self.led_controller else {
-            return;  // No LED support
+            return; // No LED support
         };
 
         let devices = self.devices.read().await;
         let Some(state) = devices.get(device_id) else {
-            return;  // Device not found
+            return; // Device not found
         };
 
         let Some(layer_config) = state.get_layer_config(layer_id) else {
-            return;  // Layer config not found
+            return; // Layer config not found
         };
 
         let (r, g, b) = layer_config.led_color;
-        let zone = layer_config.led_zone.unwrap_or(crate::led_controller::LedZone::Logo);
+        let zone = layer_config
+            .led_zone
+            .unwrap_or(crate::led_controller::LedZone::Logo);
 
         // Set LED to layer color
         if let Err(e) = led_controller.set_zone_color(zone, r, g, b).await {
@@ -873,7 +876,12 @@ impl LayerManager {
         // Store layer color in LED controller
         led_controller.set_layer_color(layer_id, (r, g, b)).await;
 
-        debug!("Updated LED for device {} layer {} to RGB {:?}", device_id, layer_id, (r, g, b));
+        debug!(
+            "Updated LED for device {} layer {} to RGB {:?}",
+            device_id,
+            layer_id,
+            (r, g, b)
+        );
     }
 
     /// Add a layer configuration for a device
@@ -886,7 +894,10 @@ impl LayerManager {
         let mut devices = self.devices.write().await;
 
         if !devices.contains_key(device_id) {
-            devices.insert(device_id.to_string(), DeviceLayerState::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceLayerState::new(device_id.to_string()),
+            );
         }
 
         if let Some(state) = devices.get_mut(device_id) {
@@ -925,17 +936,16 @@ impl LayerManager {
     /// * `Ok(true)` - Layer is now active
     /// * `Ok(false)` - Layer is now inactive
     /// * `Err(String)` - Layer ID exceeds configured layers
-    pub async fn toggle_layer(
-        &self,
-        device_id: &str,
-        layer_id: usize,
-    ) -> Result<bool, String> {
+    pub async fn toggle_layer(&self, device_id: &str, layer_id: usize) -> Result<bool, String> {
         let mut devices = self.devices.write().await;
 
         // Get or create device state
         if !devices.contains_key(device_id) {
             info!("Creating new layer state for device {}", device_id);
-            devices.insert(device_id.to_string(), DeviceLayerState::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceLayerState::new(device_id.to_string()),
+            );
         }
 
         if let Some(state) = devices.get_mut(device_id) {
@@ -951,7 +961,10 @@ impl LayerManager {
             Ok(state.toggle_layer(layer_id))
         } else {
             // This shouldn't happen due to the check above, but handle it
-            Err(format!("Failed to get or create device state for {}", device_id))
+            Err(format!(
+                "Failed to get or create device state for {}",
+                device_id
+            ))
         }
     }
 
@@ -1000,7 +1013,10 @@ impl LayerManager {
         // Get or create device state
         if !devices.contains_key(device_id) {
             info!("Creating new layer state for device {}", device_id);
-            devices.insert(device_id.to_string(), DeviceLayerState::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceLayerState::new(device_id.to_string()),
+            );
         }
 
         if let Some(state) = devices.get_mut(device_id) {
@@ -1017,7 +1033,10 @@ impl LayerManager {
             Ok(())
         } else {
             // This shouldn't happen due to the check above, but handle it
-            Err(format!("Failed to get or create device state for {}", device_id))
+            Err(format!(
+                "Failed to get or create device state for {}",
+                device_id
+            ))
         }
     }
 
@@ -1225,7 +1244,10 @@ impl LayerManager {
         // Get or create device state
         if !devices.contains_key(device_id) {
             info!("Creating new layer state for device {}", device_id);
-            devices.insert(device_id.to_string(), DeviceLayerState::new(device_id.to_string()));
+            devices.insert(
+                device_id.to_string(),
+                DeviceLayerState::new(device_id.to_string()),
+            );
         }
 
         if let Some(device_state) = devices.get_mut(device_id) {
@@ -1246,14 +1268,19 @@ impl LayerManager {
 
             info!(
                 "Updated layer {} configuration for device {}: name={}, mode={:?}, led_color={:?}",
-                layer_id, device_id, device_state.layer_configs[layer_id].name,
+                layer_id,
+                device_id,
+                device_state.layer_configs[layer_id].name,
                 device_state.layer_configs[layer_id].mode,
                 device_state.layer_configs[layer_id].led_color
             );
 
             Ok(())
         } else {
-            Err(format!("Failed to get or create device state for {}", device_id))
+            Err(format!(
+                "Failed to get or create device state for {}",
+                device_id
+            ))
         }
     }
 }
@@ -1490,16 +1517,13 @@ mod tests {
         let mut expected = true;
         for i in 0..6 {
             let active = state.toggle_layer(1);
-            assert_eq!(
-                active, expected,
-                "Toggle {} should return {}",
-                i, expected
-            );
+            assert_eq!(active, expected, "Toggle {} should return {}", i, expected);
             assert_eq!(
                 state.is_toggle_layer_active(1),
                 expected,
                 "After toggle {}, is_toggle_layer_active should be {}",
-                i, expected
+                i,
+                expected
             );
             expected = !expected;
         }
@@ -1514,15 +1538,27 @@ mod tests {
 
         // Toggle layer 2
         state.toggle_layer(2);
-        assert_eq!(state.get_effective_layer(), 2, "effective layer should be 2");
+        assert_eq!(
+            state.get_effective_layer(),
+            2,
+            "effective layer should be 2"
+        );
 
         // Toggle layer 1 (lower priority, shouldn't change effective)
         state.toggle_layer(1);
-        assert_eq!(state.get_effective_layer(), 2, "effective layer should still be 2");
+        assert_eq!(
+            state.get_effective_layer(),
+            2,
+            "effective layer should still be 2"
+        );
 
         // Toggle layer 2 off, effective should be 1
         state.toggle_layer(2);
-        assert_eq!(state.get_effective_layer(), 1, "effective layer should be 1");
+        assert_eq!(
+            state.get_effective_layer(),
+            1,
+            "effective layer should be 1"
+        );
     }
 
     #[tokio::test]
@@ -1581,9 +1617,7 @@ mod tests {
 
         // Verify layer is active
         assert!(
-            manager
-                .is_toggle_layer_active("1532:0220", 1)
-                .await,
+            manager.is_toggle_layer_active("1532:0220", 1).await,
             "layer 1 should be toggle active"
         );
         assert_eq!(
@@ -1599,9 +1633,7 @@ mod tests {
 
         // Verify layer is inactive
         assert!(
-            !manager
-                .is_toggle_layer_active("1532:0220", 1)
-                .await,
+            !manager.is_toggle_layer_active("1532:0220", 1).await,
             "layer 1 should not be toggle active"
         );
         assert_eq!(
@@ -1630,9 +1662,7 @@ mod tests {
 
         // Query toggle state for non-existent device
         assert!(
-            !manager
-                .is_toggle_layer_active("nonexistent", 1)
-                .await,
+            !manager.is_toggle_layer_active("nonexistent", 1).await,
             "should return false for non-existent device"
         );
     }
@@ -2021,7 +2051,10 @@ mod tests {
 
         // Should return Ok without error
         let result = manager.load_from_path(&state_path).await;
-        assert!(result.is_ok(), "Loading from non-existent file should succeed");
+        assert!(
+            result.is_ok(),
+            "Loading from non-existent file should succeed"
+        );
     }
 
     // Layer LED integration tests (Plan 12-06)
