@@ -806,9 +806,13 @@ impl DeviceManager {
                                     // Hotkey detection happens at daemon level for Wayland compatibility
                                     if let Some(hotkey_mgr) = &hotkey_manager {
                                         let pressed = value == 1; // Only check on press, not release or repeat
-                                        let consumed = rt.block_on(async {
-                                            let mut manager = hotkey_mgr.lock().await;
-                                            manager.check_key_event(key_code.0, pressed).await
+                                                                  // Use block_in_place to avoid starving the tokio runtime
+                                                                  // when called from a runtime thread under load.
+                                        let consumed = tokio::task::block_in_place(|| {
+                                            rt.block_on(async {
+                                                let mut manager = hotkey_mgr.lock().await;
+                                                manager.check_key_event(key_code.0, pressed).await
+                                            })
                                         });
 
                                         if consumed {
@@ -826,28 +830,43 @@ impl DeviceManager {
                                     // Use final_key_code which may be a JOY_BTN_N code
                                     if let Some(remap_engine) = &remap_engine {
                                         let final_key = evdev::Key(final_key_code);
-                                        if let Some((output_key, out_value)) = rt
-                                            .block_on(remap_engine.process_event(final_key, value))
-                                        {
+                                        let remap_result = tokio::task::block_in_place(|| {
+                                            rt.block_on(
+                                                remap_engine.process_event(final_key, value),
+                                            )
+                                        });
+                                        if let Some((output_key, out_value)) = remap_result {
                                             // Key is remapped - inject and skip macro engine
                                             if let Some(injector) = &injector {
-                                                let injector_ref = rt.block_on(injector.read());
+                                                let injector_ref =
+                                                    tokio::task::block_in_place(|| {
+                                                        rt.block_on(injector.read())
+                                                    });
                                                 // Convert evdev::Key back to u16 for injector
                                                 match out_value {
                                                     0 => {
-                                                        let _ = rt.block_on(
-                                                            injector_ref.key_release(output_key.0),
-                                                        );
+                                                        let _ = tokio::task::block_in_place(|| {
+                                                            rt.block_on(
+                                                                injector_ref
+                                                                    .key_release(output_key.0),
+                                                            )
+                                                        });
                                                     }
                                                     1 => {
-                                                        let _ = rt.block_on(
-                                                            injector_ref.key_press(output_key.0),
-                                                        );
+                                                        let _ = tokio::task::block_in_place(|| {
+                                                            rt.block_on(
+                                                                injector_ref
+                                                                    .key_press(output_key.0),
+                                                            )
+                                                        });
                                                     }
                                                     2 => {
-                                                        let _ = rt.block_on(
-                                                            injector_ref.key_press(output_key.0),
-                                                        );
+                                                        let _ = tokio::task::block_in_place(|| {
+                                                            rt.block_on(
+                                                                injector_ref
+                                                                    .key_press(output_key.0),
+                                                            )
+                                                        });
                                                     } // Repeat sends press
                                                     _ => {}
                                                 }
@@ -900,10 +919,12 @@ impl DeviceManager {
                                             _ => None,
                                         };
                                         if let Some(code) = axis_code {
-                                            let _ = rt.block_on(
-                                                macro_engine
-                                                    .process_relative_event(code, value, &path),
-                                            );
+                                            let _ = tokio::task::block_in_place(|| {
+                                                rt.block_on(
+                                                    macro_engine
+                                                        .process_relative_event(code, value, &path),
+                                                )
+                                            });
                                         }
                                     }
 
@@ -1005,14 +1026,16 @@ impl DeviceManager {
                                                     let x_norm = dpad_state.x as f32 / 32767.0;
                                                     let y_norm = dpad_state.y as f32 / 32767.0;
 
-                                                    rt.block_on(async move {
-                                                        crate::ipc::broadcast_analog_input(
-                                                            state,
-                                                            &device_id_clone,
-                                                            x_norm,
-                                                            y_norm,
-                                                        )
-                                                        .await;
+                                                    tokio::task::block_in_place(|| {
+                                                        rt.block_on(async move {
+                                                            crate::ipc::broadcast_analog_input(
+                                                                state,
+                                                                &device_id_clone,
+                                                                x_norm,
+                                                                y_norm,
+                                                            )
+                                                            .await;
+                                                        })
                                                     });
                                                 }
                                                 _ => {}
@@ -1023,7 +1046,9 @@ impl DeviceManager {
                                     // Check if D-pad mode is enabled
                                     let dpad_mode = if is_analog_stick {
                                         analog_processor.as_ref().map(|processor| {
-                                            rt.block_on(processor.get_dpad_mode(&id))
+                                            tokio::task::block_in_place(|| {
+                                                rt.block_on(processor.get_dpad_mode(&id))
+                                            })
                                         })
                                     } else {
                                         None
@@ -1069,9 +1094,13 @@ impl DeviceManager {
                                                         if !current_dpad_keys.contains(key_code) {
                                                             let inj_clone = Arc::clone(inj);
                                                             let key = *key_code;
-                                                            rt.block_on(async move {
-                                                                let lock = inj_clone.write().await;
-                                                                let _ = lock.key_release(key).await;
+                                                            tokio::task::block_in_place(|| {
+                                                                rt.block_on(async move {
+                                                                    let lock =
+                                                                        inj_clone.write().await;
+                                                                    let _ =
+                                                                        lock.key_release(key).await;
+                                                                })
                                                             });
                                                             debug!(
                                                                 "D-pad release: key={}",
@@ -1085,9 +1114,13 @@ impl DeviceManager {
                                                         if !previous_dpad_keys.contains(key_code) {
                                                             let inj_clone = Arc::clone(inj);
                                                             let key = *key_code;
-                                                            rt.block_on(async move {
-                                                                let lock = inj_clone.write().await;
-                                                                let _ = lock.key_press(key).await;
+                                                            tokio::task::block_in_place(|| {
+                                                                rt.block_on(async move {
+                                                                    let lock =
+                                                                        inj_clone.write().await;
+                                                                    let _ =
+                                                                        lock.key_press(key).await;
+                                                                })
                                                             });
                                                             debug!("D-pad press: key={}", key_code);
                                                         }
@@ -1111,32 +1144,31 @@ impl DeviceManager {
                                     // Check if active layer uses gamepad mode
                                     // This requires layer_manager to be available
                                     if let Some(lm) = &layer_manager {
-                                        let effective_layer = rt.block_on(async {
-                                            let lm_read = lm.read().await;
-                                            lm_read
-                                                .get_device_state(&id)
-                                                .await
-                                                .map(|s| s.get_effective_layer())
-                                                .unwrap_or(0)
-                                        });
+                                        let (_effective_layer, analog_mode) =
+                                            tokio::task::block_in_place(|| {
+                                                rt.block_on(async {
+                                                let lm_read = lm.read().await;
+                                                let effective_layer = lm_read
+                                                    .get_device_state(&id)
+                                                    .await
+                                                    .map(|s| s.get_effective_layer())
+                                                    .unwrap_or(0);
 
-                                        // Get layer config to check analog_mode
-                                        let analog_mode = rt.block_on(async {
-                                            let lm_read = lm.read().await;
-                                            if let Some(state) = lm_read.get_device_state(&id).await
-                                            {
-                                                if let Some(config) =
-                                                    state.get_layer_config(effective_layer)
+                                                let analog_mode = if let Some(state) = lm_read.get_device_state(&id).await
                                                 {
-                                                    // Copy the AnalogMode value (Copy trait)
-                                                    config.analog_mode
+                                                    if let Some(config) =
+                                                        state.get_layer_config(effective_layer)
+                                                    {
+                                                        config.analog_mode
+                                                    } else {
+                                                        crate::analog_processor::AnalogMode::Disabled
+                                                    }
                                                 } else {
                                                     crate::analog_processor::AnalogMode::Disabled
-                                                }
-                                            } else {
-                                                crate::analog_processor::AnalogMode::Disabled
-                                            }
-                                        });
+                                                };
+                                                (effective_layer, analog_mode)
+                                            })
+                                            });
 
                                         if analog_mode
                                             == crate::analog_processor::AnalogMode::Gamepad
@@ -1156,44 +1188,46 @@ impl DeviceManager {
                                                     let analog_processor_clone =
                                                         analog_processor.clone();
 
-                                                    rt.block_on(async move {
-                                                        // Process through DeviceManager's process_analog_gamepad
-                                                        // Note: We can't call self.process_analog_gamepad directly here
-                                                        // Instead, we use the processor directly
-                                                        if let Some(processor) = &analog_processor_clone {
-                                                            // Get layer-specific calibration
-                                                            let lm_read = lm_clone.read().await;
-                                                            let device_state = lm_read.get_device_state(&id_clone).await;
-                                                            let layer_id = device_state.as_ref()
-                                                                .map(|s| s.get_effective_layer())
-                                                                .unwrap_or(0);
+                                                    tokio::task::block_in_place(|| {
+                                                        rt.block_on(async move {
+                                                            // Process through DeviceManager's process_analog_gamepad
+                                                            // Note: We can't call self.process_analog_gamepad directly here
+                                                            // Instead, we use the processor directly
+                                                            if let Some(processor) = &analog_processor_clone {
+                                                                // Get layer-specific calibration
+                                                                let lm_read = lm_clone.read().await;
+                                                                let device_state = lm_read.get_device_state(&id_clone).await;
+                                                                let layer_id = device_state.as_ref()
+                                                                    .map(|s| s.get_effective_layer())
+                                                                    .unwrap_or(0);
 
-                                                            let layer_calibration = device_state
-                                                                .and_then(|s| {
-                                                                    s.get_layer_config(layer_id)
-                                                                        .and_then(|c| c.analog_calibration().cloned())
-                                                                });
+                                                                let layer_calibration = device_state
+                                                                    .and_then(|s| {
+                                                                        s.get_layer_config(layer_id)
+                                                                            .and_then(|c| c.analog_calibration().cloned())
+                                                                    });
 
-                                                            drop(lm_read);
+                                                                drop(lm_read);
 
-                                                            // Process with calibration
-                                                            let result = if let Some(cal) = layer_calibration {
-                                                                processor.process_as_gamepad_with_calibration(
-                                                                    dpad_state.x, dpad_state.y, &cal
-                                                                ).await
-                                                            } else {
-                                                                processor.process_as_gamepad(
-                                                                    &id_clone, dpad_state.x, dpad_state.y
-                                                                ).await
-                                                            };
+                                                                // Process with calibration
+                                                                let result = if let Some(cal) = layer_calibration {
+                                                                    processor.process_as_gamepad_with_calibration(
+                                                                        dpad_state.x, dpad_state.y, &cal
+                                                                    ).await
+                                                                } else {
+                                                                    processor.process_as_gamepad(
+                                                                        &id_clone, dpad_state.x, dpad_state.y
+                                                                    ).await
+                                                                };
 
-                                                            if let Some((x, y)) = result {
-                                                                use crate::gamepad_device::GamepadAxis;
-                                                                let _ = gamepad_clone.emit_axis(GamepadAxis::ABS_X, x);
-                                                                let _ = gamepad_clone.emit_axis(GamepadAxis::ABS_Y, y);
-                                                                debug!("Gamepad output: device={}, X={}, Y={}", id_clone, x, y);
+                                                                if let Some((x, y)) = result {
+                                                                    use crate::gamepad_device::GamepadAxis;
+                                                                    let _ = gamepad_clone.emit_axis(GamepadAxis::ABS_X, x);
+                                                                    let _ = gamepad_clone.emit_axis(GamepadAxis::ABS_Y, y);
+                                                                    debug!("Gamepad output: device={}, X={}, Y={}", id_clone, x, y);
+                                                                }
                                                             }
-                                                        }
+                                                        })
                                                     });
 
                                                     // Skip sending to macro engine when in gamepad mode
@@ -1223,106 +1257,108 @@ impl DeviceManager {
                                                     let wasd_keys_clone =
                                                         wasd_previous_keys.clone();
 
-                                                    rt.block_on(async move {
-                                                        if let (Some(processor), Some(inj)) = (
-                                                            &analog_processor_clone,
-                                                            &injector_clone,
-                                                        ) {
-                                                            // Get layer-specific calibration
-                                                            let lm_read = lm_clone.read().await;
-                                                            let device_state = lm_read
-                                                                .get_device_state(&id_clone)
-                                                                .await;
-                                                            let layer_id = device_state
-                                                                .as_ref()
-                                                                .map(|s| s.get_effective_layer())
-                                                                .unwrap_or(0);
+                                                    tokio::task::block_in_place(|| {
+                                                        rt.block_on(async move {
+                                                            if let (Some(processor), Some(inj)) = (
+                                                                &analog_processor_clone,
+                                                                &injector_clone,
+                                                            ) {
+                                                                // Get layer-specific calibration
+                                                                let lm_read = lm_clone.read().await;
+                                                                let device_state = lm_read
+                                                                    .get_device_state(&id_clone)
+                                                                    .await;
+                                                                let layer_id = device_state
+                                                                    .as_ref()
+                                                                    .map(|s| s.get_effective_layer())
+                                                                    .unwrap_or(0);
 
-                                                            let layer_calibration = device_state
-                                                                .and_then(|s| {
-                                                                    s.get_layer_config(layer_id)
-                                                                        .and_then(|c| {
-                                                                            c.analog_calibration()
-                                                                                .cloned()
-                                                                        })
-                                                                });
+                                                                let layer_calibration = device_state
+                                                                    .and_then(|s| {
+                                                                        s.get_layer_config(layer_id)
+                                                                            .and_then(|c| {
+                                                                                c.analog_calibration()
+                                                                                    .cloned()
+                                                                            })
+                                                                    });
 
-                                                            drop(lm_read);
+                                                                drop(lm_read);
 
-                                                            // Get calibration or use default
-                                                            let calibration = if let Some(cal) =
-                                                                layer_calibration
-                                                            {
-                                                                cal
-                                                            } else {
-                                                                // Create default calibration
-                                                                use crate::analog_calibration::{
-                                                                    AnalogCalibration,
-                                                                    DeadzoneShape,
-                                                                    SensitivityCurve,
+                                                                // Get calibration or use default
+                                                                let calibration = if let Some(cal) =
+                                                                    layer_calibration
+                                                                {
+                                                                    cal
+                                                                } else {
+                                                                    // Create default calibration
+                                                                    use crate::analog_calibration::{
+                                                                        AnalogCalibration,
+                                                                        DeadzoneShape,
+                                                                        SensitivityCurve,
+                                                                    };
+                                                                    AnalogCalibration {
+                                                                        deadzone: 0.15,
+                                                                        deadzone_shape:
+                                                                            DeadzoneShape::Circular,
+                                                                        sensitivity:
+                                                                            SensitivityCurve::Linear,
+                                                                        sensitivity_multiplier: 1.0,
+                                                                        range_min: -32768,
+                                                                        range_max: 32767,
+                                                                        invert_x: false,
+                                                                        invert_y: false,
+                                                                    }
                                                                 };
-                                                                AnalogCalibration {
-                                                                    deadzone: 0.15,
-                                                                    deadzone_shape:
-                                                                        DeadzoneShape::Circular,
-                                                                    sensitivity:
-                                                                        SensitivityCurve::Linear,
-                                                                    sensitivity_multiplier: 1.0,
-                                                                    range_min: -32768,
-                                                                    range_max: 32767,
-                                                                    invert_x: false,
-                                                                    invert_y: false,
-                                                                }
-                                                            };
 
-                                                            // Process as WASD
-                                                            let current_keys = processor
-                                                                .process_as_wasd(
-                                                                    &calibration,
-                                                                    dpad_state.x,
-                                                                    dpad_state.y,
+                                                                // Process as WASD
+                                                                let current_keys = processor
+                                                                    .process_as_wasd(
+                                                                        &calibration,
+                                                                        dpad_state.x,
+                                                                        dpad_state.y,
+                                                                    );
+
+                                                                // Track previous state and emit proper press/release events
+                                                                let mut prev_keys =
+                                                                    wasd_keys_clone.write().await;
+                                                                let inj_lock = inj.write().await;
+
+                                                                // Release keys that are no longer active
+                                                                for (key, _) in &*prev_keys {
+                                                                    if !current_keys
+                                                                        .iter()
+                                                                        .any(|(k, _)| k == key)
+                                                                    {
+                                                                        let _ = inj_lock
+                                                                            .key_release(key.0)
+                                                                            .await;
+                                                                    }
+                                                                }
+
+                                                                // Press keys that are newly active
+                                                                for (key, _) in &current_keys {
+                                                                    if !prev_keys
+                                                                        .iter()
+                                                                        .any(|(k, _)| k == key)
+                                                                    {
+                                                                        let _ = inj_lock
+                                                                            .key_press(key.0)
+                                                                            .await;
+                                                                    }
+                                                                }
+                                                                drop(inj_lock);
+
+                                                                // Update previous state for next iteration
+                                                                *prev_keys = current_keys;
+                                                                drop(prev_keys);
+
+                                                                debug!(
+                                                                    "WASD output: device={}, keys={:?}",
+                                                                    id_clone,
+                                                                    &*wasd_keys_clone.read().await
                                                                 );
-
-                                                            // Track previous state and emit proper press/release events
-                                                            let mut prev_keys =
-                                                                wasd_keys_clone.write().await;
-                                                            let inj_lock = inj.write().await;
-
-                                                            // Release keys that are no longer active
-                                                            for (key, _) in &*prev_keys {
-                                                                if !current_keys
-                                                                    .iter()
-                                                                    .any(|(k, _)| k == key)
-                                                                {
-                                                                    let _ = inj_lock
-                                                                        .key_release(key.0)
-                                                                        .await;
-                                                                }
                                                             }
-
-                                                            // Press keys that are newly active
-                                                            for (key, _) in &current_keys {
-                                                                if !prev_keys
-                                                                    .iter()
-                                                                    .any(|(k, _)| k == key)
-                                                                {
-                                                                    let _ = inj_lock
-                                                                        .key_press(key.0)
-                                                                        .await;
-                                                                }
-                                                            }
-                                                            drop(inj_lock);
-
-                                                            // Update previous state for next iteration
-                                                            *prev_keys = current_keys;
-                                                            drop(prev_keys);
-
-                                                            debug!(
-                                                                "WASD output: device={}, keys={:?}",
-                                                                id_clone,
-                                                                &*wasd_keys_clone.read().await
-                                                            );
-                                                        }
+                                                        })
                                                     });
 
                                                     // Skip sending to macro engine when in WASD mode
@@ -1350,58 +1386,61 @@ impl DeviceManager {
                                                     let analog_processor_clone =
                                                         analog_processor.clone();
 
-                                                    rt.block_on(async move {
-                                                        if let (Some(processor), Some(inj)) =
-                                                            (&analog_processor_clone, &injector_clone)
-                                                        {
-                                                            // Get layer-specific calibration
-                                                            let lm_read = lm_clone.read().await;
-                                                            let device_state = lm_read.get_device_state(&id_clone).await;
-                                                            let layer_id = device_state.as_ref()
-                                                                .map(|s| s.get_effective_layer())
-                                                                .unwrap_or(0);
+                                                    tokio::task::block_in_place(|| {
+                                                        rt.block_on(async move {
+                                                            if let (Some(processor), Some(inj)) =
+                                                                (&analog_processor_clone,
+                                                                &injector_clone)
+                                                            {
+                                                                // Get layer-specific calibration
+                                                                let lm_read = lm_clone.read().await;
+                                                                let device_state = lm_read.get_device_state(&id_clone).await;
+                                                                let layer_id = device_state.as_ref()
+                                                                    .map(|s| s.get_effective_layer())
+                                                                    .unwrap_or(0);
 
-                                                            let layer_calibration = device_state
-                                                                .and_then(|s| {
-                                                                    s.get_layer_config(layer_id)
-                                                                        .and_then(|c| c.analog_calibration().cloned())
-                                                                });
+                                                                let layer_calibration = device_state
+                                                                    .and_then(|s| {
+                                                                        s.get_layer_config(layer_id)
+                                                                            .and_then(|c| c.analog_calibration().cloned())
+                                                                    });
 
-                                                            drop(lm_read);
+                                                                drop(lm_read);
 
-                                                            // Get calibration or use default
-                                                            let calibration = if let Some(cal) = layer_calibration {
-                                                                cal
-                                                            } else {
-                                                                // Create default calibration
-                                                                use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
-                                                                AnalogCalibration {
-                                                                    deadzone: 0.15,
-                                                                    deadzone_shape: DeadzoneShape::Circular,
-                                                                    sensitivity: SensitivityCurve::Linear,
-                                                                    sensitivity_multiplier: 1.0,
-                                                                    range_min: -32768,
-                                                                    range_max: 32767,
-                                                                    invert_x: false,
-                                                                    invert_y: false,
+                                                                // Get calibration or use default
+                                                                let calibration = if let Some(cal) = layer_calibration {
+                                                                    cal
+                                                                } else {
+                                                                    // Create default calibration
+                                                                    use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
+                                                                    AnalogCalibration {
+                                                                        deadzone: 0.15,
+                                                                        deadzone_shape: DeadzoneShape::Circular,
+                                                                        sensitivity: SensitivityCurve::Linear,
+                                                                        sensitivity_multiplier: 1.0,
+                                                                        range_min: -32768,
+                                                                        range_max: 32767,
+                                                                        invert_x: false,
+                                                                        invert_y: false,
+                                                                    }
+                                                                };
+
+                                                                // Get default mouse velocity config
+                                                                let mouse_config = crate::analog_processor::default_mouse_velocity_config();
+
+                                                                // Process as mouse
+                                                                if let Some((vel_x, vel_y)) = processor.process_as_mouse(
+                                                                    &calibration,
+                                                                    dpad_state.x,
+                                                                    dpad_state.y,
+                                                                    &mouse_config,
+                                                                ) {
+                                                                    let inj_lock = inj.write().await;
+                                                                    let _ = inj_lock.mouse_move(vel_x, vel_y).await;
+                                                                    debug!("Mouse output: device={}, velocity=({}, {})", id_clone, vel_x, vel_y);
                                                                 }
-                                                            };
-
-                                                            // Get default mouse velocity config
-                                                            let mouse_config = crate::analog_processor::default_mouse_velocity_config();
-
-                                                            // Process as mouse
-                                                            if let Some((vel_x, vel_y)) = processor.process_as_mouse(
-                                                                &calibration,
-                                                                dpad_state.x,
-                                                                dpad_state.y,
-                                                                &mouse_config,
-                                                            ) {
-                                                                let inj_lock = inj.write().await;
-                                                                let _ = inj_lock.mouse_move(vel_x, vel_y).await;
-                                                                debug!("Mouse output: device={}, velocity=({}, {})", id_clone, vel_x, vel_y);
                                                             }
-                                                        }
+                                                        })
                                                     });
 
                                                     // Skip sending to macro engine when in mouse mode
@@ -1430,74 +1469,77 @@ impl DeviceManager {
                                                     let analog_processor_clone =
                                                         analog_processor.clone();
 
-                                                    rt.block_on(async move {
-                                                        if let (Some(processor), Some(inj)) =
-                                                            (&analog_processor_clone, &injector_clone)
-                                                        {
-                                                            // Get layer-specific calibration and camera mode
-                                                            let lm_read = lm_clone.read().await;
-                                                            let device_state = lm_read.get_device_state(&id_clone).await;
-                                                            let layer_id = device_state.as_ref()
-                                                                .map(|s| s.get_effective_layer())
-                                                                .unwrap_or(0);
+                                                    tokio::task::block_in_place(|| {
+                                                        rt.block_on(async move {
+                                                            if let (Some(processor), Some(inj)) =
+                                                                (&analog_processor_clone,
+                                                                &injector_clone)
+                                                            {
+                                                                // Get layer-specific calibration and camera mode
+                                                                let lm_read = lm_clone.read().await;
+                                                                let device_state = lm_read.get_device_state(&id_clone).await;
+                                                                let layer_id = device_state.as_ref()
+                                                                    .map(|s| s.get_effective_layer())
+                                                                    .unwrap_or(0);
 
-                                                            // Extract values before dropping lm_read
-                                                            let (layer_calibration, camera_mode) = if let Some(state) = device_state {
-                                                                let config = state.get_layer_config(layer_id);
-                                                                let cal = config.and_then(|c| c.analog_calibration().cloned());
-                                                                let mode = config.map(|c| c.camera_output_mode())
-                                                                    .unwrap_or(crate::analog_processor::CameraOutputMode::Scroll);
-                                                                (cal, mode)
-                                                            } else {
-                                                                (None, crate::analog_processor::CameraOutputMode::Scroll)
-                                                            };
+                                                                // Extract values before dropping lm_read
+                                                                let (layer_calibration, camera_mode) = if let Some(state) = device_state {
+                                                                    let config = state.get_layer_config(layer_id);
+                                                                    let cal = config.and_then(|c| c.analog_calibration().cloned());
+                                                                    let mode = config.map(|c| c.camera_output_mode())
+                                                                        .unwrap_or(crate::analog_processor::CameraOutputMode::Scroll);
+                                                                    (cal, mode)
+                                                                } else {
+                                                                    (None, crate::analog_processor::CameraOutputMode::Scroll)
+                                                                };
 
-                                                            drop(lm_read);
+                                                                drop(lm_read);
 
-                                                            // Get calibration or use default
-                                                            let calibration = if let Some(cal) = layer_calibration {
-                                                                cal
-                                                            } else {
-                                                                // Create default calibration
-                                                                use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
-                                                                AnalogCalibration {
-                                                                    deadzone: 0.15,
-                                                                    deadzone_shape: DeadzoneShape::Circular,
-                                                                    sensitivity: SensitivityCurve::Linear,
-                                                                    sensitivity_multiplier: 1.0,
-                                                                    range_min: -32768,
-                                                                    range_max: 32767,
-                                                                    invert_x: false,
-                                                                    invert_y: false,
-                                                                }
-                                                            };
-
-                                                            // Process as camera
-                                                            if let Some(output) = processor.process_as_camera(
-                                                                &calibration,
-                                                                dpad_state.x,
-                                                                dpad_state.y,
-                                                                camera_mode,
-                                                            ) {
-                                                                use crate::analog_processor::CameraOutput;
-                                                                match output {
-                                                                    CameraOutput::Scroll(amount) => {
-                                                                        let inj_lock = inj.write().await;
-                                                                        let _ = inj_lock.mouse_scroll(amount).await;
-                                                                        debug!("Camera scroll: device={}, amount={}", id_clone, amount);
+                                                                // Get calibration or use default
+                                                                let calibration = if let Some(cal) = layer_calibration {
+                                                                    cal
+                                                                } else {
+                                                                    // Create default calibration
+                                                                    use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};
+                                                                    AnalogCalibration {
+                                                                        deadzone: 0.15,
+                                                                        deadzone_shape: DeadzoneShape::Circular,
+                                                                        sensitivity: SensitivityCurve::Linear,
+                                                                        sensitivity_multiplier: 1.0,
+                                                                        range_min: -32768,
+                                                                        range_max: 32767,
+                                                                        invert_x: false,
+                                                                        invert_y: false,
                                                                     }
-                                                                    CameraOutput::Keys(keys) => {
-                                                                        // Emit keys for camera control
-                                                                        let inj_lock = inj.write().await;
-                                                                        for key in &keys {
-                                                                            let _ = inj_lock.key_press(key.0).await;
-                                                                            let _ = inj_lock.key_release(key.0).await;  // Immediate for repeat
+                                                                };
+
+                                                                // Process as camera
+                                                                if let Some(output) = processor.process_as_camera(
+                                                                    &calibration,
+                                                                    dpad_state.x,
+                                                                    dpad_state.y,
+                                                                    camera_mode,
+                                                                ) {
+                                                                    use crate::analog_processor::CameraOutput;
+                                                                    match output {
+                                                                        CameraOutput::Scroll(amount) => {
+                                                                            let inj_lock = inj.write().await;
+                                                                            let _ = inj_lock.mouse_scroll(amount).await;
+                                                                            debug!("Camera scroll: device={}, amount={}", id_clone, amount);
                                                                         }
-                                                                        debug!("Camera keys: device={}, keys={:?}", id_clone, &keys);
+                                                                        CameraOutput::Keys(keys) => {
+                                                                            // Emit keys for camera control
+                                                                            let inj_lock = inj.write().await;
+                                                                            for key in &keys {
+                                                                                let _ = inj_lock.key_press(key.0).await;
+                                                                                let _ = inj_lock.key_release(key.0).await;  // Immediate for repeat
+                                                                            }
+                                                                            debug!("Camera keys: device={}, keys={:?}", id_clone, &keys);
+                                                                        }
                                                                     }
                                                                 }
                                                             }
-                                                        }
+                                                        })
                                                     });
 
                                                     // Skip sending to macro engine when in camera mode
