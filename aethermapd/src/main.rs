@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -316,6 +316,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     }
                                     _ => {}
                                 }
+                            }
+                        }
+                        DeviceEventType::AbsAxis { axis, value } => {
+                            use evdev::AbsoluteAxisType;
+
+                            // Map evdev absolute axis to internal axis code for injector
+                            let axis_code = match axis {
+                                AbsoluteAxisType::ABS_X => 61000,
+                                AbsoluteAxisType::ABS_Y => 61001,
+                                AbsoluteAxisType::ABS_Z => 61002,
+                                AbsoluteAxisType::ABS_RX => 61003,
+                                AbsoluteAxisType::ABS_RY => 61004,
+                                AbsoluteAxisType::ABS_RZ => 61005,
+                                _ => {
+                                    debug!("Unknown ABS axis: {:?} value={}", axis, value);
+                                    continue;
+                                }
+                            };
+
+                            // Forward to injector for analog joystick emulation
+                            if let Some(inj) = injector {
+                                let injector_ref = inj.read().await;
+                                let _ = injector_ref.analog_move(axis_code, value).await;
                             }
                         }
                     }

@@ -16,6 +16,8 @@ pub enum DeviceEventType {
     Key { original_code: u16, value: i32 },
     /// Relative axis (mouse movement, scroll)
     RelAxis { axis: RelativeAxisType, value: i32 },
+    /// Absolute axis (analog stick, throttle, hat switch)
+    AbsAxis { axis: AbsoluteAxisType, value: i32 },
 }
 
 /// Message sent from device event reader to main event loop
@@ -47,6 +49,15 @@ impl DeviceEventMessage {
         Self {
             device_path,
             event_type: DeviceEventType::RelAxis { axis, value },
+            key_code: None,
+        }
+    }
+
+    /// Create an absolute axis event message
+    pub fn abs_axis_event(device_path: String, axis: AbsoluteAxisType, value: i32) -> Self {
+        Self {
+            device_path,
+            event_type: DeviceEventType::AbsAxis { axis, value },
             key_code: None,
         }
     }
@@ -1550,27 +1561,10 @@ impl DeviceManager {
                                         }
                                     }
 
-                                    // Encode absolute axis events in the message format
-                                    // We use high key codes to represent analog events:
-                                    // 61000: ABS_X, 61001: ABS_Y, 61002: ABS_Z, 61003: ABS_RX, 61004: ABS_RY, 61005: ABS_RZ
-                                    let analog_event_code = match axis {
-                                        AbsoluteAxisType::ABS_X => 61000,
-                                        AbsoluteAxisType::ABS_Y => 61001,
-                                        AbsoluteAxisType::ABS_Z => 61002,
-                                        AbsoluteAxisType::ABS_RX => 61003,
-                                        AbsoluteAxisType::ABS_RY => 61004,
-                                        AbsoluteAxisType::ABS_RZ => 61005,
-                                        _ => {
-                                            debug!("Unsupported absolute axis: {:?}", axis);
-                                            continue; // Skip unsupported axes
-                                        }
-                                    };
-
-                                    // Send as key event (analog input is treated like a key for macro engine)
-                                    let msg = DeviceEventMessage::key_event(
+                                    // Send as absolute axis event for proper handling
+                                    let msg = DeviceEventMessage::abs_axis_event(
                                         path.clone(),
-                                        analog_event_code,
-                                        analog_event_code,
+                                        axis,
                                         value,
                                     );
                                     if let Err(e) = sender.try_send(msg) {

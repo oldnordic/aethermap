@@ -98,6 +98,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     DeviceEventType::RelAxis { axis, value } => {
                         info!("[{}] RelAxis {:?} = {}", msg.device_path, axis, value);
                     }
+                    DeviceEventType::AbsAxis { axis, value } => {
+                        info!("[{}] AbsAxis {:?} = {}", msg.device_path, axis, value);
+                    }
                 }
             }
             _ = &mut shutdown => {
