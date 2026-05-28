@@ -1524,18 +1524,15 @@ impl DeviceManager {
                                         }
                                     };
 
-                                    let sender_clone = sender.clone();
-                                    let path_clone = path.clone();
-
                                     // Send as key event (analog input is treated like a key for macro engine)
                                     let msg = DeviceEventMessage::key_event(
-                                        path_clone,
+                                        path.clone(),
                                         analog_event_code,
                                         analog_event_code,
                                         value,
                                     );
-                                    if let Err(e) = rt.block_on(sender_clone.send(msg)) {
-                                        error!("Failed to send analog event: {}", e);
+                                    if let Err(e) = sender.try_send(msg) {
+                                        error!("Failed to send analog event (channel full or closed): {}", e);
                                         return;
                                     }
                                 }
