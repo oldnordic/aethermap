@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_target(false)
         .init();
 
-    info!("Starting Aethermap Daemon v0.1.0");
+    info!("Starting Aethermap Daemon v{}", env!("CARGO_PKG_VERSION"));
 
     // Check if we're running as root (required for privileged operations)
     if !security::SecurityManager::is_root() {

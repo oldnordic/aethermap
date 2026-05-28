@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2026-05-29
+
+### Fixed
+- **Deadlock fix**: Replaced nested `rt.block_on()` calls in the evdev event loop with `sender.try_send()` and `tokio::task::block_in_place()` to prevent runtime starvation under rapid analog stick input.
+- **Async mutex safety**: Replaced `std::sync::Mutex` with `tokio::sync::Mutex` in `DaemonState` to eliminate `.lock().unwrap()` panics in async contexts.
+- **ABS axis value range**: Added normalization for unsigned 0-65535 device values (Azeron Cyborg 2) to signed -32768..32767 standard evdev range before injection.
+- **Error handling**: Replaced all `let _ = ` error discards in the event loop with proper `if let Err(e)` logging for key, relative axis, and absolute axis events.
+
 ## [1.5.0] - 2026-05-15
 
 ### Added

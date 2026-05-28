@@ -1,6 +1,6 @@
 # Maintainer: Luiz Spies <luiz@oldnordic.com>
 pkgname=aethermap
-pkgver=1.4.3
+pkgver=1.5.1
 pkgrel=1
 pkgdesc="Input remapper and macro engine for Linux devices (daemon + GUI)"
 arch=('x86_64')
