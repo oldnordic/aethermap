@@ -863,16 +863,17 @@ impl DeviceManager {
                                     // Send event to macro engine for non-remapped keys
                                     // Include original key code for potential passthrough
                                     // Use final_key_code which includes JOY_BTN_N codes for joystick buttons
-                                    let sender_clone = sender.clone();
-                                    let path_clone = path.clone();
                                     let msg = DeviceEventMessage::key_event(
-                                        path_clone,
+                                        path.clone(),
                                         key_code.0,     // original code for passthrough
                                         final_key_code, // processed code for macro engine
                                         value,
                                     );
-                                    if let Err(e) = rt.block_on(sender_clone.send(msg)) {
-                                        error!("Failed to send event: {}", e);
+                                    if let Err(e) = sender.try_send(msg) {
+                                        error!(
+                                            "Failed to send event (channel full or closed): {}",
+                                            e
+                                        );
                                         return;
                                     }
                                 }
@@ -907,12 +908,13 @@ impl DeviceManager {
                                     }
 
                                     // Send to macro engine with full event data for potential passthrough
-                                    let sender_clone = sender.clone();
-                                    let path_clone = path.clone();
-                                    let msg =
-                                        DeviceEventMessage::rel_axis_event(path_clone, axis, value);
-                                    if let Err(e) = rt.block_on(sender_clone.send(msg)) {
-                                        error!("Failed to send mouse event: {}", e);
+                                    let msg = DeviceEventMessage::rel_axis_event(
+                                        path.clone(),
+                                        axis,
+                                        value,
+                                    );
+                                    if let Err(e) = sender.try_send(msg) {
+                                        error!("Failed to send mouse event (channel full or closed): {}", e);
                                         return;
                                     }
                                 }
@@ -946,22 +948,24 @@ impl DeviceManager {
 
                                         // Send key release events for previous direction
                                         for key_code in &previous_hat_keys {
-                                            let sender_clone = sender.clone();
-                                            let path_clone = path.clone();
                                             let msg = DeviceEventMessage::key_event(
-                                                path_clone, *key_code, *key_code, 0,
+                                                path.clone(),
+                                                *key_code,
+                                                *key_code,
+                                                0,
                                             );
-                                            let _ = rt.block_on(sender_clone.send(msg));
+                                            let _ = sender.try_send(msg);
                                         }
 
                                         // Send key press events for new direction
                                         for key_code in &current_hat_keys {
-                                            let sender_clone = sender.clone();
-                                            let path_clone = path.clone();
                                             let msg = DeviceEventMessage::key_event(
-                                                path_clone, *key_code, *key_code, 1,
+                                                path.clone(),
+                                                *key_code,
+                                                *key_code,
+                                                1,
                                             );
-                                            let _ = rt.block_on(sender_clone.send(msg));
+                                            let _ = sender.try_send(msg);
                                         }
 
                                         previous_hat_keys = current_hat_keys.clone();
