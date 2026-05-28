@@ -413,12 +413,12 @@ async fn handle_request(
         }
         Request::GetDevices => {
             let state = state.read().await;
-            let devices = state.devices.lock().unwrap().clone();
+            let devices = state.devices.lock().await.clone();
             Response::Devices(devices)
         }
         Request::ListMacros => {
             let state = state.read().await;
-            let macros = state.macros.lock().unwrap().values().cloned().collect();
+            let macros = state.macros.lock().await.values().cloned().collect();
             Response::Macros(macros)
         }
         Request::SetMacro {
@@ -428,7 +428,7 @@ async fn handle_request(
             let state = state.write().await;
 
             // Check if the device exists
-            let devices = state.devices.lock().unwrap();
+            let devices = state.devices.lock().await;
             let device_exists = devices
                 .iter()
                 .any(|d| d.path.to_string_lossy() == device_path);
@@ -437,7 +437,7 @@ async fn handle_request(
             }
 
             // Add or update the macro
-            let mut macros = state.macros.lock().unwrap();
+            let mut macros = state.macros.lock().await;
             macros.insert(macro_entry.name.clone(), macro_entry);
 
             Response::Ack
@@ -446,7 +446,7 @@ async fn handle_request(
             let state = state.write().await;
 
             // Find and remove the macro
-            let mut macros = state.macros.lock().unwrap();
+            let mut macros = state.macros.lock().await;
             let original_len = macros.len();
             macros.remove(&name);
 
@@ -511,7 +511,7 @@ async fn handle_request(
                     state.active_recording = None;
 
                     // Add the macro to the daemon state
-                    let mut macros = state.macros.lock().unwrap();
+                    let mut macros = state.macros.lock().await;
                     macros.insert(macro_entry.name.clone(), macro_entry.clone());
                     drop(macros);
 
@@ -597,8 +597,8 @@ async fn handle_request(
         }
         Request::GetStatus => {
             let state = state.read().await;
-            let devices_count = state.devices.lock().unwrap().len();
-            let macros_count = state.macros.lock().unwrap().len();
+            let devices_count = state.devices.lock().await.len();
+            let macros_count = state.macros.lock().await.len();
             Response::Status {
                 version: "0.1.0".to_string(),
                 uptime_seconds: 0, // Would be calculated in real implementation
@@ -610,7 +610,7 @@ async fn handle_request(
             // Save current macros as a profile
             let macros_count = {
                 let state_guard = state.read().await;
-                let macros = state_guard.macros.lock().unwrap();
+                let macros = state_guard.macros.lock().await;
                 let count = macros.len();
                 drop(macros);
                 drop(state_guard);
@@ -1008,7 +1008,7 @@ async fn handle_request(
                 dm.get_device(&device_path)
             } else {
                 // Fallback: try from state.devices
-                let devices = state_guard.devices.lock().unwrap();
+                let devices = state_guard.devices.lock().await;
                 devices
                     .iter()
                     .find(|d| d.path.to_string_lossy() == device_path)
@@ -2562,7 +2562,7 @@ mod tests {
         // Add a device first
         {
             let state = state.write().await;
-            state.devices.lock().unwrap().push(DeviceInfo {
+            state.devices.lock().await.push(DeviceInfo {
                 name: "Test Device".to_string(),
                 path: PathBuf::from("/dev/input/test"),
                 vendor_id: 0x1234,
@@ -2604,8 +2604,8 @@ mod tests {
 
         // Verify the macro was added
         let state = state.read().await;
-        assert_eq!(state.macros.lock().unwrap().len(), 1);
-        let macros = state.macros.lock().unwrap();
+        assert_eq!(state.macros.lock().await.len(), 1);
+        let macros = state.macros.lock().await;
         let first_macro = macros.values().next().unwrap();
         assert_eq!(first_macro.name, test_macro.name);
     }

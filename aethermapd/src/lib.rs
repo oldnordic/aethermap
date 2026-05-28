@@ -9,9 +9,9 @@
 //! - Layer management for multi-layer remapping
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Instant;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 pub mod analog_calibration;
 pub mod analog_processor;

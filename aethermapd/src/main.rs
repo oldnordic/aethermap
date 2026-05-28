@@ -201,7 +201,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let discovered_devices = device_manager.get_devices();
         {
             let state = state.write().await;
-            *state.devices.lock().unwrap() = discovered_devices;
+            *state.devices.lock().await = discovered_devices;
         }
 
         // Start device event processing loop
@@ -380,10 +380,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 }
                             };
 
+                            // Normalize value from device range to standard evdev range.
+                            // The Azeron Cyborg 2 (and many gamepads) report ABS values
+                            // in unsigned 0-65535 range, but the Linux input subsystem
+                            // and our uinput virtual device expect signed -32768..32767.
+                            // Formula: (raw - 32768) clamps to [-32768, 32767].
+                            let normalized_value = (value - 32768).clamp(-32768, 32767);
+
                             // Forward to injector for analog joystick emulation
                             if let Some(inj) = injector {
                                 let injector_ref = inj.read().await;
-                                if let Err(e) = injector_ref.analog_move(axis_code, value).await {
+                                if let Err(e) =
+                                    injector_ref.analog_move(axis_code, normalized_value).await
+                                {
                                     error!(
                                         "Failed to inject analog axis {} ({}): {}",
                                         axis_code, axis.0, e

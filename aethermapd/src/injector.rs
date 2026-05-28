@@ -686,7 +686,10 @@ impl UinputInjector {
     ///
     /// # Arguments
     /// * `axis_code` - Axis code (61000-61005 for ABS_X, ABS_Y, etc.)
-    /// * `value` - Raw analog value (-32768 to 32767)
+    /// * `value` - Normalized analog value in standard evdev signed range (-32768 to 32767).
+    ///   Callers must normalize raw device values before passing; e.g. for devices
+    ///   that emit unsigned 0-65535 (Azeron Cyborg 2), convert with
+    ///   `(raw - 32768).clamp(-32768, 32767)`.
     ///
     /// # Returns
     /// Ok(()) if successful, Err on failure
