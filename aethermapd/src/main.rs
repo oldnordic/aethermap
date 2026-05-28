@@ -280,16 +280,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         // Mouse button: convert to 1-based (272->1, 273->2, etc.)
                                         let button_num = original_code - 271;
                                         if value == 0 {
-                                            let _ = injector_ref.mouse_release(button_num).await;
+                                            if let Err(e) =
+                                                injector_ref.mouse_release(button_num).await
+                                            {
+                                                error!("Failed to inject mouse release (button {}): {}", button_num, e);
+                                            }
                                         } else {
-                                            let _ = injector_ref.mouse_press(button_num).await;
+                                            if let Err(e) =
+                                                injector_ref.mouse_press(button_num).await
+                                            {
+                                                error!(
+                                                    "Failed to inject mouse press (button {}): {}",
+                                                    button_num, e
+                                                );
+                                            }
                                         }
                                     } else {
                                         // Regular key
                                         if value == 0 {
-                                            let _ = injector_ref.key_release(original_code).await;
+                                            if let Err(e) =
+                                                injector_ref.key_release(original_code).await
+                                            {
+                                                error!(
+                                                    "Failed to inject key release (code {}): {}",
+                                                    original_code, e
+                                                );
+                                            }
                                         } else if value == 1 || value == 2 {
-                                            let _ = injector_ref.key_press(original_code).await;
+                                            if let Err(e) =
+                                                injector_ref.key_press(original_code).await
+                                            {
+                                                error!(
+                                                    "Failed to inject key press (code {}): {}",
+                                                    original_code, e
+                                                );
+                                            }
                                         }
                                     }
                                 }
@@ -303,16 +328,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let injector_ref = inj.read().await;
                                 match axis {
                                     RelativeAxisType::REL_X => {
-                                        let _ = injector_ref.mouse_move(value, 0).await;
+                                        if let Err(e) = injector_ref.mouse_move(value, 0).await {
+                                            error!(
+                                                "Failed to inject mouse X movement ({}): {}",
+                                                value, e
+                                            );
+                                        }
                                     }
                                     RelativeAxisType::REL_Y => {
-                                        let _ = injector_ref.mouse_move(0, value).await;
+                                        if let Err(e) = injector_ref.mouse_move(0, value).await {
+                                            error!(
+                                                "Failed to inject mouse Y movement ({}): {}",
+                                                value, e
+                                            );
+                                        }
                                     }
                                     RelativeAxisType::REL_WHEEL => {
-                                        let _ = injector_ref.mouse_scroll(value).await;
+                                        if let Err(e) = injector_ref.mouse_scroll(value).await {
+                                            error!(
+                                                "Failed to inject mouse scroll ({}): {}",
+                                                value, e
+                                            );
+                                        }
                                     }
                                     RelativeAxisType::REL_HWHEEL => {
-                                        let _ = injector_ref.mouse_scroll(-value).await;
+                                        if let Err(e) = injector_ref.mouse_scroll(-value).await {
+                                            error!(
+                                                "Failed to inject mouse hscroll ({}): {}",
+                                                -value, e
+                                            );
+                                        }
                                     }
                                     _ => {}
                                 }
@@ -338,7 +383,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             // Forward to injector for analog joystick emulation
                             if let Some(inj) = injector {
                                 let injector_ref = inj.read().await;
-                                let _ = injector_ref.analog_move(axis_code, value).await;
+                                if let Err(e) = injector_ref.analog_move(axis_code, value).await {
+                                    error!(
+                                        "Failed to inject analog axis {} ({}): {}",
+                                        axis_code, axis.0, e
+                                    );
+                                }
                             }
                         }
                     }
