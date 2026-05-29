@@ -1,6 +1,6 @@
 # Maintainer: Luiz Spies <luiz@oldnordic.com>
 pkgname=aethermap
-pkgver=1.5.1
+pkgver=1.5.2
 pkgrel=1
 pkgdesc="Input remapper and macro engine for Linux devices (daemon + GUI)"
 arch=('x86_64')
@@ -11,12 +11,20 @@ depends=('gcc-libs' 'libevdev' 'systemd-libs')
 makedepends=('cargo' 'rust' 'pkg-config' 'libevdev' 'systemd')
 install="$pkgname.install"
 source=(
-    "$pkgname-$pkgver.tar.gz::https://github.com/oldnordic/aethermap/archive/refs/tags/v$pkgver.tar.gz"
     '99-aethermap.rules'
 )
-sha256sums=('SKIP' 'SKIP')
+sha256sums=('SKIP')
 
 prepare() {
+    # Use the local source directory instead of downloading
+    cd "$srcdir"
+    if [ -d "$startdir/.git" ]; then
+        # Running from git repo - copy local source (exclude build artifacts)
+        mkdir -p "$pkgname-$pkgver"
+        cp -r "$startdir"/* "$pkgname-$pkgver/" 2>/dev/null || true
+        # Remove build artifacts
+        rm -rf "$pkgname-$pkgver/target" "$pkgname-$pkgver/src" "$pkgname-$pkgver/pkg" "$pkgname-$pkgver"/*.pkg.tar.zst
+    fi
     cd "$pkgname-$pkgver"
     cargo fetch --target "$(rustc -vV | sed -n 's/host: //p')"
 }

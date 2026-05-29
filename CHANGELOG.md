@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.2] - 2026-05-29
+
+### Fixed
+- **GUI keypad layout**: Corrected Azeron Cyborg 2 keypad layout to match actual physical button arrangement (clusters, keypad, thumb buttons, D-pad, modifiers, actions) instead of generic QWERTY grid.
+
 ## [1.5.1] - 2026-05-29
 
 ### Fixed
