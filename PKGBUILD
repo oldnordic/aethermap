@@ -1,6 +1,6 @@
 # Maintainer: Luiz Spies <luiz@oldnordic.com>
 pkgname=aethermap
-pkgver=1.5.2
+pkgver=1.6.0
 pkgrel=1
 pkgdesc="Input remapper and macro engine for Linux devices (daemon + GUI)"
 arch=('x86_64')
@@ -23,7 +23,7 @@ prepare() {
         mkdir -p "$pkgname-$pkgver"
         cp -r "$startdir"/* "$pkgname-$pkgver/" 2>/dev/null || true
         # Remove build artifacts
-        rm -rf "$pkgname-$pkgver/target" "$pkgname-$pkgver/src" "$pkgname-$pkgver/pkg" "$pkgname-$pkgver"/*.pkg.tar.zst
+        rm -rf "$pkgname-$pkgver/target" "$pkgname-$pkgver/src" "$pkgname-$pkgver/pkg" "$pkgname-$pkgver/.claude" "$pkgname-$pkgver"/*.pkg.tar.zst
     fi
     cd "$pkgname-$pkgver"
     cargo fetch --target "$(rustc -vV | sed -n 's/host: //p')"
@@ -60,4 +60,8 @@ package() {
 
     # Config directory
     install -dm755 "$pkgdir/etc/aethermap"
+
+    # Device SVG assets for GUI keypad view
+    install -dm755 "$pkgdir/usr/share/aethermap/assets"
+    install -Dm644 aethermap-gui/assets/*.svg "$pkgdir/usr/share/aethermap/assets/"
 }
