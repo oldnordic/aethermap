@@ -745,7 +745,11 @@ impl LayerManager {
             );
         }
 
-        devices.get(device_id).cloned().unwrap()
+        // Safe: device was just inserted above if missing
+        devices
+            .get(device_id)
+            .cloned()
+            .expect("device must exist after insert")
     }
 
     /// Activate a layer for a device

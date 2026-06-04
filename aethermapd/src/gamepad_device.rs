@@ -25,8 +25,6 @@ pub const ABS_RY: u16 = 0x04;
 pub const ABS_RZ: u16 = 0x05;
 
 // uinput ioctl constants
-#[allow(dead_code)]
-const UINPUT_IOCTL_BASE: u8 = b'U';
 const UI_SET_EVBIT: u64 = 0x40045564; // _IOW('U', 100, int)
 const UI_SET_ABSBIT: u64 = 0x40045567; // _IOW('U', 103, int)
 const UI_DEV_CREATE: u64 = 0x5501; // _IO('U', 1)
@@ -67,7 +65,10 @@ struct InputEvent {
 /// This structure is used to configure the virtual device before creation.
 /// It contains the device name, ID information, and axis configuration.
 #[repr(C)]
-#[allow(dead_code)]
+#[allow(
+    dead_code,
+    reason = "repr(C) uinput struct — layout fields required by kernel ioctl"
+)]
 struct UinputUserDev {
     name: [u8; 80],
     id: InputId,

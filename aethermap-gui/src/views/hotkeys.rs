@@ -43,7 +43,10 @@ fn modifier_checkbox<'a>(
 }
 
 pub fn view(state: &State) -> Element<'_, Message> {
-    let view = state.hotkey_view.as_ref().unwrap();
+    let view = state
+        .hotkey_view
+        .as_ref()
+        .expect("hotkey_view not initialized");
 
     let bindings_header = row![
         text("Hotkey Bindings").size(18),

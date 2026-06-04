@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="280" viewBox="0 0 320 280">
+  <!-- Azeron Cyborg 2 silhouette -->
+  <!-- Body outline -->
+  <path d="M60,20 Q80,10 100,12 L200,15 Q230,18 240,35 L260,80 Q268,110 265,140 L260,180 Q255,210 240,230 L230,250 Q220,265 200,270 L100,268 Q70,265 55,245 L40,210 Q30,180 32,150 L35,100 Q38,60 50,35 Z" 
+        fill="#1a1a2e" stroke="#4a4a6a" stroke-width="2"/>
+  
+  <!-- Left cluster (C1-C4) -->
+  <rect x="75" y="35" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="89" y="52" text-anchor="middle" fill="#8a8aaa" font-size="9">C1</text>
+  <rect x="108" y="35" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="122" y="52" text-anchor="middle" fill="#8a8aaa" font-size="9">C2</text>
+  <rect x="141" y="35" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="155" y="52" text-anchor="middle" fill="#8a8aaa" font-size="9">C3</text>
+  <rect x="174" y="35" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="188" y="52" text-anchor="middle" fill="#8a8aaa" font-size="9">C4</text>
+  
+  <!-- Main keypad row 1 (K1-K3) -->
+  <rect x="90" y="70" width="32" height="28" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="106" y="89" text-anchor="middle" fill="#aaaacc" font-size="10">K1</text>
+  <rect x="128" y="70" width="32" height="28" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="144" y="89" text-anchor="middle" fill="#aaaacc" font-size="10">K2</text>
+  <rect x="166" y="70" width="32" height="28" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="182" y="89" text-anchor="middle" fill="#aaaacc" font-size="10">K3</text>
+  
+  <!-- Main keypad row 2 (K4-K6) -->
+  <rect x="90" y="105" width="32" height="28" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="106" y="124" text-anchor="middle" fill="#aaaacc" font-size="10">K4</text>
+  <rect x="128" y="105" width="32" height="28" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="144" y="124" text-anchor="middle" fill="#aaaacc" font-size="10">K5</text>
+  <rect x="166" y="105" width="32" height="28" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="182" y="124" text-anchor="middle" fill="#aaaacc" font-size="10">K6</text>
+  
+  <!-- Right cluster (C5-C7) -->
+  <rect x="90" y="145" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="104" y="162" text-anchor="middle" fill="#8a8aaa" font-size="9">C5</text>
+  <rect x="123" y="145" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="137" y="162" text-anchor="middle" fill="#8a8aaa" font-size="9">C6</text>
+  <rect x="156" y="145" width="28" height="24" rx="4" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="170" y="162" text-anchor="middle" fill="#8a8aaa" font-size="9">C7</text>
+  
+  <!-- Thumb cluster (TT, TM, TB) -->
+  <rect x="100" y="185" width="26" height="22" rx="4" fill="#3a2a2a" stroke="#8a6a6a" stroke-width="1"/>
+  <text x="113" y="200" text-anchor="middle" fill="#cc8a8a" font-size="8">TT</text>
+  <rect x="131" y="185" width="26" height="22" rx="4" fill="#3a2a2a" stroke="#8a6a6a" stroke-width="1"/>
+  <text x="144" y="200" text-anchor="middle" fill="#cc8a8a" font-size="8">TM</text>
+  <rect x="162" y="185" width="26" height="22" rx="4" fill="#3a2a2a" stroke="#8a6a6a" stroke-width="1"/>
+  <text x="175" y="200" text-anchor="middle" fill="#cc8a8a" font-size="8">TB</text>
+  
+  <!-- Analog stick area -->
+  <circle cx="150" cy="225" r="18" fill="#1a1a2e" stroke="#4a4a6a" stroke-width="1.5"/>
+  <circle cx="150" cy="225" r="10" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  
+  <!-- D-pad -->
+  <rect x="140" y="245" width="20" height="8" rx="2" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  <rect x="146" y="239" width="8" height="20" rx="2" fill="#2a2a4a" stroke="#6a6a8a" stroke-width="1"/>
+  
+  <!-- Modifier row (M1-M4) -->
+  <rect x="75" y="250" width="24" height="20" rx="3" fill="#2a2a3a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="87" y="264" text-anchor="middle" fill="#8a8aaa" font-size="8">M1</text>
+  <rect x="104" y="250" width="24" height="20" rx="3" fill="#2a2a3a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="116" y="264" text-anchor="middle" fill="#8a8aaa" font-size="8">M2</text>
+  <rect x="133" y="250" width="24" height="20" rx="3" fill="#2a2a3a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="145" y="264" text-anchor="middle" fill="#8a8aaa" font-size="8">M3</text>
+  <rect x="162" y="250" width="24" height="20" rx="3" fill="#2a2a3a" stroke="#6a6a8a" stroke-width="1"/>
+  <text x="174" y="264" text-anchor="middle" fill="#8a8aaa" font-size="8">M4</text>
+  
+  <!-- Action buttons (A1, A2) -->
+  <rect x="195" y="250" width="26" height="20" rx="3" fill="#3a2a3a" stroke="#8a6a8a" stroke-width="1"/>
+  <text x="208" y="264" text-anchor="middle" fill="#cc8acc" font-size="8">A1</text>
+  <rect x="226" y="250" width="26" height="20" rx="3" fill="#3a2a3a" stroke="#8a6a8a" stroke-width="1"/>
+  <text x="239" y="264" text-anchor="middle" fill="#cc8acc" font-size="8">A2</text>
+  
+  <!-- Device label -->
+  <text x="160" y="278" text-anchor="middle" fill="#5a5a7a" font-size="9" font-style="italic">Azeron Cyborg 2</text>
+</svg>

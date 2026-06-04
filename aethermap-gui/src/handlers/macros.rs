@@ -134,7 +134,12 @@ pub fn start_recording(state: &mut State) -> Command<Message> {
         return Command::none();
     }
 
-    let device_path = state.grabbed_devices.iter().next().unwrap().clone();
+    let device_path = state
+        .grabbed_devices
+        .iter()
+        .next()
+        .expect("no grabbed device available for macro recording")
+        .clone();
     let socket_path = state.socket_path.clone();
     let macro_name = state.new_macro_name.clone();
     let capture_mouse = state.macro_settings.capture_mouse;

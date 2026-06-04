@@ -1,213 +1,485 @@
 use crate::gui::{Message, State};
 use crate::theme;
 use iced::{
-    widget::{button, column, container, row, text, Space},
+    widget::{button, column, container, row, svg, text, Space},
     Alignment, Element, Length,
 };
+
+/// Known device vendor IDs
+const AZERON_VENDOR_ID: u16 = 0x16d0;
+const RAZER_VENDOR_ID: u16 = 0x1532;
+
+/// Razer Tartarus Chroma product ID
+const RAZER_TARTARUS_CHROMA_PID: u16 = 0x0208;
+
+/// Recognized device profiles for keypad layout rendering
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeviceProfile {
+    AzeronCyborg2,
+    RazerTartarusChroma,
+    Generic,
+}
+
+impl DeviceProfile {
+    /// Detect device profile from vendor/product IDs
+    pub fn from_vid_pid(vendor_id: u16, product_id: u16) -> Self {
+        match (vendor_id, product_id) {
+            (AZERON_VENDOR_ID, _) => Self::AzeronCyborg2,
+            (RAZER_VENDOR_ID, RAZER_TARTARUS_CHROMA_PID) => Self::RazerTartarusChroma,
+            // Other Razer keypads (Tartarus v2: 0x0045, Orbweaver: 0x0113, etc.)
+            // fall through to generic for now — add specific profiles as needed
+            _ => Self::Generic,
+        }
+    }
+
+    /// Human-readable device name for the header
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Self::AzeronCyborg2 => "Azeron Cyborg 2",
+            Self::RazerTartarusChroma => "Razer Tartarus Chroma",
+            Self::Generic => "Keypad",
+        }
+    }
+
+    /// Path to device silhouette SVG in assets/
+    pub fn svg_path(&self) -> Option<&'static str> {
+        match self {
+            Self::AzeronCyborg2 => Some("aethermap-gui/assets/device-azeron-cyborg2.svg"),
+            Self::RazerTartarusChroma => {
+                Some("aethermap-gui/assets/device-razer-tartarus-chroma.svg")
+            }
+            Self::Generic => None,
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct KeypadButton {
     pub id: String,
     pub label: String,
     pub row: usize,
-    #[allow(dead_code)]
     pub col: usize,
     pub current_remap: Option<String>,
 }
 
+/// Select the appropriate keypad layout for a device profile
+pub fn layout_for_profile(profile: DeviceProfile) -> Vec<KeypadButton> {
+    match profile {
+        DeviceProfile::AzeronCyborg2 => azeron_keypad_layout(),
+        DeviceProfile::RazerTartarusChroma => razer_tartarus_chroma_layout(),
+        DeviceProfile::Generic => azeron_keypad_layout(), // fallback
+    }
+}
+
+/// Legacy entry point — callers that don't know the device type yet
 pub fn azeron_keypad_layout() -> Vec<KeypadButton> {
     vec![
         // Row 0: Left Cluster (top)
         KeypadButton {
-            id: "JOY_BTN_7".to_string(),
-            label: "C1".to_string(),
+            id: "JOY_BTN_7".into(),
+            label: "C1".into(),
             row: 0,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_8".to_string(),
-            label: "C2".to_string(),
+            id: "JOY_BTN_8".into(),
+            label: "C2".into(),
             row: 0,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_9".to_string(),
-            label: "C3".to_string(),
+            id: "JOY_BTN_9".into(),
+            label: "C3".into(),
             row: 0,
             col: 2,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_10".to_string(),
-            label: "C4".to_string(),
+            id: "JOY_BTN_10".into(),
+            label: "C4".into(),
             row: 0,
             col: 3,
             current_remap: None,
         },
         // Row 1: Main Keypad (top)
         KeypadButton {
-            id: "JOY_BTN_11".to_string(),
-            label: "K1".to_string(),
+            id: "JOY_BTN_11".into(),
+            label: "K1".into(),
             row: 1,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_12".to_string(),
-            label: "K2".to_string(),
+            id: "JOY_BTN_12".into(),
+            label: "K2".into(),
             row: 1,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_13".to_string(),
-            label: "K3".to_string(),
+            id: "JOY_BTN_13".into(),
+            label: "K3".into(),
             row: 1,
             col: 2,
             current_remap: None,
         },
         // Row 2: Main Keypad (bottom)
         KeypadButton {
-            id: "JOY_BTN_14".to_string(),
-            label: "K4".to_string(),
+            id: "JOY_BTN_14".into(),
+            label: "K4".into(),
             row: 2,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_15".to_string(),
-            label: "K5".to_string(),
+            id: "JOY_BTN_15".into(),
+            label: "K5".into(),
             row: 2,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_16".to_string(),
-            label: "K6".to_string(),
+            id: "JOY_BTN_16".into(),
+            label: "K6".into(),
             row: 2,
             col: 2,
             current_remap: None,
         },
         // Row 3: Right Cluster
         KeypadButton {
-            id: "JOY_BTN_17".to_string(),
-            label: "C5".to_string(),
+            id: "JOY_BTN_17".into(),
+            label: "C5".into(),
             row: 3,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_18".to_string(),
-            label: "C6".to_string(),
+            id: "JOY_BTN_18".into(),
+            label: "C6".into(),
             row: 3,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_19".to_string(),
-            label: "C7".to_string(),
+            id: "JOY_BTN_19".into(),
+            label: "C7".into(),
             row: 3,
             col: 2,
             current_remap: None,
         },
         // Row 4: Thumb buttons
         KeypadButton {
-            id: "JOY_BTN_4".to_string(),
-            label: "TT".to_string(),
+            id: "JOY_BTN_4".into(),
+            label: "TT".into(),
             row: 4,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_5".to_string(),
-            label: "TM".to_string(),
+            id: "JOY_BTN_5".into(),
+            label: "TM".into(),
             row: 4,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_6".to_string(),
-            label: "TB".to_string(),
+            id: "JOY_BTN_6".into(),
+            label: "TB".into(),
             row: 4,
             col: 2,
             current_remap: None,
         },
         // Row 5: D-Pad
         KeypadButton {
-            id: "JOY_BTN_0".to_string(),
-            label: "DU".to_string(),
+            id: "JOY_BTN_0".into(),
+            label: "DU".into(),
             row: 5,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_3".to_string(),
-            label: "DL".to_string(),
+            id: "JOY_BTN_3".into(),
+            label: "DL".into(),
             row: 6,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_1".to_string(),
-            label: "DR".to_string(),
+            id: "JOY_BTN_1".into(),
+            label: "DR".into(),
             row: 6,
             col: 2,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_2".to_string(),
-            label: "DD".to_string(),
+            id: "JOY_BTN_2".into(),
+            label: "DD".into(),
             row: 7,
             col: 1,
             current_remap: None,
         },
         // Row 8: Modifiers
         KeypadButton {
-            id: "JOY_BTN_20".to_string(),
-            label: "M1".to_string(),
+            id: "JOY_BTN_20".into(),
+            label: "M1".into(),
             row: 8,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_21".to_string(),
-            label: "M2".to_string(),
+            id: "JOY_BTN_21".into(),
+            label: "M2".into(),
             row: 8,
             col: 1,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_22".to_string(),
-            label: "M3".to_string(),
+            id: "JOY_BTN_22".into(),
+            label: "M3".into(),
             row: 8,
             col: 2,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_23".to_string(),
-            label: "M4".to_string(),
+            id: "JOY_BTN_23".into(),
+            label: "M4".into(),
             row: 8,
             col: 3,
             current_remap: None,
         },
         // Row 9: Actions
         KeypadButton {
-            id: "JOY_BTN_24".to_string(),
-            label: "A1".to_string(),
+            id: "JOY_BTN_24".into(),
+            label: "A1".into(),
             row: 9,
             col: 0,
             current_remap: None,
         },
         KeypadButton {
-            id: "JOY_BTN_25".to_string(),
-            label: "A2".to_string(),
+            id: "JOY_BTN_25".into(),
+            label: "A2".into(),
             row: 9,
             col: 1,
             current_remap: None,
         },
     ]
+}
+
+/// Razer Tartarus Chroma layout
+///
+/// 25 anti-ghosted programmable keys (KEY_1..KEY_25) arranged as:
+/// - 4 rows x 5 keys (01-20)
+/// - Thumb pad: 8-way directional + scroll wheel
+/// - Mode switch + Function button
+///
+/// In evdev, keys report as KEY_1 through KEY_25 for the main grid,
+/// BTN_TRIGGER_HAPPY for thumb pad directions, and additional keys
+/// for Mode/Fn.
+pub fn razer_tartarus_chroma_layout() -> Vec<KeypadButton> {
+    // Row 0: Keys 01-05
+    let mut buttons = vec![
+        KeypadButton {
+            id: "KEY_1".into(),
+            label: "01".into(),
+            row: 0,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_2".into(),
+            label: "02".into(),
+            row: 0,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_3".into(),
+            label: "03".into(),
+            row: 0,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_4".into(),
+            label: "04".into(),
+            row: 0,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_5".into(),
+            label: "05".into(),
+            row: 0,
+            col: 4,
+            current_remap: None,
+        },
+    ];
+    // Row 1: Keys 06-10
+    buttons.extend([
+        KeypadButton {
+            id: "KEY_6".into(),
+            label: "06".into(),
+            row: 1,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_7".into(),
+            label: "07".into(),
+            row: 1,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_8".into(),
+            label: "08".into(),
+            row: 1,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_9".into(),
+            label: "09".into(),
+            row: 1,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_10".into(),
+            label: "10".into(),
+            row: 1,
+            col: 4,
+            current_remap: None,
+        },
+    ]);
+    // Row 2: Keys 11-15
+    buttons.extend([
+        KeypadButton {
+            id: "KEY_11".into(),
+            label: "11".into(),
+            row: 2,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_12".into(),
+            label: "12".into(),
+            row: 2,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_13".into(),
+            label: "13".into(),
+            row: 2,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_14".into(),
+            label: "14".into(),
+            row: 2,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_15".into(),
+            label: "15".into(),
+            row: 2,
+            col: 4,
+            current_remap: None,
+        },
+    ]);
+    // Row 3: Keys 16-20
+    buttons.extend([
+        KeypadButton {
+            id: "KEY_16".into(),
+            label: "16".into(),
+            row: 3,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_17".into(),
+            label: "17".into(),
+            row: 3,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_18".into(),
+            label: "18".into(),
+            row: 3,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_19".into(),
+            label: "19".into(),
+            row: 3,
+            col: 3,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_20".into(),
+            label: "20".into(),
+            row: 3,
+            col: 4,
+            current_remap: None,
+        },
+    ]);
+    // Row 4: Thumb pad (8-way directional)
+    buttons.extend([
+        KeypadButton {
+            id: "BTN_TRIGGER_HAPPY1".into(),
+            label: "T\u{2191}".into(),
+            row: 4,
+            col: 0,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "BTN_TRIGGER_HAPPY2".into(),
+            label: "T\u{2190}".into(),
+            row: 4,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "BTN_TRIGGER_HAPPY3".into(),
+            label: "T\u{2193}".into(),
+            row: 4,
+            col: 2,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "BTN_TRIGGER_HAPPY4".into(),
+            label: "T\u{2192}".into(),
+            row: 4,
+            col: 3,
+            current_remap: None,
+        },
+    ]);
+    // Row 5: Mode + Fn buttons
+    buttons.extend([
+        KeypadButton {
+            id: "KEY_21".into(),
+            label: "Mode".into(),
+            row: 5,
+            col: 1,
+            current_remap: None,
+        },
+        KeypadButton {
+            id: "KEY_22".into(),
+            label: "Fn".into(),
+            row: 5,
+            col: 2,
+            current_remap: None,
+        },
+    ]);
+
+    buttons
 }
 
 pub fn format_remap_target(target: &str) -> String {
@@ -266,15 +538,30 @@ pub fn format_remap_target(target: &str) -> String {
     }
 }
 
+/// Render the device silhouette SVG if available for the current profile
+fn device_image(profile: DeviceProfile) -> Option<Element<'static, Message>> {
+    let svg_path = profile.svg_path()?;
+    let handle = svg::Handle::from_path(svg_path);
+    Some(
+        container(
+            svg(handle)
+                .width(Length::Fixed(280.0))
+                .height(Length::Fixed(240.0)),
+        )
+        .center_x()
+        .into(),
+    )
+}
+
 pub fn view(state: &State) -> Element<'_, Message> {
-    let layout = azeron_keypad_layout();
+    let layout = &state.keypad_layout;
+    let profile = state.keypad_device_profile;
 
-    let mut rows: Vec<Vec<Element<'_, Message>>> = Vec::with_capacity(10);
-    for _ in 0..10 {
-        rows.push(Vec::new());
-    }
+    // Count rows needed
+    let max_row = layout.iter().map(|b| b.row).max().unwrap_or(0);
+    let mut rows: Vec<Vec<Element<'_, Message>>> = (0..=max_row).map(|_| Vec::new()).collect();
 
-    for keypad_button in &layout {
+    for keypad_button in layout {
         let button_id = keypad_button.id.clone();
         let label = keypad_button.label.clone();
         let remap = keypad_button.current_remap.clone();
@@ -323,21 +610,24 @@ pub fn view(state: &State) -> Element<'_, Message> {
             .height(iced::Length::Fixed(54.0))
             .into();
 
-        if rows.get_mut(keypad_button.row).is_some() {
-            rows[keypad_button.row].push(btn);
+        if let Some(row) = rows.get_mut(keypad_button.row) {
+            row.push(btn);
         }
     }
 
-    let hat_switch = container(text("Hat\n\u{2195}").size(10))
-        .width(iced::Length::Fixed(54.0))
-        .height(iced::Length::Fixed(54.0))
-        .center_x()
-        .center_y()
-        .style(theme::styles::card)
-        .into();
+    // Add hat switch indicator for Azeron (if profile uses analog hat)
+    if profile == DeviceProfile::AzeronCyborg2 {
+        let hat_switch = container(text("Hat\n\u{2195}").size(10))
+            .width(iced::Length::Fixed(54.0))
+            .height(iced::Length::Fixed(54.0))
+            .center_x()
+            .center_y()
+            .style(theme::styles::card)
+            .into();
 
-    if rows.get_mut(5).is_some() {
-        rows[5].push(hat_switch);
+        if let Some(row) = rows.get_mut(5) {
+            row.push(hat_switch);
+        }
     }
 
     let keypad_rows: Vec<Element<'_, Message>> = rows
@@ -351,21 +641,26 @@ pub fn view(state: &State) -> Element<'_, Message> {
         })
         .collect();
 
-    let keypad_content = column![
-        text("Azeron Keypad Layout").size(20),
+    let mut content = column![
+        text(format!("{} Layout", profile.display_name())).size(20),
         Space::with_height(10),
         text("Click a button to configure remapping").size(12),
-        Space::with_height(20),
     ]
     .spacing(10)
-    .align_items(Alignment::Center)
-    .push(
+    .align_items(Alignment::Center);
+
+    // Add device image if available
+    if let Some(image) = device_image(profile) {
+        content = content.push(Space::with_height(10)).push(image);
+    }
+
+    content = content.push(Space::with_height(20)).push(
         column(keypad_rows)
             .spacing(4)
             .align_items(Alignment::Center),
     );
 
-    container(keypad_content)
+    container(content)
         .padding(24)
         .width(Length::Fill)
         .center_x()

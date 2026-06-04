@@ -44,7 +44,7 @@ pub struct Notification {
     pub timestamp: Instant,
 }
 
-pub use views::keypad::{azeron_keypad_layout, KeypadButton};
+pub use views::keypad::{azeron_keypad_layout, layout_for_profile, DeviceProfile, KeypadButton};
 
 pub use views::auto_switch::{AutoSwitchRule, AutoSwitchRulesView};
 
@@ -84,10 +84,12 @@ pub struct State {
     pub active_remap_profiles: HashMap<String, String>,
     /// Active remaps per device (device_path -> remap entries)
     pub active_remaps: HashMap<String, (String, Vec<RemapEntry>)>,
-    /// Azeron keypad layout for selected device
+    /// Keypad layout for selected device (device-specific)
     pub keypad_layout: Vec<KeypadButton>,
     /// Current device path being viewed in keypad layout
     pub keypad_view_device: Option<String>,
+    /// Detected device profile for the current keypad view
+    pub keypad_device_profile: DeviceProfile,
     /// Selected button for remapping (index into keypad_layout)
     pub selected_button: Option<usize>,
     /// Device capabilities for current selection
@@ -162,6 +164,7 @@ impl Default for State {
             active_remaps: HashMap::new(),
             keypad_layout: Vec::new(),
             keypad_view_device: None,
+            keypad_device_profile: DeviceProfile::Generic,
             selected_button: None,
             device_capabilities: None,
             active_layers: HashMap::new(),
@@ -441,12 +444,6 @@ pub enum Message {
     CloseAnalogCalibration,
     /// Analog input updated (streaming from daemon)
     AnalogInputUpdated(f32, f32), // (x, y)
-}
-
-// Reserved for future use
-#[allow(dead_code)]
-pub enum _FutureMessage {
-    DismissNotification,
 }
 
 impl Application for State {
@@ -1106,6 +1103,7 @@ impl Application for State {
                     self.device_capabilities = None;
                     self.keypad_layout.clear();
                     self.keypad_view_device = None;
+                    self.keypad_device_profile = DeviceProfile::Generic;
                     self.selected_button = None;
                     return Command::none();
                 }
@@ -1132,7 +1130,15 @@ impl Application for State {
             }
             Message::DeviceCapabilitiesLoaded(device_path, Ok(capabilities)) => {
                 self.device_capabilities = Some(capabilities);
-                self.keypad_layout = azeron_keypad_layout();
+                // Detect device profile from vendor/product ID
+                let profile = self
+                    .devices
+                    .iter()
+                    .find(|d| d.path == device_path)
+                    .map(|d| DeviceProfile::from_vid_pid(d.vendor_id, d.product_id))
+                    .unwrap_or(DeviceProfile::Generic);
+                self.keypad_device_profile = profile;
+                self.keypad_layout = layout_for_profile(profile);
                 // Load current remappings and update button.current_remap
                 if let Some((profile_name, remaps)) = self.active_remaps.get(&device_path) {
                     for remap in remaps {

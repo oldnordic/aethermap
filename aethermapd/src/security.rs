@@ -6,7 +6,7 @@
 //! - Token-based authentication when enabled
 
 use aethermap_common::tracing;
-use libc::{c_int, setgroups};
+use libc::setgroups;
 use nix::unistd::{getuid, setgid, setuid, Uid};
 use std::fs;
 use std::os::unix::fs::{MetadataExt, PermissionsExt};
@@ -306,10 +306,6 @@ impl SecurityManager {
         Ok(())
     }
 }
-
-// Linux capability constants
-#[allow(dead_code)]
-const CAP_SYS_RAWIO: c_int = 17;
 
 /// Create a security manager with token authentication enabled/disabled
 pub fn create_security_manager(token_auth_enabled: bool) -> SecurityManager {

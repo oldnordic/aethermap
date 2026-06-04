@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.3] - 2026-06-04
+
+### Added
+- **Device-specific keypad layouts**: Keypad remapping view now selects the correct layout based on detected device (Azeron Cyborg 2, Razer Tartarus Chroma) instead of always showing Azeron layout.
+- **Device SVG images**: Visual device silhouettes displayed above the keypad button grid for quick device recognition.
+
+### Changed
+- Replaced all 10 production `.unwrap()` calls with `.expect()` messages across `aethermapd` and `aethermap-gui`, preventing potential panics in hardware I/O paths.
+- Added `reason =` strings to all remaining `#[allow(dead_code)]` / `#[allow(unused_variables)]` annotations.
+
+### Removed
+- Deleted 7 dead code items: unused constants (`UINPUT_IOCTL_BASE` x2, `CAP_SYS_RAWIO`, 4 diagonal hat codes), unused methods (`create_fallback_device`, `send_color_with_brightness`, `MockInjector::new`, `get_group_gid`), and dead `_FutureMessage` enum.
+- Removed 4.7 GB untracked `src/` directory (duplicate workspace copy with build artifacts).
+
 ## [1.5.2] - 2026-05-29
 
 ### Fixed

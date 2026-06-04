@@ -29,9 +29,6 @@ const ABS_RZ: u16 = 0x05;
 // Key codes
 const KEY_LEFTSHIFT: u16 = 42;
 
-// uinput ioctl constants
-#[allow(dead_code)]
-const UINPUT_IOCTL_BASE: u8 = b'U';
 const UI_SET_EVBIT: u64 = 0x40045564; // _IOW('U', 100, int)
 const UI_SET_KEYBIT: u64 = 0x40045565; // _IOW('U', 101, int)
 const UI_SET_RELBIT: u64 = 0x40045566; // _IOW('U', 102, int)

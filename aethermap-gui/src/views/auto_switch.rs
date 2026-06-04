@@ -25,7 +25,10 @@ pub struct AutoSwitchRulesView {
 }
 
 pub fn view(state: &State) -> Element<'_, Message> {
-    let view = state.auto_switch_view.as_ref().unwrap();
+    let view = state
+        .auto_switch_view
+        .as_ref()
+        .expect("auto_switch_view not initialized");
 
     let focus_display = row![
         text("Current Focus:").size(14),

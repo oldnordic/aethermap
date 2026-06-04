@@ -236,7 +236,8 @@ pub fn close(state: &mut State) -> Command<Message> {
     state.analog_calibration_view = None;
 
     let _ = std::thread::spawn(move || {
-        let rt = tokio::runtime::Runtime::new().unwrap();
+        let rt = tokio::runtime::Runtime::new()
+            .expect("failed to create tokio runtime for analog calibration");
         rt.block_on(async move {
             let client = crate::ipc::IpcClient::new(socket_path);
             if let Err(e) = client.unsubscribe_analog_input(&device_id).await {

@@ -109,15 +109,7 @@ const HAT_UP: u16 = 103; // KEY_UP
 const HAT_DOWN: u16 = 108; // KEY_DOWN
 const HAT_LEFT: u16 = 105; // KEY_LEFT
 const HAT_RIGHT: u16 = 106; // KEY_RIGHT
-                            // Diagonal directions map to two key presses (composable)
-#[allow(dead_code)]
-const HAT_UP_LEFT: u16 = 111; // KEY_UPLEFT (or map to custom)
-#[allow(dead_code)]
-const HAT_UP_RIGHT: u16 = 114; // KEY_UPRIGHT (or map to custom)
-#[allow(dead_code)]
-const HAT_DOWN_LEFT: u16 = 116; // KEY_DOWNLEFT (or map to custom)
-#[allow(dead_code)]
-const HAT_DOWN_RIGHT: u16 = 113; // KEY_DOWNRIGHT (or map to custom)
+                            // Diagonal directions are composable from HAT_UP/DOWN + HAT_LEFT/RIGHT
 
 /// Hat switch state for tracking 8-way position
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -1859,23 +1851,6 @@ impl DeviceManager {
         None
     }
 
-    /// Create a fallback device for testing
-    #[allow(dead_code)]
-    fn create_fallback_device(&self, device_type: &str) -> DeviceInfo {
-        use aethermap_common::DeviceType;
-        DeviceInfo {
-            name: format!("Fallback {}", device_type),
-            path: PathBuf::from(format!(
-                "/dev/input/event{}",
-                if device_type == "keyboard" { "0" } else { "1" }
-            )),
-            vendor_id: 0x1532,
-            product_id: 0x0220,
-            phys: "fallback-device".to_string(),
-            device_type: DeviceType::Other,
-        }
-    }
-
     /// Shutdown the device manager
     ///
     /// This method performs a best-effort shutdown: it attempts to ungrab all devices
@@ -2463,7 +2438,10 @@ impl DeviceManager {
 }
 
 #[cfg(test)]
-#[allow(unused_variables)]
+#[allow(
+    unused_variables,
+    reason = "test variables may be unused in assertions"
+)]
 mod tests {
     use super::*;
 
@@ -2611,7 +2589,10 @@ mod gamepad_tests {
 
 // Integration tests for WASD, Mouse, and Camera modes (plan 15-08)
 #[cfg(test)]
-#[allow(unused_variables)]
+#[allow(
+    unused_variables,
+    reason = "test variables may be unused in assertions"
+)]
 mod analog_mode_tests {
     use super::*;
     use crate::analog_calibration::{AnalogCalibration, DeadzoneShape, SensitivityCurve};

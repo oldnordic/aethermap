@@ -76,7 +76,10 @@ pub struct FocusTracker {
 }
 
 /// Internal portal wrapper for ashpd integration
-#[allow(dead_code)]
+#[allow(
+    dead_code,
+    reason = "portal fields used internally during init, not read externally"
+)]
 struct FocusPortal {
     /// Whether portal is available
     available: bool,

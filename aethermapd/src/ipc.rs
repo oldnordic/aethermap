@@ -198,8 +198,17 @@ impl IpcServer {
         // Spawn the main server loop
         let _state_clone = Arc::clone(&state);
         // Clone references before moving into task
-        let macro_engine = self.macro_engine.as_ref().unwrap().clone();
-        let injector = self.injector.as_ref().unwrap().clone();
+        // Safe: macro_engine and injector are set via set_macro_engine/set_injector before run()
+        let macro_engine = self
+            .macro_engine
+            .as_ref()
+            .expect("macro_engine must be set before run()")
+            .clone();
+        let injector = self
+            .injector
+            .as_ref()
+            .expect("injector must be set before run()")
+            .clone();
         let auto_profile_switcher = self.auto_profile_switcher.clone();
 
         task::spawn(async move {
@@ -2406,19 +2415,6 @@ fn detect_device_capabilities(device_info: &aethermap_common::DeviceInfo) -> Dev
         has_hat_switch,
         joystick_button_count,
         led_zones,
-    }
-}
-
-/// Get the GID for a group name
-#[cfg(target_os = "linux")]
-#[allow(dead_code)]
-fn get_group_gid(group_name: &str) -> Option<u32> {
-    // Simplified implementation for now
-    // In a real implementation, this would use libc or nix to resolve group names
-    match group_name {
-        "root" => Some(0),
-        "input" => Some(1001), // Common GID for input group
-        _ => None,
     }
 }
 

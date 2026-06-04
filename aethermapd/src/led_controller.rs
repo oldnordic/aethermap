@@ -925,21 +925,6 @@ impl LedController {
         Ok(())
     }
 
-    /// Send color command with brightness scaling (for animations)
-    #[allow(dead_code)]
-    async fn send_color_with_brightness(
-        &self,
-        zone: LedZone,
-        r: u8,
-        g: u8,
-        b: u8,
-        _brightness_percent: u8,
-    ) -> Result<(), LedError> {
-        // For software animation, we pre-scale the RGB values
-        // so we can just use the regular color command
-        self.send_color_command(zone, r, g, b).await
-    }
-
     /// Internal color command without state update (for animations)
     async fn send_color_command(&self, zone: LedZone, r: u8, g: u8, b: u8) -> Result<(), LedError> {
         let zone_id = zone.to_raw_id();

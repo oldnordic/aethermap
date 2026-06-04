@@ -1,4 +1,4 @@
-use crate::gui::{azeron_keypad_layout, Message, State, Tab};
+use crate::gui::{layout_for_profile, DeviceProfile, Message, State, Tab};
 use aethermap_common::{DeviceCapabilities, DeviceInfo, RemapEntry, RemapProfileInfo};
 use iced::Command;
 
@@ -478,7 +478,15 @@ pub fn device_capabilities_loaded(
     capabilities: DeviceCapabilities,
 ) -> Command<Message> {
     state.device_capabilities = Some(capabilities);
-    state.keypad_layout = azeron_keypad_layout();
+    // Detect device profile
+    let profile = state
+        .devices
+        .iter()
+        .find(|d| d.path == device_path)
+        .map(|d| DeviceProfile::from_vid_pid(d.vendor_id, d.product_id))
+        .unwrap_or(DeviceProfile::Generic);
+    state.keypad_device_profile = profile;
+    state.keypad_layout = layout_for_profile(profile);
     if let Some((profile_name, remaps)) = state.active_remaps.get(&device_path) {
         for remap in remaps {
             if let Some(button) = state

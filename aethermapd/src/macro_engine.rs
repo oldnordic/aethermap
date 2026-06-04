@@ -37,7 +37,10 @@ pub struct MacroEngine {
     cleanup_tx: mpsc::Sender<String>, // Channel for cleanup notifications
     _cleanup_task: tokio::task::JoinHandle<()>, // Keep cleanup task alive
     max_concurrent_macros: usize,
-    #[allow(dead_code)]
+    #[allow(
+        dead_code,
+        reason = "wired from config, reserved for future macro execution timing"
+    )]
     default_delay: u32,
     macro_settings: Arc<RwLock<aethermap_common::MacroSettings>>,
     mouse_deltas: Arc<RwLock<HashMap<String, (i32, i32)>>>,
@@ -234,7 +237,10 @@ impl MacroEngine {
         }
 
         // Get the recorded macro
-        let macro_entry = recording.take().unwrap();
+        // Safe: recording was checked for None above (line 232)
+        let macro_entry = recording
+            .take()
+            .expect("recording must be Some after None check");
 
         info!("Stopped recording macro: {}", macro_entry.name);
         Ok(Some(macro_entry))
@@ -749,13 +755,6 @@ mod tests {
 
     // Create a mock injector for testing
     struct MockInjector;
-
-    impl MockInjector {
-        #[allow(dead_code)]
-        fn new() -> Arc<Self> {
-            Arc::new(Self)
-        }
-    }
 
     #[async_trait::async_trait]
     impl Injector for MockInjector {
